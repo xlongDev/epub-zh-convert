@@ -8,25 +8,30 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
 
   const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
+    const selectedFiles = Array.from(event.target.files);
+    if (selectedFiles.length === 0) return;
 
-    setFile(selectedFile);
+    setFiles(selectedFiles);
     setError(null);
   };
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (files.length === 0) return;
 
     setIsLoading(true);
     setError(null);
     setProgress(0);
 
     try {
-      await convertEpub(file, setProgress);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        await convertEpub(file, (currentProgress) => {
+          setProgress(((i + currentProgress / 100) / files.length) * 100);
+        });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,29 +67,30 @@ export default function Home() {
             disabled={isLoading}
             className="hidden"
             id="fileInput"
+            multiple
           />
           <label
             htmlFor="fileInput"
             className="block w-full p-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            {file ? (
+            {files.length > 0 ? (
               <p className="text-gray-700 dark:text-gray-300">
-                已选择文件: {file.name}
+                已选择 {files.length} 个文件
               </p>
             ) : (
               <p className="text-gray-700 dark:text-gray-300">
-                点击上传 EPUB 文件
+                点击上传 EPUB 文件（支持批量上传）
               </p>
             )}
           </label>
 
-          {file && (
+          {files.length > 0 && (
             <button
               onClick={handleConvert}
               disabled={isLoading}
               className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              {isLoading ? `转换中... ${progress}%` : "开始转换"}
+              {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
             </button>
           )}
 

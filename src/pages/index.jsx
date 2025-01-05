@@ -368,7 +368,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="mt-4 text-center" // 调整成功动画的位置
+                className="mt-2 text-center" // 调整成功动画的位置
               >
                 <motion.div
                   initial={{ scale: 0 }}

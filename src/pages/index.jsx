@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaUpload } from "react-icons/fa";
-import dynamic from "next/dynamic"; // 引入 dynamic
+import { FaUpload, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import dynamic from "next/dynamic";
 
 // 动态导入 LottiePlayer，禁用 SSR
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
@@ -12,7 +12,8 @@ const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false }
 // 引入动画文件
 const welcomeAnimation = require("public/animations/welcome.json");
 const successAnimation = require("public/animations/success.json");
-const loadingAnimation = require("public/animations/loading.json"); // 加载动画
+const loadingAnimation = require("public/animations/loading.json");
+const errorAnimation = require("public/animations/error.json"); // 错误动画
 
 const titleVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -43,7 +44,8 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
-  const [isWelcomeVisible, setIsWelcomeVisible] = useState(true); // 控制欢迎动画的显示
+  const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
+  const [isFileListOpen, setIsFileListOpen] = useState(false);
   const abortControllerRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -155,10 +157,10 @@ export default function Home() {
             className="mb-4 text-center"
           >
             <LottiePlayer
-              animationData={welcomeAnimation} // 欢迎动画文件
-              loop={true} // 不循环播放
-              play // 自动播放
-              style={{ width: 150, height: 150, margin: "0 auto" }} // 设置动画大小
+              animationData={welcomeAnimation}
+              loop={true}
+              play
+              style={{ width: 150, height: 150, margin: "0 auto" }}
             />
           </motion.div>
         )}
@@ -188,7 +190,7 @@ export default function Home() {
           initial="hidden"
           animate="visible"
           variants={uploadVariants}
-          className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl"
+          className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
         >
           <input
             type="file"
@@ -217,29 +219,61 @@ export default function Home() {
             </div>
           </label>
 
-          <AnimatePresence>
-            {files.map((file, index) => (
-              <motion.div
-                key={index}
-                variants={fileItemVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mt-4 shadow-sm"
+          {/* 文件列表 */}
+          {files.length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={() => setIsFileListOpen(!isFileListOpen)}
+                className="w-full flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 <span className="text-gray-700 dark:text-gray-300">
-                  {file.name}
+                  已选择 {files.length} 个文件
                 </span>
-                <button
-                  onClick={() => handleDeleteFile(index)}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  🗑️
-                </button>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                {isFileListOpen ? (
+                  <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                ) : (
+                  <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isFileListOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-2 max-h-48 overflow-y-auto"
+                  >
+                    {files.map((file, index) => (
+                      <motion.div
+                        key={index}
+                        variants={fileItemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg mt-2 shadow-sm"
+                      >
+                        <span
+                          className="text-gray-700 dark:text-gray-300 truncate"
+                          title={file.name} // 鼠标悬停时显示完整文件名
+                        >
+                          {file.name}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteFile(index)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          🗑️
+                        </button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {files.length > 0 && (
             <div className="mt-6 flex space-x-4">
@@ -272,19 +306,20 @@ export default function Home() {
               className="mt-6 text-center"
             >
               <LottiePlayer
-                animationData={loadingAnimation} // 加载动画文件
-                loop={true} // 循环播放
-                play // 自动播放
-                style={{ width: 100, height: 100, margin: "0 auto" }} // 设置动画大小
+                animationData={loadingAnimation}
+                loop={true}
+                play
+                style={{ width: 100, height: 100, margin: "0 auto" }}
               />
-              {/* <p className="text-gray-700 dark:text-gray-300 mt-2">
+              <p className="text-gray-700 dark:text-gray-300 mt-2">
                 转换中，请稍候...
-              </p> */}
+              </p>
             </motion.div>
           )}
 
+          {/* 成功动画 */}
           <AnimatePresence>
-            {isComplete && (
+            {isComplete && !error && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -297,28 +332,42 @@ export default function Home() {
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {/* 使用 Lottie 动画 */}
                   <LottiePlayer
-                    animationData={successAnimation} // 成功动画文件
-                    loop={false} // 不循环播放
-                    play // 自动播放
-                    style={{ width: 150, height: 150, margin: "0 auto" }} // 设置动画大小
+                    animationData={successAnimation}
+                    loop={false}
+                    play
+                    style={{ width: 150, height: 150, margin: "0 auto" }}
                   />
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
+          {/* 错误动画 */}
           <AnimatePresence>
             {error && (
               <motion.div
-                variants={errorVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="mt-6 text-red-500 dark:text-red-400 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="mt-8 text-center"
               >
-                错误: {error}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <LottiePlayer
+                    animationData={errorAnimation} // 错误动画文件
+                    loop={false}
+                    play
+                    style={{ width: 150, height: 150, margin: "0 auto" }}
+                  />
+                  <p className="text-red-500 dark:text-red-400 text-xl mt-4">
+                    {error}
+                  </p>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -340,7 +389,10 @@ export default function Home() {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm"
                     >
-                      <span className="text-gray-700 dark:text-gray-300">
+                      <span
+                        className="text-gray-700 dark:text-gray-300 truncate"
+                        title={file.name} // 鼠标悬停时显示完整文件名
+                      >
                         {file.name}
                       </span>
                       <div className="flex space-x-4">

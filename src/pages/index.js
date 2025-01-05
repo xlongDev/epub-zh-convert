@@ -35,12 +35,17 @@ export default function Home() {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const result = await convertEpub(file, (currentProgress) => {
-          setProgress(((i + currentProgress / 100) / files.length) * 100);
-        }, abortControllerRef.current.signal);
-        converted.push({ name: result.name, blob: result.blob });
+        try {
+          const result = await convertEpub(file, (currentProgress) => {
+            setProgress(((i + currentProgress / 100) / files.length) * 100);
+          }, abortControllerRef.current.signal);
+          converted.push({ name: result.name, blob: result.blob });
+          setConvertedFiles([...converted]); // 实时更新转换后的文件列表
+        } catch (err) {
+          console.error(`文件 ${file.name} 转换失败:`, err.message);
+          setError(`文件 ${file.name} 转换失败: ${err.message}`);
+        }
       }
-      setConvertedFiles(converted); // 保存转换后的文件
       setIsComplete(true); // 标记转换完成
     } catch (err) {
       setError(err.message);
@@ -58,29 +63,34 @@ export default function Home() {
   };
 
   const handleDeleteFile = (index) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleDeleteConvertedFile = (index) => {
-    const newConvertedFiles = [...convertedFiles];
-    newConvertedFiles.splice(index, 1);
-    setConvertedFiles(newConvertedFiles);
+    setConvertedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
-  const handleDownloadAll = () => {
-    convertedFiles.forEach((file) => {
+  const handleDownloadAll = async () => {
+    convertedFiles.forEach((file, index) => {
       const url = URL.createObjectURL(file.blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = file.name;
       a.click();
       URL.revokeObjectURL(url);
+
+      // 添加下载动画
+      const downloadButton = document.getElementById(`download-${index}`);
+      if (downloadButton) {
+        downloadButton.classList.add("animate-ping");
+        setTimeout(() => {
+          downloadButton.classList.remove("animate-ping");
+        }, 500);
+      }
     });
   };
 
-  const handleDownloadSingle = (index) => {
+  const handleDownloadSingle = async (index) => {
     const file = convertedFiles[index];
     if (!file) return;
 
@@ -90,6 +100,15 @@ export default function Home() {
     a.download = file.name;
     a.click();
     URL.revokeObjectURL(url);
+
+    // 添加下载动画
+    const downloadButton = document.getElementById(`download-${index}`);
+    if (downloadButton) {
+      downloadButton.classList.add("animate-ping");
+      setTimeout(() => {
+        downloadButton.classList.remove("animate-ping");
+      }, 500);
+    }
   };
 
   return (
@@ -138,29 +157,28 @@ export default function Home() {
           </label>
 
           {/* 文件列表 */}
-          {files.length > 0 && (
-            <motion.ul className="mt-4 space-y-2">
-              {files.map((file, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+          <AnimatePresence>
+            {files.map((file, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mt-2"
+              >
+                <span className="text-gray-700 dark:text-gray-300">
+                  {file.name}
+                </span>
+                <button
+                  onClick={() => handleDeleteFile(index)}
+                  className="text-red-500 hover:text-red-600"
                 >
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {file.name}
-                  </span>
-                  <button
-                    onClick={() => handleDeleteFile(index)}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    🗑️
-                  </button>
-                </motion.li>
-              ))}
-            </motion.ul>
-          )}
+                  🗑️
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
 
           {files.length > 0 && (
             <div className="mt-4 flex space-x-2">
@@ -231,48 +249,52 @@ export default function Home() {
           )}
 
           {/* 转换后的文件下载区域 */}
-          {convertedFiles.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                转换后的文件
-              </h2>
-              <motion.ul className="space-y-2">
-                {convertedFiles.map((file, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                  >
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {file.name}
-                    </span>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleDownloadSingle(index)}
-                        className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
-                      >
-                        下载
-                      </button>
-                      <button
-                        onClick={() => handleDeleteConvertedFile(index)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </motion.li>
-                ))}
-              </motion.ul>
-              <button
-                onClick={handleDownloadAll}
-                className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
-              >
-                批量下载所有文件
-              </button>
-            </div>
-          )}
+          <AnimatePresence>
+            {convertedFiles.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                  转换后的文件
+                </h2>
+                <motion.ul className="space-y-2">
+                  {convertedFiles.map((file, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                    >
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {file.name}
+                      </span>
+                      <div className="flex space-x-2">
+                        <button
+                          id={`download-${index}`}
+                          onClick={() => handleDownloadSingle(index)}
+                          className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                          下载
+                        </button>
+                        <button
+                          onClick={() => handleDeleteConvertedFile(index)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </motion.li>
+                  ))}
+                </motion.ul>
+                <button
+                  onClick={handleDownloadAll}
+                  className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  批量下载所有文件
+                </button>
+              </div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </div>

@@ -3,27 +3,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
+import { FaUpload } from "react-icons/fa";
+import dynamic from "next/dynamic"; // 引入 dynamic
 
-// 首页标题动画
+// 动态导入 LottiePlayer，禁用 SSR
+const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
+
+// 引入动画文件
+const successAnimation = require("public/animations/success.json");
+
 const titleVariants = {
   hidden: { opacity: 0, y: -20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } },
 };
 
-// 文件上传区域动画
 const uploadVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.4 } },
 };
 
-// 文件列表项动画
 const fileItemVariants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -10, transition: { duration: 0.3 } },
 };
 
-// 错误提示动画
 const errorVariants = {
   hidden: { opacity: 0, y: -10 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
@@ -34,10 +38,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
-  const [files, setFiles] = useState([]); // 上传的文件列表
-  const [convertedFiles, setConvertedFiles] = useState([]); // 转换后的文件列表
-  const [isComplete, setIsComplete] = useState(false); // 转换完成状态
-  const abortControllerRef = useRef(null); // 用于取消转换
+  const [files, setFiles] = useState([]);
+  const [convertedFiles, setConvertedFiles] = useState([]);
+  const [isComplete, setIsComplete] = useState(false);
+  const abortControllerRef = useRef(null);
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
@@ -45,7 +49,7 @@ export default function Home() {
 
     setFiles(selectedFiles);
     setError(null);
-    setIsComplete(false); // 重置完成状态
+    setIsComplete(false);
   };
 
   const handleConvert = async () => {
@@ -56,7 +60,7 @@ export default function Home() {
     setProgress(0);
     setIsComplete(false);
     const converted = [];
-    abortControllerRef.current = new AbortController(); // 创建 AbortController
+    abortControllerRef.current = new AbortController();
 
     try {
       for (let i = 0; i < files.length; i++) {
@@ -66,13 +70,13 @@ export default function Home() {
             setProgress(((i + currentProgress / 100) / files.length) * 100);
           }, abortControllerRef.current.signal);
           converted.push({ name: result.name, blob: result.blob });
-          setConvertedFiles([...converted]); // 实时更新转换后的文件列表
+          setConvertedFiles([...converted]);
         } catch (err) {
           console.error(`文件 ${file.name} 转换失败:`, err.message);
           setError(`文件 ${file.name} 转换失败: ${err.message}`);
         }
       }
-      setIsComplete(true); // 标记转换完成
+      setIsComplete(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -82,7 +86,7 @@ export default function Home() {
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort(); // 取消转换
+      abortControllerRef.current.abort();
       setIsLoading(false);
       setError("转换已取消");
     }
@@ -105,7 +109,6 @@ export default function Home() {
       a.click();
       URL.revokeObjectURL(url);
 
-      // 添加下载动画
       const downloadButton = document.getElementById(`download-${index}`);
       if (downloadButton) {
         downloadButton.classList.add("animate-ping");
@@ -127,7 +130,6 @@ export default function Home() {
     a.click();
     URL.revokeObjectURL(url);
 
-    // 添加下载动画
     const downloadButton = document.getElementById(`download-${index}`);
     if (downloadButton) {
       downloadButton.classList.add("animate-ping");
@@ -138,9 +140,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-orange-400 via-yellow-500 to-lime-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
       <div className="w-full max-w-2xl mx-4">
-        {/* 导航栏 */}
         <motion.nav
           initial="hidden"
           animate="visible"
@@ -149,7 +150,7 @@ export default function Home() {
         >
           <motion.h1
             variants={titleVariants}
-            className="text-2xl font-bold text-white dark:text-gray-100"
+            className="text-3xl font-bold text-gray-800 dark:text-gray-100"
           >
             EPUB 繁简转换
           </motion.h1>
@@ -162,12 +163,11 @@ export default function Home() {
           </motion.div>
         </motion.nav>
 
-        {/* 文件上传区域 */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={uploadVariants}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-2xl"
+          className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl"
         >
           <input
             type="file"
@@ -180,20 +180,22 @@ export default function Home() {
           />
           <label
             htmlFor="fileInput"
-            className="block w-full p-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="block w-full p-8 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800"
           >
-            {files.length > 0 ? (
-              <p className="text-gray-700 dark:text-gray-300">
-                已选择 {files.length} 个文件
-              </p>
-            ) : (
-              <p className="text-gray-700 dark:text-gray-300">
-                点击上传 EPUB 文件（支持批量上传）
-              </p>
-            )}
+            <div className="flex flex-col items-center space-y-4">
+              <FaUpload className="w-12 h-12 text-blue-500 dark:text-purple-400" />
+              {files.length > 0 ? (
+                <p className="text-gray-700 dark:text-gray-300 text-lg">
+                  已选择 {files.length} 个文件
+                </p>
+              ) : (
+                <p className="text-gray-700 dark:text-gray-300 text-lg">
+                  点击上传 EPUB 文件（支持批量上传）
+                </p>
+              )}
+            </div>
           </label>
 
-          {/* 文件列表 */}
           <AnimatePresence>
             {files.map((file, index) => (
               <motion.div
@@ -203,7 +205,7 @@ export default function Home() {
                 animate="visible"
                 exit="exit"
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mt-2"
+                className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mt-4 shadow-sm"
               >
                 <span className="text-gray-700 dark:text-gray-300">
                   {file.name}
@@ -219,12 +221,12 @@ export default function Home() {
           </AnimatePresence>
 
           {files.length > 0 && (
-            <div className="mt-4 flex space-x-2">
+            <div className="mt-6 flex space-x-4">
               <motion.button
                 onClick={handleConvert}
                 disabled={isLoading}
                 whileTap={{ scale: 0.95 }}
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+                className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors shadow-md"
               >
                 {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
               </motion.button>
@@ -232,7 +234,7 @@ export default function Home() {
                 <motion.button
                   onClick={handleCancel}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                  className="w-full bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition-colors shadow-md"
                 >
                   取消转换
                 </motion.button>
@@ -240,15 +242,14 @@ export default function Home() {
             </div>
           )}
 
-          {/* 转换进度条 */}
           {isLoading && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="mt-4"
+              className="mt-6"
             >
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 shadow-inner">
                 <motion.div
                   className="bg-blue-500 h-2.5 rounded-full"
                   style={{ width: `${progress}%` }}
@@ -260,7 +261,6 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* 转换完成动画 */}
           <AnimatePresence>
             {isComplete && (
               <motion.div
@@ -268,21 +268,26 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="mt-6 text-center"
+                className="mt-8 text-center"
               >
                 <motion.div
-                  className="text-green-500 text-2xl mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  ✅ 转换完成！
+                  {/* 使用动态导入的 LottiePlayer */}
+                  <LottiePlayer
+                    animationData={successAnimation} // 动画文件
+                    loop={false} // 不循环播放
+                    play // 自动播放
+                    style={{ width: 100, height: 100, margin: "0 auto" }} // 设置动画大小
+                  />
+                  {/* <p className="text-green-500 text-xl mt-4">转换完成！</p> */}
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* 错误提示动画 */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -290,21 +295,20 @@ export default function Home() {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="mt-4 text-red-500 dark:text-red-400 text-center"
+                className="mt-6 text-red-500 dark:text-red-400 text-center"
               >
                 错误: {error}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* 转换后的文件下载区域 */}
           <AnimatePresence>
             {convertedFiles.length > 0 && (
-              <div className="mt-6">
-                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">
                   转换后的文件
                 </h2>
-                <motion.ul className="space-y-2">
+                <motion.ul className="space-y-4">
                   {convertedFiles.map((file, index) => (
                     <motion.li
                       key={index}
@@ -313,17 +317,17 @@ export default function Home() {
                       animate="visible"
                       exit="exit"
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                      className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm"
                     >
                       <span className="text-gray-700 dark:text-gray-300">
                         {file.name}
                       </span>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-4">
                         <motion.button
                           id={`download-${index}`}
                           onClick={() => handleDownloadSingle(index)}
                           whileTap={{ scale: 0.95 }}
-                          className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
+                          className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors shadow-md"
                         >
                           下载
                         </motion.button>
@@ -340,7 +344,7 @@ export default function Home() {
                 <motion.button
                   onClick={handleDownloadAll}
                   whileTap={{ scale: 0.95 }}
-                  className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
+                  className="mt-6 w-full bg-purple-500 text-white py-3 px-6 rounded-lg hover:bg-purple-600 transition-colors shadow-md"
                 >
                   批量下载所有文件
                 </motion.button>

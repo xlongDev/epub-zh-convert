@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
@@ -10,7 +10,9 @@ import dynamic from "next/dynamic"; // 引入 dynamic
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 // 引入动画文件
+const welcomeAnimation = require("public/animations/welcome.json");
 const successAnimation = require("public/animations/success.json");
+const loadingAnimation = require("public/animations/loading.json"); // 加载动画
 
 const titleVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -41,6 +43,7 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [isWelcomeVisible, setIsWelcomeVisible] = useState(true); // 控制欢迎动画的显示
   const abortControllerRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -142,6 +145,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
       <div className="w-full max-w-2xl mx-4">
+        {/* 欢迎动画 */}
+        {isWelcomeVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="mb-4 text-center"
+          >
+            <LottiePlayer
+              animationData={welcomeAnimation} // 欢迎动画文件
+              loop={true} // 不循环播放
+              play // 自动播放
+              style={{ width: 150, height: 150, margin: "0 auto" }} // 设置动画大小
+            />
+          </motion.div>
+        )}
+
         <motion.nav
           initial="hidden"
           animate="visible"
@@ -242,22 +263,23 @@ export default function Home() {
             </div>
           )}
 
+          {/* 加载动画 */}
           {isLoading && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="mt-6"
+              className="mt-6 text-center"
             >
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 shadow-inner">
-                <motion.div
-                  className="bg-blue-500 h-2.5 rounded-full"
-                  style={{ width: `${progress}%` }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.5 }}
-                />
-              </div>
+              <LottiePlayer
+                animationData={loadingAnimation} // 加载动画文件
+                loop={true} // 循环播放
+                play // 自动播放
+                style={{ width: 100, height: 100, margin: "0 auto" }} // 设置动画大小
+              />
+              {/* <p className="text-gray-700 dark:text-gray-300 mt-2">
+                转换中，请稍候...
+              </p> */}
             </motion.div>
           )}
 
@@ -275,14 +297,13 @@ export default function Home() {
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {/* 使用动态导入的 LottiePlayer */}
+                  {/* 使用 Lottie 动画 */}
                   <LottiePlayer
-                    animationData={successAnimation} // 动画文件
+                    animationData={successAnimation} // 成功动画文件
                     loop={false} // 不循环播放
                     play // 自动播放
-                    style={{ width: 100, height: 100, margin: "0 auto" }} // 设置动画大小
+                    style={{ width: 150, height: 150, margin: "0 auto" }} // 设置动画大小
                   />
-                  {/* <p className="text-green-500 text-xl mt-4">转换完成！</p> */}
                 </motion.div>
               </motion.div>
             )}

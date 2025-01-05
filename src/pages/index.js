@@ -8,9 +8,17 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
+  const [file, setFile] = useState(null);
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+    setError(null);
+  };
+
+  const handleConvert = async () => {
     if (!file) return;
 
     setIsLoading(true);
@@ -59,24 +67,27 @@ export default function Home() {
             htmlFor="fileInput"
             className="block w-full p-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            {isLoading ? (
-              <div className="space-y-4">
-                <p className="text-gray-700 dark:text-gray-300">
-                  转换中... {progress}%
-                </p>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                  <div
-                    className="bg-blue-500 h-2.5 rounded-full"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-              </div>
+            {file ? (
+              <p className="text-gray-700 dark:text-gray-300">
+                已选择文件: {file.name}
+              </p>
             ) : (
               <p className="text-gray-700 dark:text-gray-300">
                 点击上传 EPUB 文件
               </p>
             )}
           </label>
+
+          {file && (
+            <button
+              onClick={handleConvert}
+              disabled={isLoading}
+              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              {isLoading ? `转换中... ${progress}%` : "开始转换"}
+            </button>
+          )}
+
           {error && (
             <p className="mt-4 text-red-500 dark:text-red-400 text-center">
               错误: {error}

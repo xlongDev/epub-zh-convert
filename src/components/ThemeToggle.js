@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { SunIcon, MoonIcon } from '@heroicons/react/solid'; // 确保路径正确
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
@@ -16,12 +16,12 @@ const ThemeToggle = () => {
       className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
     >
       {theme === 'dark' ? (
-        <SunIcon className="w-6 h-6 text-yellow-500" />
+        <FaSun className="w-5 h-5 text-yellow-500" /> 
       ) : (
-        <MoonIcon className="w-6 h-6 text-gray-800" />
+        <FaMoon className="w-5 h-5 text-gray-800" />
       )}
     </button>
   );
 };
 
-export default ThemeToggle; // 确保使用默认导出
+export default ThemeToggle;

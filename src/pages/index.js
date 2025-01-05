@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { convertEpub } from '../utils/zipUtils';
 import GitHubLink from '@/components/GitHubLink';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +35,7 @@ export default function Home() {
             EPUB 繁简转换
           </h1>
           <div className="flex space-x-4">
+            <ThemeToggle />
             <GitHubLink />
           </div>
         </nav>

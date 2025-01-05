@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaUpload, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaUpload, FaChevronDown, FaChevronUp, FaArrowDown } from "react-icons/fa";
 import dynamic from "next/dynamic";
 
 // 动态导入 LottiePlayer，禁用 SSR
@@ -13,7 +13,7 @@ const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false }
 const welcomeAnimation = require("public/animations/welcome.json");
 const successAnimation = require("public/animations/success.json");
 const loadingAnimation = require("public/animations/loading.json");
-const errorAnimation = require("public/animations/error.json"); // 错误动画
+const errorAnimation = require("public/animations/error.json");
 
 const titleVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -46,7 +46,31 @@ export default function Home() {
   const [isComplete, setIsComplete] = useState(false);
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [isFileListOpen, setIsFileListOpen] = useState(false);
+  const [showDownloadPrompt, setShowDownloadPrompt] = useState(false); // 新增状态：是否显示下载提示
   const abortControllerRef = useRef(null);
+
+  // 转换成功后的逻辑
+  useEffect(() => {
+    if (isComplete && convertedFiles.length > 0) {
+      setShowDownloadPrompt(true); // 显示下载提示
+
+      // 5秒后自动隐藏提示条
+      const timer = setTimeout(() => {
+        setShowDownloadPrompt(false);
+      }, 5000);
+
+      return () => clearTimeout(timer); // 清理定时器
+    }
+  }, [isComplete, convertedFiles]);
+
+  // 滚动到转换后的文件列表
+  const scrollToConvertedFiles = () => {
+    const convertedFilesSection = document.getElementById("converted-files");
+    if (convertedFilesSection) {
+      convertedFilesSection.scrollIntoView({ behavior: "smooth" });
+      setShowDownloadPrompt(false); // 隐藏下载提示
+    }
+  };
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
@@ -165,6 +189,30 @@ export default function Home() {
           </motion.div>
         )}
 
+        {/* 下载提示条 */}
+        <AnimatePresence>
+          {showDownloadPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+              className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-lg shadow-lg flex items-center space-x-2"
+            >
+              <p className="text-sm">
+                转换成功！下拉或点击以下载文件。
+              </p>
+              <button
+                onClick={scrollToConvertedFiles}
+                className="bg-white text-green-500 px-2 py-1 rounded-md hover:bg-green-100 transition-colors flex items-center"
+              >
+                <FaArrowDown className="mr-1" />
+                <span className="text-sm">下载</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.nav
           initial="hidden"
           animate="visible"
@@ -257,7 +305,7 @@ export default function Home() {
                       >
                         <span
                           className="text-gray-700 dark:text-gray-300 truncate"
-                          title={file.name} // 鼠标悬停时显示完整文件名
+                          title={file.name}
                         >
                           {file.name}
                         </span>
@@ -311,9 +359,9 @@ export default function Home() {
                 play
                 style={{ width: 100, height: 100, margin: "0 auto" }}
               />
-              <p className="text-gray-700 dark:text-gray-300 mt-2">
+              {/* <p className="text-gray-700 dark:text-gray-300 mt-2">
                 转换中，请稍候...
-              </p>
+              </p> */}
             </motion.div>
           )}
 
@@ -336,7 +384,7 @@ export default function Home() {
                     animationData={successAnimation}
                     loop={false}
                     play
-                    style={{ width: 150, height: 150, margin: "0 auto" }}
+                    style={{ width: 120, height: 120, margin: "0 auto" }}
                   />
                 </motion.div>
               </motion.div>
@@ -359,7 +407,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <LottiePlayer
-                    animationData={errorAnimation} // 错误动画文件
+                    animationData={errorAnimation}
                     loop={false}
                     play
                     style={{ width: 150, height: 150, margin: "0 auto" }}
@@ -372,9 +420,10 @@ export default function Home() {
             )}
           </AnimatePresence>
 
+          {/* 转换后的文件列表 */}
           <AnimatePresence>
             {convertedFiles.length > 0 && (
-              <div className="mt-8">
+              <div id="converted-files" className="mt-8">
                 <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">
                   转换后的文件
                 </h2>
@@ -391,7 +440,7 @@ export default function Home() {
                     >
                       <span
                         className="text-gray-700 dark:text-gray-300 truncate"
-                        title={file.name} // 鼠标悬停时显示完整文件名
+                        title={file.name}
                       >
                         {file.name}
                       </span>

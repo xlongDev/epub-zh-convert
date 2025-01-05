@@ -3,11 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
-import { FaUpload, FaChevronDown, FaChevronUp, FaArrowDown } from "react-icons/fa";
+import {
+  FaUpload,
+  FaChevronDown,
+  FaChevronUp,
+  FaArrowDown,
+} from "react-icons/fa";
 import dynamic from "next/dynamic";
 
 // 动态导入 LottiePlayer，禁用 SSR
-const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
+const LottiePlayer = dynamic(() => import("react-lottie-player"), {
+  ssr: false,
+});
 
 // 引入动画文件
 const welcomeAnimation = require("public/animations/welcome.json");
@@ -95,9 +102,13 @@ export default function Home() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         try {
-          const result = await convertEpub(file, (currentProgress) => {
-            setProgress(((i + currentProgress / 100) / files.length) * 100);
-          }, abortControllerRef.current.signal);
+          const result = await convertEpub(
+            file,
+            (currentProgress) => {
+              setProgress(((i + currentProgress / 100) / files.length) * 100);
+            },
+            abortControllerRef.current.signal
+          );
           converted.push({ name: result.name, blob: result.blob });
           setConvertedFiles([...converted]);
         } catch (err) {
@@ -197,14 +208,14 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.5 }}
-              className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-lg shadow-lg flex items-center space-x-2"
+              className="fixed bottom-4 left-4 right-4 sm:bottom-4 sm:right-4 sm:left-auto bg-green-500 text-white p-3 rounded-lg shadow-lg flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2"
             >
-              <p className="text-sm">
+              <p className="text-sm text-center sm:text-left">
                 转换成功！下拉或点击以下载文件。
               </p>
               <button
                 onClick={scrollToConvertedFiles}
-                className="bg-white text-green-500 px-2 py-1 rounded-md hover:bg-green-100 transition-colors flex items-center"
+                className="bg-white text-green-500 px-3 py-1 rounded-md hover:bg-green-100 transition-colors flex items-center"
               >
                 <FaArrowDown className="mr-1" />
                 <span className="text-sm">下载</span>
@@ -225,10 +236,7 @@ export default function Home() {
           >
             EPUB 繁简转换
           </motion.h1>
-          <motion.div
-            variants={titleVariants}
-            className="flex space-x-4"
-          >
+          <motion.div variants={titleVariants} className="flex space-x-4">
             <ThemeToggle />
             <GitHubLink />
           </motion.div>

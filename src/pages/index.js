@@ -8,7 +8,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // 上传的文件列表
+  const [convertedFiles, setConvertedFiles] = useState([]); // 转换后的文件列表
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
@@ -24,19 +25,45 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setProgress(0);
+    const converted = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        await convertEpub(file, (currentProgress) => {
+        const result = await convertEpub(file, (currentProgress) => {
           setProgress(((i + currentProgress / 100) / files.length) * 100);
         });
+        converted.push({ name: result.name, blob: result.blob });
       }
+      setConvertedFiles(converted); // 保存转换后的文件
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownloadAll = () => {
+    convertedFiles.forEach((file) => {
+      const url = URL.createObjectURL(file.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const handleDownloadSingle = (index) => {
+    const file = convertedFiles[index];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -79,7 +106,7 @@ export default function Home() {
               </p>
             ) : (
               <p className="text-gray-700 dark:text-gray-300">
-                点击上传 EPUB 文件（支持批量上传）
+                点击上传 EPUB 文件（支持批量）
               </p>
             )}
           </label>
@@ -98,6 +125,39 @@ export default function Home() {
             <p className="mt-4 text-red-500 dark:text-red-400 text-center">
               错误: {error}
             </p>
+          )}
+
+          {/* 转换后的文件下载区域 */}
+          {convertedFiles.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                转换后的文件
+              </h2>
+              <ul className="space-y-2">
+                {convertedFiles.map((file, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  >
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() => handleDownloadSingle(index)}
+                      className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
+                    >
+                      下载
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={handleDownloadAll}
+                className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
+              >
+                批量下载所有文件
+              </button>
+            </div>
           )}
         </motion.div>
       </div>

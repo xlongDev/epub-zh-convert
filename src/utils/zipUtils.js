@@ -1,11 +1,11 @@
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 import { convertText, convertFilename } from './opencc';
 
 /**
  * 转换 EPUB 文件
  * @param {File} file - 用户上传的 EPUB 文件
  * @param {function} setProgress - 更新进度的回调函数
+ * @returns {Promise<Blob>} - 返回转换后的 Blob 对象
  */
 export const convertEpub = async (file, setProgress) => {
   try {
@@ -66,8 +66,7 @@ export const convertEpub = async (file, setProgress) => {
     const originalFilename = file.name;
     const convertedFilename = convertFilename(originalFilename);
 
-    // 保存文件
-    saveAs(newEpub, convertedFilename);
+    return { blob: newEpub, name: convertedFilename }; // 返回转换后的 Blob 对象和文件名
   } catch (err) {
     throw new Error('文件转换失败: ' + err.message);
   }

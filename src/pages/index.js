@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
@@ -11,6 +11,7 @@ export default function Home() {
   const [files, setFiles] = useState([]); // 上传的文件列表
   const [convertedFiles, setConvertedFiles] = useState([]); // 转换后的文件列表
   const [isComplete, setIsComplete] = useState(false); // 转换完成状态
+  const abortControllerRef = useRef(null); // 用于取消转换
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
@@ -29,13 +30,14 @@ export default function Home() {
     setProgress(0);
     setIsComplete(false);
     const converted = [];
+    abortControllerRef.current = new AbortController(); // 创建 AbortController
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const result = await convertEpub(file, (currentProgress) => {
           setProgress(((i + currentProgress / 100) / files.length) * 100);
-        });
+        }, abortControllerRef.current.signal);
         converted.push({ name: result.name, blob: result.blob });
       }
       setConvertedFiles(converted); // 保存转换后的文件
@@ -45,6 +47,26 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort(); // 取消转换
+      setIsLoading(false);
+      setError("转换已取消");
+    }
+  };
+
+  const handleDeleteFile = (index) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
+  };
+
+  const handleDeleteConvertedFile = (index) => {
+    const newConvertedFiles = [...convertedFiles];
+    newConvertedFiles.splice(index, 1);
+    setConvertedFiles(newConvertedFiles);
   };
 
   const handleDownloadAll = () => {
@@ -115,14 +137,49 @@ export default function Home() {
             )}
           </label>
 
+          {/* 文件列表 */}
           {files.length > 0 && (
-            <button
-              onClick={handleConvert}
-              disabled={isLoading}
-              className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
-            </button>
+            <motion.ul className="mt-4 space-y-2">
+              {files.map((file, index) => (
+                <motion.li
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                >
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {file.name}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteFile(index)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    🗑️
+                  </button>
+                </motion.li>
+              ))}
+            </motion.ul>
+          )}
+
+          {files.length > 0 && (
+            <div className="mt-4 flex space-x-2">
+              <button
+                onClick={handleConvert}
+                disabled={isLoading}
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
+              </button>
+              {isLoading && (
+                <button
+                  onClick={handleCancel}
+                  className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  取消转换
+                </button>
+              )}
+            </div>
           )}
 
           {/* 转换进度条 */}
@@ -179,24 +236,35 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
                 转换后的文件
               </h2>
-              <ul className="space-y-2">
+              <motion.ul className="space-y-2">
                 {convertedFiles.map((file, index) => (
-                  <li
+                  <motion.li
                     key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
                     className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                   >
                     <span className="text-gray-700 dark:text-gray-300">
                       {file.name}
                     </span>
-                    <button
-                      onClick={() => handleDownloadSingle(index)}
-                      className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
-                    >
-                      下载
-                    </button>
-                  </li>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleDownloadSingle(index)}
+                        className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        下载
+                      </button>
+                      <button
+                        onClick={() => handleDeleteConvertedFile(index)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </motion.li>
                 ))}
-              </ul>
+              </motion.ul>
               <button
                 onClick={handleDownloadAll}
                 className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"

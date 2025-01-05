@@ -5,6 +5,7 @@ import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
 import { FaUpload, FaChevronDown, FaChevronUp, FaArrowDown } from "react-icons/fa";
 import dynamic from "next/dynamic";
+import styles from '@/styles/Home.module.css'; // 引入 Home.module.css
 
 // 动态导入 LottiePlayer，禁用 SSR
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
@@ -46,21 +47,20 @@ export default function Home() {
   const [isComplete, setIsComplete] = useState(false);
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [isFileListOpen, setIsFileListOpen] = useState(false);
-  const [showDownloadPrompt, setShowDownloadPrompt] = useState(false); // 新增状态：是否显示下载提示
-  const [isDragging, setIsDragging] = useState(false); // 新增状态：是否正在拖拽
+  const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const abortControllerRef = useRef(null);
 
   // 转换成功后的逻辑
   useEffect(() => {
     if (isComplete && convertedFiles.length > 0 && !error) {
-      setShowDownloadPrompt(true); // 显示下载提示
+      setShowDownloadPrompt(true);
 
-      // 5秒后自动隐藏提示条
       const timer = setTimeout(() => {
         setShowDownloadPrompt(false);
       }, 5000);
 
-      return () => clearTimeout(timer); // 清理定时器
+      return () => clearTimeout(timer);
     }
   }, [isComplete, convertedFiles, error]);
 
@@ -68,12 +68,12 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       if (showDownloadPrompt) {
-        setShowDownloadPrompt(false); // 用户开始滚动时隐藏提示条
+        setShowDownloadPrompt(false);
       }
     };
 
-    window.addEventListener("scroll", handleScroll); // 添加滚动事件监听器
-    return () => window.removeEventListener("scroll", handleScroll); // 清理事件监听器
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [showDownloadPrompt]);
 
   // 滚动到转换后的文件列表
@@ -81,24 +81,24 @@ export default function Home() {
     const convertedFilesSection = document.getElementById("converted-files");
     if (convertedFilesSection) {
       convertedFilesSection.scrollIntoView({ behavior: "smooth" });
-      setShowDownloadPrompt(false); // 隐藏下载提示
+      setShowDownloadPrompt(false);
     }
   };
 
   // 处理文件拖拽
   const handleDragOver = (e) => {
     e.preventDefault();
-    setIsDragging(true); // 设置拖拽状态为 true
+    setIsDragging(true);
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
-    setIsDragging(false); // 设置拖拽状态为 false
+    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    setIsDragging(false); // 设置拖拽状态为 false
+    setIsDragging(false);
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     if (droppedFiles.length === 0) return;
@@ -154,7 +154,7 @@ export default function Home() {
       abortControllerRef.current.abort();
       setIsLoading(false);
       setError("转换已取消");
-      setIsComplete(false); // 取消转换时不显示成功提示条
+      setIsComplete(false);
     }
   };
 
@@ -206,7 +206,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+    <div className={`${styles.container} min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800`}>
       <div className="w-full max-w-2xl mx-4">
         {/* 欢迎动画 */}
         {isWelcomeVisible && (
@@ -409,7 +409,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="mt-4 text-center" // 调整成功动画的位置
+                className="mt-4 text-center"
               >
                 <motion.div
                   initial={{ scale: 0 }}

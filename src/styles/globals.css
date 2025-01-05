@@ -9,3 +9,15 @@
     color: #e2e8f0; /* 暗夜模式文字颜色 */
   }
 }
+
+/* 确保页面背景色延伸到整个页面 */
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f7fafc; /* 默认背景色 */
+}
+
+.dark body, .dark html {
+  background-color: #1a202c; /* 暗夜模式背景色 */
+}

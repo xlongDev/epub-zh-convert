@@ -3,8 +3,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh; /* 确保容器高度至少为视口高度 */
   font-family: Arial, sans-serif;
+  background-color: inherit; /* 继承 body 的背景色 */
 }
 
 .fileInput {
@@ -31,4 +32,22 @@
 
 .dark .error {
   color: #f56565;
+}
+
+/* 媒体查询：针对移动设备调整布局 */
+@media (max-width: 768px) {
+  .container {
+    height: auto; /* 在移动设备上取消固定高度 */
+    padding-top: 20px; /* 添加顶部内边距 */
+    padding-bottom: 20px; /* 添加底部内边距 */
+  }
+
+  .fileInput {
+    width: 90%; /* 在移动设备上增加输入框宽度 */
+    margin: 10px 0; /* 调整外边距 */
+  }
+
+  .progress {
+    width: 90%; /* 在移动设备上增加进度条宽度 */
+  }
 }

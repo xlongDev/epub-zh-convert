@@ -47,6 +47,7 @@ export default function Home() {
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [isFileListOpen, setIsFileListOpen] = useState(false);
   const [showDownloadPrompt, setShowDownloadPrompt] = useState(false); // 新增状态：是否显示下载提示
+  const [isDragging, setIsDragging] = useState(false); // 新增状态：是否正在拖拽
   const abortControllerRef = useRef(null);
 
   // 转换成功后的逻辑
@@ -63,6 +64,18 @@ export default function Home() {
     }
   }, [isComplete, convertedFiles, error]);
 
+  // 监听页面滚动事件
+  useEffect(() => {
+    const handleScroll = () => {
+      if (showDownloadPrompt) {
+        setShowDownloadPrompt(false); // 用户开始滚动时隐藏提示条
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll); // 添加滚动事件监听器
+    return () => window.removeEventListener("scroll", handleScroll); // 清理事件监听器
+  }, [showDownloadPrompt]);
+
   // 滚动到转换后的文件列表
   const scrollToConvertedFiles = () => {
     const convertedFilesSection = document.getElementById("converted-files");
@@ -70,6 +83,29 @@ export default function Home() {
       convertedFilesSection.scrollIntoView({ behavior: "smooth" });
       setShowDownloadPrompt(false); // 隐藏下载提示
     }
+  };
+
+  // 处理文件拖拽
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true); // 设置拖拽状态为 true
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false); // 设置拖拽状态为 false
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false); // 设置拖拽状态为 false
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length === 0) return;
+
+    setFiles(droppedFiles);
+    setError(null);
+    setIsComplete(false);
   };
 
   const handleFileChange = (event) => {
@@ -249,7 +285,12 @@ export default function Home() {
           />
           <label
             htmlFor="fileInput"
-            className="block w-full p-8 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`block w-full p-8 text-center border-2 border-dashed ${
+              isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 dark:border-gray-600"
+            } rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800`}
           >
             <div className="flex flex-col items-center space-y-4">
               <FaUpload className="w-12 h-12 text-blue-500 dark:text-purple-400" />
@@ -259,7 +300,7 @@ export default function Home() {
                 </p>
               ) : (
                 <p className="text-gray-700 dark:text-gray-300 text-lg">
-                  点击上传 EPUB 文件（支持批量上传）
+                  {isDragging ? "释放文件以上传" : "点击或拖拽文件以上传"}
                 </p>
               )}
             </div>
@@ -368,7 +409,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="mt-2 text-center" // 调整成功动画的位置
+                className="mt-4 text-center" // 调整成功动画的位置
               >
                 <motion.div
                   initial={{ scale: 0 }}

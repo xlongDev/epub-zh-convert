@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { convertEpub } from '../utils/zipUtils';
-// import ThemeToggle from '@/components/ThemeToggle'; 
 import GitHubLink from '@/components/GitHubLink';
 
 export default function Home() {
@@ -27,13 +26,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-      <div className="container mx-auto p-4">
+    <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+      <div className="w-full max-w-2xl mx-4">
         {/* 导航栏 */}
         <nav className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">EPUB 繁简转换</h1>
+          <h1 className="text-2xl font-bold text-white dark:text-gray-100">
+            EPUB 繁简转换
+          </h1>
           <div className="flex space-x-4">
-            {/* <ThemeToggle /> */}
             <GitHubLink />
           </div>
         </nav>
@@ -43,7 +43,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-2xl"
         >
           <input
             type="file"
@@ -55,11 +55,13 @@ export default function Home() {
           />
           <label
             htmlFor="fileInput"
-            className="block w-full p-4 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="block w-full p-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             {isLoading ? (
-              <div className="space-y-2">
-                <p>转换中... {progress}%</p>
+              <div className="space-y-4">
+                <p className="text-gray-700 dark:text-gray-300">
+                  转换中... {progress}%
+                </p>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div
                     className="bg-blue-500 h-2.5 rounded-full"
@@ -68,7 +70,9 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <p>点击上传 EPUB 文件</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                点击上传 EPUB 文件
+              </p>
             )}
           </label>
           {error && (

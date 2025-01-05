@@ -9,22 +9,42 @@ const ThemeToggle = () => {
   useEffect(() => {
     setMounted(true);
 
-    // 从 localStorage 中获取用户的手动选择
-    const savedTheme = localStorage.getItem('theme');
+    // 检测系统主题
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const systemTheme = mediaQuery.matches ? 'dark' : 'light';
+
+    // 从 sessionStorage 中获取用户的手动选择
+    const savedTheme = sessionStorage.getItem('theme');
+
+    // 如果有手动选择，则使用手动选择的主题
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
-      // 如果没有手动选择，则根据系统暗夜模式设置
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const systemTheme = mediaQuery.matches ? 'dark' : 'light';
+      // 否则使用系统主题
       setTheme(systemTheme);
     }
+
+    // 监听系统主题变化
+    const handleSystemThemeChange = (e) => {
+      const newSystemTheme = e.matches ? 'dark' : 'light';
+      // 如果用户没有手动选择主题，则跟随系统主题变化
+      if (!sessionStorage.getItem('theme')) {
+        setTheme(newSystemTheme);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    // 清理监听器
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
   }, [setTheme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme); // 保存用户的选择
+    sessionStorage.setItem('theme', newTheme); // 保存用户的选择到 sessionStorage
   };
 
   if (!mounted) return null;

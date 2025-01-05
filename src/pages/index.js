@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -10,6 +10,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [files, setFiles] = useState([]); // 上传的文件列表
   const [convertedFiles, setConvertedFiles] = useState([]); // 转换后的文件列表
+  const [isComplete, setIsComplete] = useState(false); // 转换完成状态
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
@@ -17,6 +18,7 @@ export default function Home() {
 
     setFiles(selectedFiles);
     setError(null);
+    setIsComplete(false); // 重置完成状态
   };
 
   const handleConvert = async () => {
@@ -25,6 +27,7 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setProgress(0);
+    setIsComplete(false);
     const converted = [];
 
     try {
@@ -36,6 +39,7 @@ export default function Home() {
         converted.push({ name: result.name, blob: result.blob });
       }
       setConvertedFiles(converted); // 保存转换后的文件
+      setIsComplete(true); // 标记转换完成
     } catch (err) {
       setError(err.message);
     } finally {
@@ -106,7 +110,7 @@ export default function Home() {
               </p>
             ) : (
               <p className="text-gray-700 dark:text-gray-300">
-                点击上传 EPUB 文件（支持批量）
+                点击上传 EPUB 文件（支持批量上传）
               </p>
             )}
           </label>
@@ -120,6 +124,48 @@ export default function Home() {
               {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
             </button>
           )}
+
+          {/* 转换进度条 */}
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4"
+            >
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <motion.div
+                  className="bg-blue-500 h-2.5 rounded-full"
+                  style={{ width: `${progress}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* 转换完成动画 */}
+          <AnimatePresence>
+            {isComplete && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="mt-6 text-center"
+              >
+                <motion.div
+                  className="text-green-500 text-2xl mb-4"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  ✅ 转换完成！
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {error && (
             <p className="mt-4 text-red-500 dark:text-red-400 text-center">

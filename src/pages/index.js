@@ -4,6 +4,32 @@ import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
 
+// 首页标题动画
+const titleVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } },
+};
+
+// 文件上传区域动画
+const uploadVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.4 } },
+};
+
+// 文件列表项动画
+const fileItemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.3 } },
+};
+
+// 错误提示动画
+const errorVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: -10 },
+};
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -115,21 +141,32 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-r from-orange-400 via-yellow-500 to-lime-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
       <div className="w-full max-w-2xl mx-4">
         {/* 导航栏 */}
-        <nav className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-white dark:text-gray-100">
+        <motion.nav
+          initial="hidden"
+          animate="visible"
+          variants={titleVariants}
+          className="flex justify-between items-center mb-8"
+        >
+          <motion.h1
+            variants={titleVariants}
+            className="text-2xl font-bold text-white dark:text-gray-100"
+          >
             EPUB 繁简转换
-          </h1>
-          <div className="flex space-x-4">
+          </motion.h1>
+          <motion.div
+            variants={titleVariants}
+            className="flex space-x-4"
+          >
             <ThemeToggle />
             <GitHubLink />
-          </div>
-        </nav>
+          </motion.div>
+        </motion.nav>
 
         {/* 文件上传区域 */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial="hidden"
+          animate="visible"
+          variants={uploadVariants}
           className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-2xl"
         >
           <input
@@ -161,10 +198,11 @@ export default function Home() {
             {files.map((file, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                variants={fileItemVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mt-2"
               >
                 <span className="text-gray-700 dark:text-gray-300">
@@ -182,20 +220,22 @@ export default function Home() {
 
           {files.length > 0 && (
             <div className="mt-4 flex space-x-2">
-              <button
+              <motion.button
                 onClick={handleConvert}
                 disabled={isLoading}
+                whileTap={{ scale: 0.95 }}
                 className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
-              </button>
+              </motion.button>
               {isLoading && (
-                <button
+                <motion.button
                   onClick={handleCancel}
+                  whileTap={{ scale: 0.95 }}
                   className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
                 >
                   取消转换
-                </button>
+                </motion.button>
               )}
             </div>
           )}
@@ -242,11 +282,20 @@ export default function Home() {
             )}
           </AnimatePresence>
 
-          {error && (
-            <p className="mt-4 text-red-500 dark:text-red-400 text-center">
-              错误: {error}
-            </p>
-          )}
+          {/* 错误提示动画 */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                variants={errorVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="mt-4 text-red-500 dark:text-red-400 text-center"
+              >
+                错误: {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 转换后的文件下载区域 */}
           <AnimatePresence>
@@ -259,23 +308,25 @@ export default function Home() {
                   {convertedFiles.map((file, index) => (
                     <motion.li
                       key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
+                      variants={fileItemVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
                       className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                     >
                       <span className="text-gray-700 dark:text-gray-300">
                         {file.name}
                       </span>
                       <div className="flex space-x-2">
-                        <button
+                        <motion.button
                           id={`download-${index}`}
                           onClick={() => handleDownloadSingle(index)}
+                          whileTap={{ scale: 0.95 }}
                           className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition-colors"
                         >
                           下载
-                        </button>
+                        </motion.button>
                         <button
                           onClick={() => handleDeleteConvertedFile(index)}
                           className="text-red-500 hover:text-red-600"
@@ -286,12 +337,13 @@ export default function Home() {
                     </motion.li>
                   ))}
                 </motion.ul>
-                <button
+                <motion.button
                   onClick={handleDownloadAll}
+                  whileTap={{ scale: 0.95 }}
                   className="mt-4 w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
                 >
                   批量下载所有文件
-                </button>
+                </motion.button>
               </div>
             )}
           </AnimatePresence>

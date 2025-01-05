@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { convertEpub } from '../utils/zipUtils';
-import GitHubLink from '@/components/GitHubLink';
-import ThemeToggle from '@/components/ThemeToggle';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { convertEpub } from "../utils/zipUtils";
+import GitHubLink from "@/components/GitHubLink";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-r from-orange-400 via-yellow-500 to-lime-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
       <div className="w-full max-w-2xl mx-4">
         {/* 导航栏 */}
         <nav className="flex justify-between items-center mb-8">

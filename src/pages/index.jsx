@@ -3,18 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
-import {
-  FaUpload,
-  FaChevronDown,
-  FaChevronUp,
-  FaArrowDown,
-} from "react-icons/fa";
+import { FaUpload, FaChevronDown, FaChevronUp, FaArrowDown } from "react-icons/fa";
 import dynamic from "next/dynamic";
 
 // 动态导入 LottiePlayer，禁用 SSR
-const LottiePlayer = dynamic(() => import("react-lottie-player"), {
-  ssr: false,
-});
+const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 // 引入动画文件
 const welcomeAnimation = require("public/animations/welcome.json");
@@ -58,7 +51,7 @@ export default function Home() {
 
   // 转换成功后的逻辑
   useEffect(() => {
-    if (isComplete && convertedFiles.length > 0) {
+    if (isComplete && convertedFiles.length > 0 && !error) {
       setShowDownloadPrompt(true); // 显示下载提示
 
       // 5秒后自动隐藏提示条
@@ -68,7 +61,7 @@ export default function Home() {
 
       return () => clearTimeout(timer); // 清理定时器
     }
-  }, [isComplete, convertedFiles]);
+  }, [isComplete, convertedFiles, error]);
 
   // 滚动到转换后的文件列表
   const scrollToConvertedFiles = () => {
@@ -102,13 +95,9 @@ export default function Home() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         try {
-          const result = await convertEpub(
-            file,
-            (currentProgress) => {
-              setProgress(((i + currentProgress / 100) / files.length) * 100);
-            },
-            abortControllerRef.current.signal
-          );
+          const result = await convertEpub(file, (currentProgress) => {
+            setProgress(((i + currentProgress / 100) / files.length) * 100);
+          }, abortControllerRef.current.signal);
           converted.push({ name: result.name, blob: result.blob });
           setConvertedFiles([...converted]);
         } catch (err) {
@@ -129,6 +118,7 @@ export default function Home() {
       abortControllerRef.current.abort();
       setIsLoading(false);
       setError("转换已取消");
+      setIsComplete(false); // 取消转换时不显示成功提示条
     }
   };
 
@@ -367,9 +357,6 @@ export default function Home() {
                 play
                 style={{ width: 100, height: 100, margin: "0 auto" }}
               />
-              {/* <p className="text-gray-700 dark:text-gray-300 mt-2">
-                转换中，请稍候...
-              </p> */}
             </motion.div>
           )}
 
@@ -381,7 +368,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="mt-8 text-center"
+                className="mt-4 text-center" // 调整成功动画的位置
               >
                 <motion.div
                   initial={{ scale: 0 }}

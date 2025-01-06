@@ -232,7 +232,7 @@ export default function Home() {
             />
           </motion.div>
         )}
-
+  
         {/* 下载提示 */}
         <AnimatePresence>
           {showDownloadPrompt && (
@@ -256,7 +256,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-
+  
         {/* 导航栏 */}
         <motion.nav
           initial="hidden"
@@ -275,7 +275,7 @@ export default function Home() {
             <GitHubLink />
           </motion.div>
         </motion.nav>
-
+  
         {/* 主要内容区域 */}
         <motion.div
           initial="hidden"
@@ -301,7 +301,7 @@ export default function Home() {
               <option value="s2t">简体转繁体</option>
             </select>
           </div>
-
+  
           {/* 文件上传区域 */}
           <div className="relative">
             <input
@@ -325,7 +325,22 @@ export default function Home() {
               } rounded-lg cursor-pointer hover:bg-gray-50/60 dark:hover:bg-gray-700/60 transition-colors bg-white/60 dark:bg-gray-800/60`}
             >
               <div className="flex flex-col items-center space-y-4">
-                <FaUpload className="w-12 h-12 text-[#60A5FA] dark:text-[#818CF8]" />
+                {/* 上传图标 */}
+                <motion.div
+                  animate={{
+                    rotate: isDragging ? 360 : 0, // 拖拽时旋转 360 度
+                    scale: isDragging ? 1.2 : 1, // 拖拽时放大
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <FaUpload
+                    className={`w-12 h-12 ${
+                      isDragging
+                        ? "text-[#60A5FA] dark:text-[#818CF8]"
+                        : "text-[#60A5FA] dark:text-[#818CF8]"
+                    } transition-colors`}
+                  />
+                </motion.div>
                 {files.length > 0 ? (
                   <p className="text-gray-700 dark:text-gray-300 text-lg">
                     已选择 {files.length} 个文件
@@ -337,7 +352,7 @@ export default function Home() {
                 )}
               </div>
             </label>
-
+  
             {/* 进度条 */}
             {isLoading && (
               <motion.div
@@ -364,7 +379,7 @@ export default function Home() {
               </motion.div>
             )}
           </div>
-
+  
           {/* 文件列表 */}
           {files.length > 0 && (
             <div className="mt-6">
@@ -381,7 +396,7 @@ export default function Home() {
                   <FaChevronDown className="text-gray-500 dark:text-gray-400" />
                 )}
               </button>
-
+  
               <AnimatePresence>
                 {isFileListOpen && (
                   <motion.div
@@ -422,7 +437,7 @@ export default function Home() {
               </AnimatePresence>
             </div>
           )}
-
+  
           {/* 转换按钮 */}
           {files.length > 0 && (
             <div className="mt-6 flex space-x-4">
@@ -445,7 +460,7 @@ export default function Home() {
               )}
             </div>
           )}
-
+  
           {/* 加载动画 */}
           {isLoading && (
             <motion.div
@@ -462,7 +477,7 @@ export default function Home() {
               />
             </motion.div>
           )}
-
+  
           {/* 成功动画 */}
           <AnimatePresence>
             {isComplete && !error && (
@@ -488,7 +503,7 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
-
+  
           {/* 错误提示 */}
           <AnimatePresence>
             {error && (
@@ -517,7 +532,7 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
-
+  
           {/* 转换后的文件列表 */}
           <AnimatePresence>
             {convertedFiles.length > 0 && (

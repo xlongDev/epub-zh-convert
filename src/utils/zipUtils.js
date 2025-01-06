@@ -6,9 +6,10 @@ import { convertText, convertFilename } from './opencc';
  * @param {File} file - 用户上传的 EPUB 文件
  * @param {function} setProgress - 更新进度的回调函数
  * @param {AbortSignal} signal - 取消信号
+ * @param {string} direction - 转换方向 ('t2s' 或 's2t')
  * @returns {Promise<{ blob: Blob, name: string }>} - 返回转换后的 Blob 对象和文件名
  */
-export const convertEpub = async (file, setProgress, signal) => {
+export const convertEpub = async (file, setProgress, signal, direction = 't2s') => {
   try {
     const zip = new JSZip();
     const reader = new FileReader();
@@ -37,11 +38,11 @@ export const convertEpub = async (file, setProgress, signal) => {
         if (path.endsWith('.html') || path.endsWith('.xhtml') || path.endsWith('.txt')) {
           // 转换文本内容
           content = await fileEntry.async('text');
-          content = convertText(content);
+          content = convertText(content, direction); // 根据方向转换
         } else if (path.endsWith('toc.ncx') || path.endsWith('nav.xhtml')) {
           // 转换目录文件内容
           content = await fileEntry.async('text');
-          content = convertText(content);
+          content = convertText(content, direction); // 根据方向转换
         } else {
           // 直接复制非文本文件
           content = await fileEntry.async('uint8array');
@@ -73,7 +74,7 @@ export const convertEpub = async (file, setProgress, signal) => {
 
     // 转换文件名
     const originalFilename = file.name;
-    const convertedFilename = convertFilename(originalFilename);
+    const convertedFilename = convertFilename(originalFilename, direction); // 根据方向转换文件名
 
     return { blob: newEpub, name: convertedFilename }; // 返回转换后的 Blob 对象和文件名
   } catch (err) {

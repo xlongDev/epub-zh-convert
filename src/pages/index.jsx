@@ -5,7 +5,7 @@ import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
 import { FaUpload, FaChevronDown, FaChevronUp, FaArrowDown } from "react-icons/fa";
 import dynamic from "next/dynamic";
-import styles from '@/styles/Home.module.css'; // 引入 Home.module.css
+import styles from '@/styles/Home.module.css';
 
 // 动态导入 LottiePlayer，禁用 SSR
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
@@ -49,6 +49,7 @@ export default function Home() {
   const [isFileListOpen, setIsFileListOpen] = useState(false);
   const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [direction, setDirection] = useState('t2s'); // 默认繁转简
   const abortControllerRef = useRef(null);
 
   // 转换成功后的逻辑
@@ -133,7 +134,7 @@ export default function Home() {
         try {
           const result = await convertEpub(file, (currentProgress) => {
             setProgress(((i + currentProgress / 100) / files.length) * 100);
-          }, abortControllerRef.current.signal);
+          }, abortControllerRef.current.signal, direction); // 传递转换方向
           converted.push({ name: result.name, blob: result.blob });
           setConvertedFiles([...converted]);
         } catch (err) {
@@ -274,6 +275,23 @@ export default function Home() {
           variants={uploadVariants}
           className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
         >
+          {/* 转换方向选择 */}
+          <div className="mb-4">
+            <label htmlFor="direction" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              转换方向
+            </label>
+            <select
+              id="direction"
+              value={direction}
+              onChange={(e) => setDirection(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            >
+              <option value="t2s">繁体转简体</option>
+              <option value="s2t">简体转繁体</option>
+            </select>
+          </div>
+
+          {/* 文件上传区域 */}
           <input
             type="file"
             accept=".epub"

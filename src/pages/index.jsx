@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { convertEpub } from "../utils/zipUtils";
 import GitHubLink from "@/components/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle";
+import ShareButton from '@/components/ShareButton';
 import {
   FaUpload,
   FaChevronDown,
@@ -10,6 +11,7 @@ import {
   FaArrowDown,
   FaFile,
   FaTrash,
+  FaDownload,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import styles from "@/styles/Home.module.css";
@@ -56,6 +58,9 @@ export default function Home() {
   const [isFileListOpen, setIsFileListOpen] = useState(false);
   const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const [isFileSelected, setIsFileSelected] = useState(false);
+  const [isHoveringUpload, setIsHoveringUpload] = useState(false);
   const [direction, setDirection] = useState("t2s");
   const abortControllerRef = useRef(null);
 
@@ -106,6 +111,7 @@ export default function Home() {
     setError(null);
     setIsComplete(false);
     setIsFileListOpen(false);
+    setIsFileSelected(true);
   };
 
   const handleFileChange = (event) => {
@@ -115,6 +121,7 @@ export default function Home() {
     setError(null);
     setIsComplete(false);
     setIsFileListOpen(false);
+    setIsFileSelected(true);
   };
 
   const handleConvert = async () => {
@@ -215,7 +222,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 flex items-center justify-center">
       <div className="w-full max-w-2xl mx-4">
-        {/* 欢迎动画 */}
         {isWelcomeVisible && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -233,7 +239,6 @@ export default function Home() {
           </motion.div>
         )}
   
-        {/* 下载提示 */}
         <AnimatePresence>
           {showDownloadPrompt && (
             <motion.div
@@ -246,18 +251,20 @@ export default function Home() {
               <p className="text-sm text-center sm:text-left">
                 转换成功！下拉或点击以下载文件。
               </p>
-              <button
+              <motion.button
                 onClick={scrollToConvertedFiles}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
                 className="bg-white text-green-500 px-3 py-1 rounded-md hover:bg-green-100 transition-colors flex items-center"
               >
                 <FaArrowDown className="mr-1" />
                 <span className="text-sm">下载</span>
-              </button>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
   
-        {/* 导航栏 */}
         <motion.nav
           initial="hidden"
           animate="visible"
@@ -276,14 +283,12 @@ export default function Home() {
           </motion.div>
         </motion.nav>
   
-        {/* 主要内容区域 */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={uploadVariants}
           className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-white/50 dark:border-gray-700/50 relative"
         >
-          {/* 转换方向选择 */}
           <div className="mb-6">
             <label
               htmlFor="direction"
@@ -291,18 +296,23 @@ export default function Home() {
             >
               转换方向
             </label>
-            <select
-              id="direction"
-              value={direction}
-              onChange={(e) => setDirection(e.target.value)}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[#60A5FA] focus:border-[#60A5FA] bg-white/60 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300, damping: 10 }}
             >
-              <option value="t2s">繁体转简体</option>
-              <option value="s2t">简体转繁体</option>
-            </select>
+              <select
+                id="direction"
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[#60A5FA] focus:border-[#60A5FA] bg-white/60 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300"
+              >
+                <option value="t2s">繁体转简体</option>
+                <option value="s2t">简体转繁体</option>
+              </select>
+            </motion.div>
           </div>
   
-          {/* 文件上传区域 */}
           <div className="relative">
             <input
               type="file"
@@ -318,24 +328,33 @@ export default function Home() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              onClick={() => {
+                setIsClicking(true);
+                setTimeout(() => setIsClicking(false), 300);
+              }}
               className={`block w-full p-8 text-center border-2 border-dashed ${
                 isDragging
                   ? "border-[#60A5FA] bg-[#DBEAFE]/60 dark:bg-[#1E3A8A]/60"
                   : "border-gray-300 dark:border-gray-600"
-              } rounded-lg cursor-pointer hover:bg-gray-50/60 dark:hover:bg-gray-700/60 transition-colors bg-white/60 dark:bg-gray-800/60`}
+              } rounded-lg cursor-pointer hover:bg-gray-50/60 dark:hover:bg-gray-700/60 transition-colors`}
             >
               <div className="flex flex-col items-center space-y-4">
-                {/* 上传图标 */}
                 <motion.div
                   animate={{
-                    rotate: isDragging ? 360 : 0, // 拖拽时旋转 360 度
-                    scale: isDragging ? 1.2 : 1, // 拖拽时放大
+                    rotate:
+                      isDragging || isClicking || isFileSelected || isHoveringUpload
+                        ? 360
+                        : 0,
+                    scale:
+                      isDragging || isClicking || isFileSelected || isHoveringUpload
+                        ? 1.2
+                        : 1,
                   }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
                   <FaUpload
                     className={`w-12 h-12 ${
-                      isDragging
+                      isDragging || isClicking || isFileSelected || isHoveringUpload
                         ? "text-[#60A5FA] dark:text-[#818CF8]"
                         : "text-[#60A5FA] dark:text-[#818CF8]"
                     } transition-colors`}
@@ -353,7 +372,6 @@ export default function Home() {
               </div>
             </label>
   
-            {/* 进度条 */}
             {isLoading && (
               <motion.div
                 className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
@@ -380,11 +398,18 @@ export default function Home() {
             )}
           </div>
   
-          {/* 文件列表 */}
           {files.length > 0 && (
-            <div className="mt-6">
-              <button
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-6"
+            >
+              <motion.button
                 onClick={() => setIsFileListOpen(!isFileListOpen)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
                 className="w-full flex justify-between items-center p-3 bg-gray-100/60 dark:bg-gray-700/60 rounded-lg hover:bg-gray-200/60 dark:hover:bg-gray-600/60 transition-colors"
               >
                 <span className="text-gray-700 dark:text-gray-300">
@@ -395,7 +420,7 @@ export default function Home() {
                 ) : (
                   <FaChevronDown className="text-gray-500 dark:text-gray-400" />
                 )}
-              </button>
+              </motion.button>
   
               <AnimatePresence>
                 {isFileListOpen && (
@@ -425,7 +450,13 @@ export default function Home() {
                         </span>
                         <motion.button
                           onClick={() => handleDeleteFile(index)}
+                          whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 10,
+                          }}
                           className="text-red-400 hover:text-red-500 transition-colors"
                         >
                           <FaTrash />
@@ -435,16 +466,22 @@ export default function Home() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           )}
   
-          {/* 转换按钮 */}
           {files.length > 0 && (
-            <div className="mt-6 flex space-x-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-6 flex space-x-4"
+            >
               <motion.button
                 onClick={handleConvert}
                 disabled={isLoading}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
                 className="w-full bg-[#60A5FA] text-white py-3 px-6 rounded-lg hover:bg-[#3B82F6] active:bg-[#2563EB] transition-colors shadow-md"
               >
                 {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
@@ -452,16 +489,17 @@ export default function Home() {
               {isLoading && (
                 <motion.button
                   onClick={handleCancel}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
                   className="w-full bg-[#EA580C] text-white py-3 px-6 rounded-lg hover:bg-[#C2410C] active:bg-[#9A3412] transition-colors shadow-md"
                 >
                   取消转换
                 </motion.button>
               )}
-            </div>
+            </motion.div>
           )}
   
-          {/* 加载动画 */}
           {isLoading && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -478,7 +516,6 @@ export default function Home() {
             </motion.div>
           )}
   
-          {/* 成功动画 */}
           <AnimatePresence>
             {isComplete && !error && (
               <motion.div
@@ -504,7 +541,6 @@ export default function Home() {
             )}
           </AnimatePresence>
   
-          {/* 错误提示 */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -533,7 +569,6 @@ export default function Home() {
             )}
           </AnimatePresence>
   
-          {/* 转换后的文件列表 */}
           <AnimatePresence>
             {convertedFiles.length > 0 && (
               <motion.div
@@ -565,20 +600,33 @@ export default function Home() {
                         {file.name}
                       </span>
                       <div className="flex space-x-4">
+                        <ShareButton file={file.blob} fileName={file.name} />
                         <motion.button
                           id={`download-${index}`}
                           onClick={() => handleDownloadSingle(index)}
+                          whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="bg-[#34D399] text-white py-2 px-4 rounded-lg hover:bg-[#10B981] active:bg-[#059669] transition-colors shadow-md"
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 10,
+                          }}
+                          className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-md"
                         >
-                          下载
+                          <FaDownload className="w-5 h-5" />
                         </motion.button>
                         <motion.button
                           onClick={() => handleDeleteConvertedFile(index)}
-                          whileTap={{ scale: 0.9 }}
-                          className="text-red-400 hover:text-red-500 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 10,
+                          }}
+                          className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
                         >
-                          <FaTrash />
+                          <FaTrash className="w-5 h-5" />
                         </motion.button>
                       </div>
                     </motion.li>
@@ -586,7 +634,9 @@ export default function Home() {
                 </motion.ul>
                 <motion.button
                   onClick={handleDownloadAll}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
                   className="mt-6 w-full bg-[#8B5CF6] text-white py-3 px-6 rounded-lg hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors shadow-md"
                 >
                   批量下载所有文件

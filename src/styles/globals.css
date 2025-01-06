@@ -15,9 +15,30 @@ body, html {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f7fafc; /* 默认背景色 */
+  background-color: #FAF9F6; /* 默认背景色 */
 }
 
 .dark body, .dark html {
   background-color: #1a202c; /* 暗夜模式背景色 */
+}
+
+/* 自定义按钮样式 */
+.btn {
+  @apply px-4 py-2 rounded-lg transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply bg-blue-500 text-white hover:bg-blue-600;
+}
+
+.btn-secondary {
+  @apply bg-gray-500 text-white hover:bg-gray-600;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white hover:bg-red-600;
+}
+
+.btn-success {
+  @apply bg-green-500 text-white hover:bg-green-600;
 }

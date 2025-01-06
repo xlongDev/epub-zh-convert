@@ -332,6 +332,8 @@ export default function Home() {
                 setIsClicking(true);
                 setTimeout(() => setIsClicking(false), 300);
               }}
+              onMouseEnter={() => setIsHoveringUpload(true)}
+              onMouseLeave={() => setIsHoveringUpload(false)}
               className={`block w-full p-8 text-center border-2 border-dashed ${
                 isDragging
                   ? "border-[#60A5FA] bg-[#DBEAFE]/60 dark:bg-[#1E3A8A]/60"

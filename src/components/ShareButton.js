@@ -3,38 +3,61 @@ import { FaShareAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const ShareButton = ({ file, fileName }) => {
-  const [isSharing, setIsSharing] = useState(false); // 用于控制分享按钮的禁用状态
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
-    if (isSharing) return; // 如果正在分享，则直接返回
-    setIsSharing(true); // 开始分享，禁用按钮
+    if (isSharing) return;
+    setIsSharing(true);
 
     try {
-      // 生成文件的下载链接
-      const url = URL.createObjectURL(file);
+      let validFile = file;
+      if (!(file instanceof File)) {
+        console.warn("文件不是 File 类型，尝试转换...");
+        validFile = new File([file], fileName || "default.epub", {
+          type: "application/epub+zip",
+        });
+      }
 
-      if (navigator.share) {
-        // 如果支持 navigator.share，则分享下载链接
+      // 检查是否在桌面环境
+      const isDesktop =
+        typeof navigator.userAgent === "string" &&
+        /Mac|Windows|Linux/.test(navigator.userAgent) &&
+        !/Mobi|Android/i.test(navigator.userAgent);
+
+      // 检查是否在桌面 Chrome
+      const isDesktopChrome =
+        isDesktop && navigator.userAgent.includes("Chrome");
+
+      if (isDesktopChrome) {
+        alert(
+          "桌面版 Chrome 不完全支持分享功能，请尝试使用移动设备或 Safari 浏览器。"
+        );
+        setIsSharing(false);
+        return; // 停止流程，不触发下载
+      }
+
+      // 检查分享支持情况
+      if (navigator.canShare && navigator.canShare({ files: [validFile] })) {
         await navigator.share({
-          title: '下载转换后的文件',
-          text: `我已将文件 "${fileName}" 转换为 EPUB 格式，点击链接下载：${url}`,
+          title: "分享 EPUB 文件",
+          files: [validFile],
         });
       } else {
-        // 如果不支持 navigator.share，则复制链接到剪贴板
-        navigator.clipboard.writeText(url);
-        alert('链接已复制到剪贴板，您可以手动分享。');
+        const url = URL.createObjectURL(validFile);
+        await navigator.clipboard.writeText(url);
+        alert("浏览器不支持文件分享，文件链接已复制到剪贴板！");
+        URL.revokeObjectURL(url);
       }
-
-      // 释放 URL 对象
-      URL.revokeObjectURL(url);
     } catch (error) {
-      // 如果用户取消分享，忽略错误
-      if (error.name !== "AbortError") {
-        console.error('分享失败:', error);
-        alert('分享失败，请手动复制链接后分享。');
+      if (error.name === "AbortError" || error.name === "NotAllowedError") {
+        console.log("用户取消了分享操作。");
+        // 不显示错误提示，静默处理用户取消分享的情况
+      } else {
+        console.error("分享失败:", error);
+        alert("分享失败，请检查文件类型或浏览器支持。");
       }
     } finally {
-      setIsSharing(false); // 分享完成，重新启用按钮
+      setIsSharing(false);
     }
   };
 
@@ -47,7 +70,7 @@ const ShareButton = ({ file, fileName }) => {
       className={`p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md ${
         isSharing ? "opacity-50 cursor-not-allowed" : ""
       }`}
-      disabled={isSharing} // 禁用按钮
+      disabled={isSharing}
     >
       <FaShareAlt className="w-5 h-5" />
     </motion.button>

@@ -10,7 +10,7 @@ import { useFileConversion } from "@/hooks/useFileConversion";
 import { titleVariants, uploadVariants } from "@/utils/animations";
 import GitHubLink from "@/components/GitHubLink/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
-import { backgroundSchemes } from "../../config/backgroundSchemes"; // 引入配置文件
+import { backgroundSchemes } from "@/config/backgroundSchemes"; // 引入配置文件
 
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
 const DynamicErrorDisplay = dynamic(() => import("@/components/ErrorDisplay/ErrorDisplay").then(mod => mod.ErrorDisplay), { ssr: false });

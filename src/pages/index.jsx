@@ -14,7 +14,7 @@ import { backgroundSchemes } from "@/config/backgroundSchemes"; // 引入配置�
 
 const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
 const DynamicErrorDisplay = dynamic(() => import("@/components/ErrorDisplay/ErrorDisplay").then(mod => mod.ErrorDisplay), { ssr: false });
-const DynamicDownloadPrompt = dynamic(() => import("@/components/DownloadPrompt/DownloadPrompt").then(mod => mod.DownloadPrompt), { ssr: false });
+const DynamicDownloadPrompt = dynamic(() => import("@/components/DownloadPrompt/DownloadPrompt"), { ssr: false });
 
 import welcomeAnimation from "public/animations/welcome.json";
 import successAnimation from "public/animations/success.json";
@@ -145,7 +145,8 @@ export default function Home() {
             />
           </motion.div>
         )}
-  
+
+        {/* 下载提示条 */}
         <AnimatePresence>
           {showDownloadPrompt && (
             <DynamicDownloadPrompt
@@ -154,7 +155,7 @@ export default function Home() {
             />
           )}
         </AnimatePresence>
-  
+
         <motion.nav
           initial="hidden"
           animate="visible"
@@ -172,7 +173,7 @@ export default function Home() {
             <GitHubLink />
           </motion.div>
         </motion.nav>
-  
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -184,7 +185,7 @@ export default function Home() {
               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">松开以上传文件</p>
             </div>
           )}
-  
+
           <div className="mb-6">
             <label
               htmlFor="direction"
@@ -208,7 +209,7 @@ export default function Home() {
               </select>
             </motion.div>
           </div>
-  
+
           <FileUploader
             onFileChange={handleFileChange}
             onDragOver={(e) => {
@@ -236,7 +237,7 @@ export default function Home() {
             progress={progress}
             isComplete={isComplete}
           />
-  
+
           {files.length > 0 && (
             <FileList
               files={files}
@@ -245,7 +246,7 @@ export default function Home() {
               handleDeleteFile={handleDeleteFile}
             />
           )}
-  
+
           {files.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -276,9 +277,9 @@ export default function Home() {
               )}
             </motion.div>
           )}
-  
+
           {isLoading && <ProgressIndicator progress={progress} />}
-  
+
           <AnimatePresence>
             {isComplete && !error && (
               <motion.div
@@ -303,11 +304,11 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
-  
+
           <AnimatePresence>
             {error && <DynamicErrorDisplay error={error} />}
           </AnimatePresence>
-  
+
           <AnimatePresence>
             {convertedFiles.length > 0 && (
               <ConvertedFilesList

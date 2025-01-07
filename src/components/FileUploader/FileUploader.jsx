@@ -18,6 +18,17 @@ export const FileUploader = ({
   progress,
   isComplete,
 }) => {
+  // 根据转换状态动态设置图标颜色
+  const getIconColor = () => {
+    if (isComplete) {
+      return "text-green-500 dark:text-green-400"; // 转换成功时使用绿色
+    }
+    if (isDragging || isClicking || isFileSelected || isHoveringUpload) {
+      return "text-[#60A5FA] dark:text-[#818CF8]"; // 默认蓝色
+    }
+    return "text-[#60A5FA] dark:text-[#818CF8]"; // 默认蓝色
+  };
+
   return (
     <div className="relative">
       <input
@@ -60,11 +71,7 @@ export const FileUploader = ({
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
             <FaUpload
-              className={`w-12 h-12 ${
-                isDragging || isClicking || isFileSelected || isHoveringUpload
-                  ? "text-[#60A5FA] dark:text-[#818CF8]"
-                  : "text-[#60A5FA] dark:text-[#818CF8]"
-              } transition-colors`}
+              className={`w-12 h-12 ${getIconColor()} transition-colors`}
             />
           </motion.div>
 

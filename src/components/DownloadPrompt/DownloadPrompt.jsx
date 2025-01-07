@@ -27,4 +27,4 @@ const DownloadPrompt = ({ showDownloadPrompt, scrollToConvertedFiles }) => {
   );
 };
 
-export default DownloadPrompt; // 改为默认导出
+export default DownloadPrompt; // 默认导出

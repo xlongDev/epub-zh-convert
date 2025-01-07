@@ -165,7 +165,7 @@ export default function Home() {
             variants={titleVariants}
             className="text-3xl font-bold text-gray-800 dark:text-gray-100"
           >
-            E-book 繁简转换
+            EPUB 繁简转换
           </motion.h1>
           <motion.div variants={titleVariants} className="flex space-x-4">
             <ThemeToggle />

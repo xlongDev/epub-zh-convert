@@ -356,7 +356,9 @@ export default function Home() {
                 >
                   <FaUpload
                     className={`w-12 h-12 ${
-                      isDragging || isClicking || isFileSelected || isHoveringUpload
+                      isComplete
+                        ? "text-green-500 dark:text-green-400"
+                        : isDragging || isClicking || isFileSelected || isHoveringUpload
                         ? "text-[#60A5FA] dark:text-[#818CF8]"
                         : "text-[#60A5FA] dark:text-[#818CF8]"
                     } transition-colors`}

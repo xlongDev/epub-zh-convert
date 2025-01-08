@@ -76,15 +76,15 @@ export default function Home() {
   const [backgroundScheme, setBackgroundScheme] = useState(backgroundSchemes[0]);
 
   useEffect(() => {
-    // 检查 localStorage 中是否已经保存了背景颜色方案
-    const savedScheme = localStorage.getItem("backgroundScheme");
+    // 检查 sessionStorage 中是否已经保存了背景颜色方案
+    const savedScheme = sessionStorage.getItem("backgroundScheme");
     if (savedScheme) {
       // 如果已经保存过，则随机选择一个背景颜色方案
       const randomScheme = backgroundSchemes[Math.floor(Math.random() * backgroundSchemes.length)];
       setBackgroundScheme(randomScheme);
     } else {
-      // 如果是第一次加载，则使用默认背景颜色方案，并保存到 localStorage
-      localStorage.setItem("backgroundScheme", JSON.stringify(backgroundSchemes[0]));
+      // 如果是第一次加载，则使用默认背景颜色方案，并保存到 sessionStorage
+      sessionStorage.setItem("backgroundScheme", JSON.stringify(backgroundSchemes[0]));
     }
   }, []);
 

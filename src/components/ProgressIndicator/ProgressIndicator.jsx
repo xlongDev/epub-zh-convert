@@ -19,9 +19,9 @@ export const ProgressIndicator = ({ progress }) => {
         play // 确保动画播放
         style={{ width: 170, height: 170, margin: "0 auto" }}
       />
-      <p className="text-gray-700 dark:text-gray-300 mt-4">
+      {/* <p className="text-gray-700 dark:text-gray-300 mt-4">
         转换中... {Math.round(progress)}%
-      </p>
+      </p> */}
     </motion.div>
   );
 };

@@ -3,7 +3,7 @@ import { FaGithub } from 'react-icons/fa';
 const GitHubLink = () => {
   return (
     <a
-      href="https://github.com/xlongDev/epub-zh-transform.git"
+      href="https://github.com/xlongDev/epub-zh-convert"
       target="_blank"
       rel="noopener noreferrer"
       className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

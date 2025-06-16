@@ -3,7 +3,9 @@ import dynamic from "next/dynamic";
 import loadingAnimation from "public/animations/loading.json";
 
 // 动态导入 LottiePlayer，并禁用 SSR
-const LottiePlayer = dynamic(() => import("react-lottie-player"), { ssr: false });
+const LottiePlayer = dynamic(() => import("react-lottie-player"), {
+  ssr: false,
+});
 
 export const ProgressIndicator = ({ progress }) => {
   return (

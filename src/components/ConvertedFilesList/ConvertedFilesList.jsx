@@ -2,7 +2,7 @@ import { FaDownload, FaTrash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import ShareButton from "@/components/ShareButton/ShareButton";
 
-export const ConvertedFilesList = ({
+const ConvertedFilesList = ({
   convertedFiles,
   handleDownloadSingle,
   handleDeleteConvertedFile,
@@ -14,7 +14,7 @@ export const ConvertedFilesList = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      id="converted-files" // 确保 id 正确设置
+      id="converted-files"
       className="mt-8"
     >
       <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">
@@ -69,7 +69,6 @@ export const ConvertedFilesList = ({
           </motion.li>
         ))}
       </motion.ul>
-      {/* 添加批量下载按钮 */}
       <motion.button
         onClick={handleDownloadAll}
         whileHover={{ scale: 1.05 }}
@@ -82,3 +81,5 @@ export const ConvertedFilesList = ({
     </motion.div>
   );
 };
+
+export default ConvertedFilesList;

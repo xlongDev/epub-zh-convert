@@ -67,7 +67,7 @@ const ShareButton = ({ file, fileName }) => {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       transition={{ type: "spring", stiffness: 300, damping: 10 }}
-      className={`p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md ${
+      className={`p-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors shadow-md ${
         isSharing ? "opacity-50 cursor-not-allowed" : ""
       }`}
       disabled={isSharing}

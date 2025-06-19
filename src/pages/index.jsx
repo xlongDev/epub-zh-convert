@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useFileHandling } from "@/hooks/useFileHandling";
 import { useFileConversion } from "@/hooks/useFileConversion";
-import backgroundSchemes from "@/utils/backgroundSchemes";
+import backgroundSchemes from "@/config/backgroundSchemes";
 import { titleVariants } from "@/utils/animations";
 import GitHubLink from "@/components/GitHubLink/GitHubLink";
 import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
@@ -84,13 +84,19 @@ export default function Home() {
     }
   };
 
+  // 修复点：删除转换文件后重置完成状态
   const handleDeleteConvertedFile = (index) => {
     setConvertedFiles((prevFiles) => {
       const newFiles = prevFiles.filter((_, i) => i !== index);
-      if (newFiles.length === 0) {
+      
+      // 重置完成状态以防止触发下载通知
+      if (newFiles.length > 0) {
+        setIsComplete(false);
+      } else {
         setIsComplete(false);
         setShowDownloadPrompt(false);
       }
+      
       return newFiles;
     });
   };

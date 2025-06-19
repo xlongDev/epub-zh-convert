@@ -1,57 +1,85 @@
-export const backgroundSchemes = [
+/**
+ * 全站背景颜色方案常量
+ * 包含多种渐变背景选项，每个方案都提供浅色模式和深色模式的对应配置
+ * 所有颜色类名均基于Tailwind CSS v3.x的默认颜色配置
+ * 适用于：页面背景、卡片组件背景、模态框背景等场景
+ */
+const backgroundSchemes = [
   {
-    // 默认颜色方案
-    // 浅色：从蓝绿色到蓝色的渐变，充满活力和现代感
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
-    light: "bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600",
-    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
-  },
-  {
-    // 浅色：从蓝色到绿色的渐变，清新自然，适合自然主题
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
+    // 清新渐变色方案 - 从蓝色过渡到绿色
     light: "bg-gradient-to-r from-blue-300 via-teal-300 to-green-300",
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 浅色：从灰色到蓝色的渐变，带有科技感和冷静氛围
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
-    light: "bg-gradient-to-r from-gray-200 via-blue-300 to-gray-400",
-    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+    // 暖色系渐变方案 - 欢快活泼氛围
+    light: "bg-gradient-to-r from-pink-50 via-orange-50 to-yellow-50",
+    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 浅色：从橙色到紫色的渐变，温暖且富有活力，适合创意主题
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
+    // 暖色调渐变方案 - 从橙色过渡到紫色
     light: "bg-gradient-to-r from-orange-200 via-pink-300 to-purple-400",
     dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
   },
   {
-    // 浅色：从浅青色到浅蓝色的渐变，清新柔和，适合轻松的氛围
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
+    // 浅蓝绿色渐变方案 - 适合柔和背景需求
     light: "bg-gradient-to-r from-teal-100 via-cyan-100 to-blue-100",
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 浅色：从浅紫色到浅粉色的渐变，温柔浪漫，适合女性化设计
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
-    light: "bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50",
+    // 冷调科技感渐变 - indigo到violet
+    light: "bg-gradient-to-r from-indigo-200 via-violet-300 to-blue-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 自然生态色系 - emerald到stone
+    light: "bg-gradient-to-r from-emerald-50 via-stone-100 to-lime-50",
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 浅色：从浅绿色到浅青色的渐变，自然清新，适合环保或健康主题
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
-    light: "bg-gradient-to-r from-green-50 via-teal-50 to-cyan-50",
+    // 复古色系渐变 - amber到stone
+    light: "bg-gradient-to-r from-amber-100 via-amber-200 to-stone-300",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 粉彩双色渐变 - rose到pink
+    light: "bg-gradient-to-r from-rose-100 via-pink-200 to-rose-300",
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 浅色：从浅粉色到浅黄色的渐变，温暖柔和，适合温馨的场景
-    // 深色：从深灰色到灰色的渐变，适合夜间模式
-    light: "bg-gradient-to-r from-pink-50 via-orange-50 to-yellow-50",
+    // 海洋主题渐变 - cyan到blue
+    light: "bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-400",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 星空深蓝渐变 - blue到indigo
+    light: "bg-gradient-to-r from-blue-200 via-indigo-300 to-blue-400",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 极光紫绿渐变 - violet到emerald
+    light: "bg-gradient-to-r from-violet-300 via-emerald-200 to-teal-300",
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
-  // {
-  //   // 浅色：从灰色到浅灰色的渐变，柔和且低调
-  //   // 深色：从深灰色到黑色的渐变，适合夜间模式，深邃沉稳
-  //   light: "bg-gradient-to-tl from-gray-300 via-gray-100 to-gray-200",
-  //   dark: "dark:from-gray-800 dark:via-gray-900 dark:to-black",
-  // },
+  {
+    // 傍晚霞光渐变 - red到orange
+    light: "bg-gradient-to-r from-red-200 via-orange-300 to-yellow-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 深海蓝灰渐变 - sky到gray
+    light: "bg-gradient-to-r from-sky-100 via-gray-200 to-slate-300",
+    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
+  },
+  {
+    // 热带日落渐变 - amber到pink
+    light: "bg-gradient-to-r from-amber-200 via-pink-300 to-red-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 科技未来感渐变 - indigo到cyan
+    light: "bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
 ];
+
+export default backgroundSchemes;

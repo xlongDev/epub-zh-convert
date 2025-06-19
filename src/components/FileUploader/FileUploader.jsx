@@ -54,7 +54,7 @@ export const FileUploader = ({
           isDragging
             ? "border-[#60A5FA] bg-[#DBEAFE]/60 dark:bg-[#1E3A8A]/60"
             : "border-gray-300 dark:border-gray-600"
-        } rounded-lg cursor-pointer hover:bg-gray-50/60 dark:hover:bg-gray-700/60 transition-colors`}
+        } rounded-xl cursor-pointer hover:bg-gray-50/60 dark:hover:bg-gray-700/60 transition-colors`}
       >
         <div className="flex flex-col items-center space-y-4">
           <motion.div
@@ -131,14 +131,14 @@ export const FileUploader = ({
       {/* 转换过程中的动画进度条 */}
       {isLoading && (
         <motion.div
-          className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
+          className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none"
           style={{
             border: "4px solid transparent",
             borderRadius: "0.75rem",
           }}
         >
           <motion.div
-            className="absolute inset-0 border-4 border-transparent rounded-lg"
+            className="absolute inset-0 border-4 border-transparent rounded-xl"
             style={{
               borderImage: `linear-gradient(to right, #34D399 ${progress}%, transparent ${progress}%) 1`,
             }}

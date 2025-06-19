@@ -18,47 +18,34 @@ export const useFileConversion = (files, direction) => {
     setError(null);
     setProgress(0);
     setIsComplete(false);
+    setConvertedFileNames(new Set()); // 清空已转换文件名，允许重新转换
     abortControllerRef.current = new AbortController();
 
     try {
-      // 过滤出未转换的文件
-      const filesToConvert = files.filter((file) => !convertedFileNames.has(file.name));
-
-      if (filesToConvert.length === 0) {
-        // 如果没有需要转换的文件，直接完成
-        setIsComplete(true);
-        return;
-      }
-
-      for (let i = 0; i < filesToConvert.length; i++) {
-        const file = filesToConvert[i];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         try {
           const result = await convertEpub(
             file,
             (currentProgress) => {
-              // 计算总进度
-              const totalProgress = ((i + currentProgress / 100) / filesToConvert.length) * 100;
+              const totalProgress = ((i + currentProgress / 100) / files.length) * 100;
               setProgress(totalProgress);
             },
             abortControllerRef.current.signal,
             direction
           );
 
-          // 更新转换后的文件列表
           setConvertedFiles((prevFiles) => {
             const existingFileIndex = prevFiles.findIndex((f) => f.name === result.name);
             if (existingFileIndex !== -1) {
-              // 如果文件已存在，替换它
               const newFiles = [...prevFiles];
               newFiles[existingFileIndex] = { name: result.name, blob: result.blob };
               return newFiles;
             } else {
-              // 如果文件不存在，添加它
               return [...prevFiles, { name: result.name, blob: result.blob }];
             }
           });
 
-          // 记录已经转换过的文件名
           setConvertedFileNames((prevNames) => new Set(prevNames).add(file.name));
         } catch (err) {
           console.error(`文件 ${file.name} 转换失败:`, err.message);

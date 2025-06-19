@@ -13,7 +13,7 @@ const DownloadButton = ({ file, fileName }) => {
   return (
     <button
       onClick={handleDownload}
-      className="p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-transform transform hover:scale-105"
+      className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-transform transform hover:scale-105"
     >
       <FaDownload className="w-5 h-5" />
     </button>

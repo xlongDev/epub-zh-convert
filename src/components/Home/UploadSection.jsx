@@ -80,7 +80,7 @@ const UploadSection = React.memo(
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 10 }}
-            className="w-full bg-[#60A5FA] text-white py-3 px-6 rounded-lg hover:bg-[#3B82F6] active:bg-[#2563EB] transition-colors shadow-md"
+            className="w-full bg-[#60A5FA] text-white py-3 px-6 rounded-xl hover:bg-[#3B82F6] active:bg-[#2563EB] transition-colors shadow-md"
           >
             {isLoading ? `转换中... ${Math.round(progress)}%` : "开始转换"}
           </motion.button>
@@ -90,7 +90,7 @@ const UploadSection = React.memo(
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
-              className="w-full bg-[#EA580C] text-white py-3 px-6 rounded-lg hover:bg-[#C2410C] active:bg-[#9A3412] transition-colors shadow-md"
+              className="w-full bg-[#EA580C] text-white py-3 px-6 rounded-xl hover:bg-[#C2410C] active:bg-[#9A3412] transition-colors shadow-md"
             >
               取消转换
             </motion.button>

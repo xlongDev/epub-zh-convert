@@ -24,7 +24,7 @@ body, html {
 
 /* 自定义按钮样式 */
 .btn {
-  @apply px-4 py-2 rounded-lg transition-colors duration-200;
+  @apply px-4 py-2 rounded-xl transition-colors duration-200;
 }
 
 .btn-primary {

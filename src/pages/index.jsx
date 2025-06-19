@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { useFileHandling } from "@/hooks/useFileHandling";
 import { useFileConversion } from "@/hooks/useFileConversion";
 import backgroundSchemes from "@/utils/backgroundSchemes";

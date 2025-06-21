@@ -9,9 +9,6 @@ const DirectionSelector = React.memo(({ direction, setDirection }) => {
 
   return (
     <div className="mb-8">
-      {/* <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-        转换方向
-      </label> */}
       <div className="flex space-x-4">
         {options.map((option) => (
           <motion.div

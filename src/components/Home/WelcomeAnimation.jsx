@@ -10,7 +10,10 @@ const WelcomeAnimation = React.memo(({ animationData, isVisible }) => {
   return (
     <div
       className="mb-4 text-center"
-      style={{ willChange: "opacity, transform" }}
+      style={{
+        willChange: "opacity, transform",
+        animation: "fadeIn 1s ease-in-out",
+      }}
     >
       <LottiePlayer
         animationData={animationData}

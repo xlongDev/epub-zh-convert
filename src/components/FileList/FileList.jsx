@@ -1,20 +1,20 @@
 import { FaFile, FaTrash, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import Checkbox from "@/components/Checkbox/Checkbox";
 
 export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
-  // 处理全选/取消全选
-  const handleSelectAll = () => {
+  const handleSelectAll = (e) => {
     if (selectedFiles.size === files.length) {
       setSelectedFiles(new Set());
     } else {
       setSelectedFiles(new Set(files.map((_, index) => index)));
     }
+    e.stopPropagation();
   };
 
-  // 处理单个文件选择
   const handleSelectFile = (index) => {
     setSelectedFiles((prev) => {
       const newSet = new Set(prev);
@@ -27,7 +27,6 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
     });
   };
 
-  // 删除所选文件
   const handleDeleteSelected = () => {
     const sortedIndices = Array.from(selectedFiles).sort((a, b) => b - a);
     sortedIndices.forEach((index) => handleDeleteFile(index));
@@ -46,14 +45,9 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
         className="flex items-center justify-between w-full p-3 bg-gray-100/60 dark:bg-gray-700/60 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-600/60 transition-colors cursor-pointer"
       >
         <div className="flex items-center space-x-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={files.length > 0 && selectedFiles.size === files.length}
-            onChange={(e) => {
-              e.stopPropagation(); // 防止点击复选框触发展开/收起
-              handleSelectAll();
-            }}
-            className="h-5 w-5 text-green-600 focus:ring-green-500 rounded"
+            onChange={handleSelectAll}
             title={selectedFiles.size === files.length ? "取消全选" : "全选"}
           />
           <span className="text-gray-700 dark:text-gray-300">
@@ -87,11 +81,10 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="flex items-center p-3 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-md hover:shadow-lg transition-shadow"
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedFiles.has(index)}
                   onChange={() => handleSelectFile(index)}
-                  className="h-5 w-5 text-green-600 focus:ring-green-500 rounded mr-3"
+                  className="mr-3"
                 />
                 <FaFile className="text-[#60A5FA] dark:text-[#818CF8] mr-3" />
                 <span
@@ -128,7 +121,7 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="w-full bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors shadow-md"
+                  className="w-full bg-red-500 text-white mt-4 py-2 px-4 rounded-xl hover:bg-red-600 transition-colors shadow-md"
                 >
                   删除所选 ({selectedFiles.size})
                 </motion.button>

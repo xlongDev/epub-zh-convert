@@ -52,7 +52,8 @@ const ConvertedSection = React.memo(
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="mt-4 text-center"
+            layout
+            className="mt-4 text-center converted-section"
           >
             <motion.div
               initial={{ scale: 0 }}

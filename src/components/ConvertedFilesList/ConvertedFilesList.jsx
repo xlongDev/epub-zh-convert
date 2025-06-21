@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaDownload, FaTrash } from "react-icons/fa";
 import ShareButton from "@/components/ShareButton/ShareButton";
 import { useState } from "react";
+import Checkbox from "@/components/Checkbox/Checkbox";
 
 const ConvertedFilesList = ({
   convertedFiles,
@@ -11,8 +12,7 @@ const ConvertedFilesList = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
-  // 处理全选/取消全选
-  const handleSelectAll = () => {
+  const handleSelectAll = (e) => {
     if (selectedFiles.size === convertedFiles.length) {
       setSelectedFiles(new Set());
     } else {
@@ -43,7 +43,7 @@ const ConvertedFilesList = ({
     selectedIndices.forEach((index, i) => {
       setTimeout(() => {
         handleDownloadSingle(index);
-      }, i * 100); // 100ms delay between downloads
+      }, i * 100);
     });
     setSelectedFiles(new Set());
   };
@@ -61,11 +61,9 @@ const ConvertedFilesList = ({
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
           转换后的文件
         </h2>
-        <input
-          type="checkbox"
+        <Checkbox
           checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
           onChange={handleSelectAll}
-          className="h-5 w-5 text-green-600 focus:ring-green-500 rounded"
           title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
         />
       </div>
@@ -89,11 +87,10 @@ const ConvertedFilesList = ({
                 >
                   <div className="flex items-center min-w-0 flex-1">
                     <div className="flex items-center space-x-2 min-w-0 flex-1">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedFiles.has(index)}
                         onChange={() => handleSelectFile(index)}
-                        className="h-5 w-5 text-green-600 focus:ring-green-500 flex-shrink-0"
+                        className="flex-shrink-0"
                       />
                       <span
                         className="text-gray-700 dark:text-gray-300 truncate min-w-0"
@@ -137,34 +134,54 @@ const ConvertedFilesList = ({
               ))}
             </AnimatePresence>
           </ul>
-          {selectedFiles.size > 0 && (
-            <div className="flex space-x-4 mt-4">
-              <motion.button
-                onClick={handleDeleteSelected}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors shadow-md"
+          
+          {/* 修复后的操作按钮区域 */}
+          <AnimatePresence>
+            {selectedFiles.size > 0 && (
+              <motion.div
+                key="action-buttons"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 20,
+                  duration: 0.3
+                }}
+                className="mt-4 space-y-4"
               >
-                删除所选 ({selectedFiles.size})
-              </motion.button>
-              <motion.button
-                onClick={handleDownloadSelected}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                className="flex-1 bg-green-500 text-white py-2 px-4 rounded-xl hover:bg-green-600 transition-colors shadow-md"
-              >
-                批量下载所选 ({selectedFiles.size})
-              </motion.button>
-            </div>
-          )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <motion.button
+                    onClick={handleDeleteSelected}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                    className="w-full mt-2 bg-red-500 text-white py-3 px-6 rounded-xl hover:bg-red-600 transition-colors shadow-md"
+                  >
+                    删除所选 ({selectedFiles.size})
+                  </motion.button>
+                  <motion.button
+                    onClick={handleDownloadSelected}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                    className="w-full mt-2 bg-green-500 text-white py-3 px-6 rounded-xl hover:bg-green-600 transition-colors shadow-md"
+                  >
+                    批量下载所选 ({selectedFiles.size})
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* 批量下载所有文件按钮 */}
           <motion.button
             onClick={handleDownloadAll}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 300, damping: 10 }}
-            className="mt-12 w-full bg-[#8B5CF6] text-white py-3 px-6 rounded-xl hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors shadow-md"
+            className="mt-6 w-full bg-[#8B5CF6] text-white py-3 px-6 rounded-xl hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors shadow-md"
           >
             批量下载所有文件
           </motion.button>

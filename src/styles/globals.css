@@ -51,4 +51,3 @@ body, html {
 .btn-success {
   @apply bg-green-500 text-white hover:bg-green-600;
 }
-

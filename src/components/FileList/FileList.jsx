@@ -1,37 +1,44 @@
 import { FaFile, FaTrash, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { useState, useCallback, useMemo } from "react";
 import Checkbox from "@/components/Checkbox/Checkbox";
 
 export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
-  const handleSelectAll = (e) => {
-    if (selectedFiles.size === files.length) {
-      setSelectedFiles(new Set());
-    } else {
-      setSelectedFiles(new Set(files.map((_, index) => index)));
-    }
+  // 使用 useCallback 优化事件处理函数
+  const handleSelectAll = useCallback((e) => {
+    setSelectedFiles(prev =>
+      prev.size === files.length ? new Set() : new Set(files.map((_, i) => i))
+    );
     e.stopPropagation();
-  };
+  }, [files.length]);
 
-  const handleSelectFile = (index) => {
-    setSelectedFiles((prev) => {
+  const handleSelectFile = useCallback((index) => {
+    setSelectedFiles(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
+      newSet.has(index) ? newSet.delete(index) : newSet.add(index);
       return newSet;
     });
-  };
+  }, []);
 
-  const handleDeleteSelected = () => {
-    const sortedIndices = Array.from(selectedFiles).sort((a, b) => b - a);
-    sortedIndices.forEach((index) => handleDeleteFile(index));
+  const handleDeleteSelected = useCallback(() => {
+    // 从后往前删除以避免索引问题
+    Array.from(selectedFiles)
+      .sort((a, b) => b - a)
+      .forEach(handleDeleteFile);
+
     setSelectedFiles(new Set());
-  };
+  }, [selectedFiles, handleDeleteFile]);
+
+  // 计算选中文件数量
+  const selectedCount = useMemo(() => selectedFiles.size, [selectedFiles.size]);
+
+  // 计算全选状态
+  const isAllSelected = useMemo(() =>
+    files.length > 0 && selectedFiles.size === files.length,
+    [files.length, selectedFiles.size]
+  );
 
   return (
     <motion.div
@@ -46,9 +53,9 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
       >
         <div className="flex items-center space-x-3">
           <Checkbox
-            checked={files.length > 0 && selectedFiles.size === files.length}
+            checked={isAllSelected}
             onChange={handleSelectAll}
-            title={selectedFiles.size === files.length ? "取消全选" : "全选"}
+            title={isAllSelected ? "取消全选" : "全选"}
           />
           <span className="text-gray-700 dark:text-gray-300">
             已选择 {files.length} 个文件
@@ -72,43 +79,77 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
             transition={{ duration: 0.3 }}
             className="mt-4 space-y-2"
           >
-            {files.map((file, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-center p-3 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-              >
-                <Checkbox
-                  checked={selectedFiles.has(index)}
-                  onChange={() => handleSelectFile(index)}
-                  className="mr-3"
-                />
-                <FaFile className="text-[#60A5FA] dark:text-[#818CF8] mr-3" />
-                <span
-                  className="text-gray-700 dark:text-gray-300 truncate flex-1"
-                  title={file.name}
-                >
-                  {file.name}
-                </span>
-                <motion.button
-                  onClick={() => handleDeleteFile(index)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 10,
-                  }}
-                  className="text-red-400 hover:text-red-500 transition-colors"
-                >
-                  <FaTrash />
-                </motion.button>
-              </motion.div>
-            ))}
-            {selectedFiles.size > 0 && (
+            <LayoutGroup>
+              <AnimatePresence initial={false}>
+                {files.map((file, index) => (
+                  <motion.div
+                    key={index}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.2,
+                        delay: index * 0.03,
+                        type: "spring",
+                        stiffness: 300,
+                      },
+                    }}
+                    exit={{
+                      opacity: 0,
+                      x: 50,
+                      scale: 0.9,
+                      transition: { duration: 0.3 },
+                    }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 15,
+                      boxShadow: { duration: 0.2 },
+                    }}
+                    className="flex items-center p-3 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-md"
+                  >
+                    <Checkbox
+                      checked={selectedFiles.has(index)}
+                      onChange={() => handleSelectFile(index)}
+                      className="mr-3"
+                    />
+                    <FaFile className="text-[#60A5FA] dark:text-[#818CF8] mr-3 min-w-[16px]" />
+                    <span
+                      className="text-gray-700 dark:text-gray-300 truncate flex-1"
+                      title={file.name}
+                    >
+                      {file.name}
+                    </span>
+                    <motion.button
+                      onClick={() => handleDeleteFile(index)}
+                      whileHover={{
+                        scale: 1.15,
+                        rotate: [0, -5, 5, 0],
+                      }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 10,
+                        rotate: { duration: 0.4 },
+                      }}
+                      className="text-red-400 hover:text-red-500 transition-colors"
+                      aria-label={`删除文件 ${file.name}`}
+                    >
+                      <FaTrash />
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </LayoutGroup>
+
+            {selectedCount > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -118,12 +159,12 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
               >
                 <motion.button
                   onClick={handleDeleteSelected}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="w-full bg-red-500 text-white mt-4 py-2 px-4 rounded-xl hover:bg-red-600 transition-colors shadow-md"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  className="w-full bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors shadow-md flex justify-center items-center"
                 >
-                  删除所选 ({selectedFiles.size})
+                  删除所选 ({selectedCount})
                 </motion.button>
               </motion.div>
             )}

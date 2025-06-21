@@ -5,10 +5,7 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx}',
   ],
   safelist: [
-    // 渐变方向类
     'bg-gradient-to-r',
-
-    // ===== Light 模式中的颜色停止类 =====
     'from-pink-50', 'via-orange-50', 'to-yellow-50',
     'from-blue-300', 'via-teal-300', 'to-green-300',
     'from-orange-200', 'via-pink-300', 'to-purple-400',
@@ -24,14 +21,32 @@ module.exports = {
     'from-sky-100', 'via-gray-200', 'to-slate-300',
     'from-amber-200', 'via-pink-300', 'to-red-200',
     'from-indigo-300', 'via-blue-300', 'to-cyan-300',
-    
-    // ===== Dark 模式中的颜色停止类 =====
     'dark:from-gray-800', 'dark:via-gray-700', 'dark:to-gray-600',
     'dark:from-gray-900', 'dark:via-gray-800', 'dark:to-gray-700',
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        fadeIn: 'fadeIn 1s ease-in-out',
+        slideIn: 'slideIn 0.5s ease-out',
+        scaleIn: 'scaleIn 0.5s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        slideIn: {
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+    },
   },
   plugins: [],
 };

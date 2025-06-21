@@ -14,10 +14,11 @@
     "formidable": "^3.5.4",
     "framer-motion": "^12.18.1",
     "jszip": "^3.10.1",
-    "next": "15.3.3",
+    "lottie-react": "^2.4.1",
+    "next": "15.3.4",
     "next-themes": "^0.4.6",
     "opencc-js": "^1.0.5",
-    "postcss": "^8.5.5",
+    "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
@@ -27,7 +28,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3"
+    "eslint-config-next": "15.3.4"
   },
-  "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321"
+  "packageManager": "pnpm@10.12.1"
 }

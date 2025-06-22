@@ -76,14 +76,6 @@ const FileUploader = React.memo(
                 仅支持.epub格式文件
               </p>
             </div>
-            {/* 转换方向显示 */}
-            {conversionDirection && (
-              <div className="mt-2 px-3 py-1.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
-                {conversionDirection === "simplifiedToTraditional"
-                  ? "转换方向: 简体 → 繁體"
-                  : "转换方向: 繁體 → 简体"}
-              </div>
-            )}
           </div>
         </motion.div>
         {/* 隐藏的文件输入框 */}
@@ -99,7 +91,7 @@ const FileUploader = React.memo(
         {/* 加载中的覆盖层和进度百分比显示 */}
         {isLoading && (
           <motion.div
-            className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center"
+            className="absolute inset-0 bg-transparent backdrop-blur-md backdrop-brightness-90 dark:backdrop-brightness-110 rounded-xl flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -107,15 +99,15 @@ const FileUploader = React.memo(
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-3 relative flex items-center justify-center">
                 <div className="absolute w-full h-full flex items-center justify-center">
-                  <div className="w-12 h-12 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
+                  <div className="w-14 h-14 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
                 </div>
                 <div className="text-blue-600 dark:text-blue-400 font-medium text-sm z-10">
                   {Math.round(progress)}%
                 </div>
               </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              {/* <p className="text-sm text-gray-800 dark:text-gray-300">
                 正在转换中...
-              </p>
+              </p> */}
             </div>
           </motion.div>
         )}

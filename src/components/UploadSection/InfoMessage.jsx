@@ -1,4 +1,3 @@
-// src/components/InfoMessage.jsx
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 

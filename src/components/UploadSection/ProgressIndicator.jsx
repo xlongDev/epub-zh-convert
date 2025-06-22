@@ -1,4 +1,3 @@
-// src/components/ProgressIndicator.jsx
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 

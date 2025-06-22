@@ -1,4 +1,3 @@
-// src/components/DragOverlay.jsx
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 

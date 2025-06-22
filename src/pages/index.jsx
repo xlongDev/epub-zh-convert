@@ -39,6 +39,13 @@ export default function Home() {
     useState(false);
 
   const prevIsComplete = useRef(false);
+  // 添加转换成功提示音引用
+  const completedSoundRef = useRef(null);
+
+  useEffect(() => {
+    // 初始化提示音
+    completedSoundRef.current = new Audio("/completed.mp3");
+  }, []);
 
   useEffect(() => {
     const savedScheme = sessionStorage.getItem("backgroundScheme");
@@ -113,6 +120,17 @@ export default function Home() {
       setIsConversionFailedOrCancelled(false);
       setIsComplete(false);
     }
+    
+    // 添加转换成功提示音逻辑
+    if (isComplete && !prevIsComplete.current && !error) {
+      // 确保音频对象已初始化
+      if (completedSoundRef.current) {
+        completedSoundRef.current.play().catch((e) => {
+          console.error("播放转换成功提示音失败:", e);
+        });
+      }
+    }
+    
     prevIsComplete.current = isComplete;
   }, [isComplete, error, isLoading, files.length]);
 

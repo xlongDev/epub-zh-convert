@@ -4,6 +4,10 @@ import ShareButton from "@/components/ShareButton/ShareButton";
 import { useState } from "react";
 import Checkbox from "@/components/Checkbox/Checkbox";
 
+// 新增导入 JSZip 库
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+
 const ConvertedFilesList = ({
   convertedFiles,
   handleDownloadSingle,
@@ -38,14 +42,66 @@ const ConvertedFilesList = ({
     setSelectedFiles(new Set());
   };
 
+  // 修改批量下载逻辑，使用 JSZip 创建压缩包
   const handleDownloadSelected = async () => {
     const selectedIndices = Array.from(selectedFiles);
-    selectedIndices.forEach((index, i) => {
-      setTimeout(() => {
-        handleDownloadSingle(index);
-      }, i * 100);
-    });
-    setSelectedFiles(new Set());
+    
+    // 如果只选中了一个文件，直接下载
+    if (selectedIndices.length === 1) {
+      handleDownloadSingle(selectedIndices[0]);
+      setSelectedFiles(new Set());
+      return;
+    }
+
+    // 创建压缩包
+    const zip = new JSZip();
+    
+    // 添加选中的文件到压缩包
+    for (const index of selectedIndices) {
+      const file = convertedFiles[index];
+      zip.file(file.name, file.blob);
+    }
+
+    // 生成压缩包并触发下载
+    try {
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, "批量下载文件.zip");
+      setSelectedFiles(new Set());
+    } catch (error) {
+      console.error("下载压缩包失败:", error);
+      alert("下载失败，请重试");
+    }
+  };
+
+  // 修改批量下载所有文件的逻辑，使用 JSZip 创建压缩包
+  const handleDownloadAllFiles = async () => {
+    // 如果没有文件，直接返回
+    if (convertedFiles.length === 0) {
+      return;
+    }
+
+    // 如果只有一个文件，直接下载
+    if (convertedFiles.length === 1) {
+      handleDownloadSingle(0);
+      return;
+    }
+
+    // 创建压缩包
+    const zip = new JSZip();
+    
+    // 添加所有文件到压缩包
+    for (const file of convertedFiles) {
+      zip.file(file.name, file.blob);
+    }
+
+    // 生成压缩包并触发下载
+    try {
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, "全部文件.zip");
+    } catch (error) {
+      console.error("下载压缩包失败:", error);
+      alert("下载失败，请重试");
+    }
   };
 
   return (
@@ -175,9 +231,9 @@ const ConvertedFilesList = ({
             )}
           </AnimatePresence>
           
-          {/* 批量下载所有文件按钮 */}
+          {/* 修改按钮点击事件为新的压缩下载函数 */}
           <motion.button
-            onClick={handleDownloadAll}
+            onClick={handleDownloadAllFiles}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 300, damping: 10 }}
@@ -191,4 +247,4 @@ const ConvertedFilesList = ({
   );
 };
 
-export default ConvertedFilesList;
+export default ConvertedFilesList;  

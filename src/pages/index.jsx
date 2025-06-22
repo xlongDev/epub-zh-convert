@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react"; // 新增导入 useRef
 import { useFileHandling } from "@/hooks/useFileHandling";
 import { useFileConversion } from "@/hooks/useFileConversion";
 import { titleVariants } from "@/utils/animations";
@@ -14,8 +14,10 @@ import successAnimation from "public/animations/success.json";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  // Background scheme state
-  const [backgroundScheme, setBackgroundScheme] = useState(backgroundSchemes[0]);
+  // 背景方案状态
+  const [backgroundScheme, setBackgroundScheme] = useState(
+    backgroundSchemes[0]
+  );
   useEffect(() => {
     const savedScheme = sessionStorage.getItem("backgroundScheme");
     if (savedScheme) {
@@ -30,16 +32,16 @@ export default function Home() {
     }
   }, []);
 
-  // File handling logic
+  // 文件处理逻辑
   const { files, isFileSelected, handleFileChange, handleDeleteFile } =
     useFileHandling();
   const [direction, setDirection] = useState("t2s");
 
-  // Use file conversion hook
+  // 文件转换钩子
   const {
     isLoading,
     progress,
-    error, // This is crucial for detecting conversion failure
+    error,
     convertedFiles,
     setConvertedFiles,
     isComplete,
@@ -48,46 +50,53 @@ export default function Home() {
     handleCancel: originalHandleCancel,
   } = useFileConversion(files, direction);
 
-  // UI States
+  // UI 状态
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [isFileListOpen, setIsFileListOpen] = useState(false);
   const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isClicking, setIsClicking] = useState(false); // Likely internal to Uploader, can remove if not used externally
-  const [isHoveringUpload, setIsHoveringUpload] = useState(false); // Likely internal to Uploader, can remove if not used externally
+  const [isClicking, setIsClicking] = useState(false);
+  const [isHoveringUpload, setIsHoveringUpload] = useState(false);
+  const [isConversionFailedOrCancelled, setIsConversionFailedOrCancelled] =
+    useState(false);
 
-  // New crucial state: Tracks if conversion failed or was cancelled
-  const [isConversionFailedOrCancelled, setIsConversionFailedOrCancelled] = useState(false);
+  // 【修复第一步】: 新增一个 ref 来追踪 isComplete 的上一个状态。
+  // 这能帮助我们检测 isComplete 从 false 变为 true 的“瞬间”。
+  const prevIsComplete = useRef(false);
 
-  // Effect to manage download prompt and conversion failed/cancelled state
+  // 【修复第二步】: 拆分并重构 useEffect 逻辑，使其更清晰且无误。
+
+  // 这个 Effect 专门负责处理下载提示的显示逻辑
   useEffect(() => {
-    // If conversion is complete and successful
-    if (isComplete && convertedFiles.length > 0 && !error) {
+    // 关键条件变更：只有当 isComplete 从 false 变为 true 时（即转换刚刚成功完成），才触发提示。
+    if (isComplete && !prevIsComplete.current && convertedFiles.length > 0 && !error) {
       setShowDownloadPrompt(true);
-      setIsConversionFailedOrCancelled(false); // Reset this state on success
       const timer = setTimeout(() => {
         setShowDownloadPrompt(false);
-      }, 5000);
-      return () => clearTimeout(timer);
+      }, 5000); // 5秒后自动隐藏
+      return () => clearTimeout(timer); // 组件卸载或Effect重新运行时清除计时器
     }
-    // If there's an error and not currently loading (i.e., conversion failed)
-    else if (error && !isLoading) {
+  }, [isComplete, convertedFiles.length, error]); // 依赖项现在是 convertedFiles.length，更高效
+
+  // 这个 Effect 负责处理其他状态逻辑（如错误、加载中等）
+  useEffect(() => {
+    if (error && !isLoading) {
       setIsConversionFailedOrCancelled(true);
-      setIsComplete(false); // Ensure isComplete is false if there's an error
-    }
-    // If loading or just started (e.g., after retry click), reset failed/cancelled
-    else if (isLoading) {
+      setIsComplete(false);
+    } else if (isLoading) {
       setIsConversionFailedOrCancelled(false);
-      setIsComplete(false); // Ensure isComplete is false during loading
-    }
-    // If no files, or initial state, reset
-    else if (files.length === 0) {
+      setIsComplete(false);
+    } else if (files.length === 0) {
       setIsConversionFailedOrCancelled(false);
       setIsComplete(false);
     }
-  }, [isComplete, convertedFiles, error, isLoading, files.length]); // Added isLoading and files.length to dependencies
 
-  // Effect to hide download prompt on scroll
+    // 在 Effect 的末尾，用当前 isComplete 的值更新 ref，为下一次渲染做准备。
+    prevIsComplete.current = isComplete;
+  }, [isComplete, error, isLoading, files.length, setIsComplete]);
+
+
+  // Effect：当用户滚动页面时，隐藏下载提示
   useEffect(() => {
     const handleScroll = () => {
       if (showDownloadPrompt) {
@@ -98,6 +107,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [showDownloadPrompt]);
 
+  // 平滑滚动到转换文件列表区域
   const scrollToConvertedFiles = () => {
     const convertedFilesSection = document.getElementById("converted-files");
     if (convertedFilesSection) {
@@ -106,35 +116,40 @@ export default function Home() {
     }
   };
 
-  // Callback to handle file deletion
-  const handleDeleteFileCallback = useCallback((indexToDelete) => {
-    // Call the original handleDeleteFile from useFileHandling
-    handleDeleteFile(indexToDelete);
-    // If all files are removed, reset conversion states
-    if (files.length === 1 && indexToDelete === 0) { // If deleting the last file
-      setIsComplete(false);
-      setIsConversionFailedOrCancelled(false); // Reset failed/cancelled state
-      setShowDownloadPrompt(false);
-    }
-  }, [handleDeleteFile, files.length]);
-
-
-  // Handle deletion of a converted file
-  const handleDeleteConvertedFile = useCallback((index) => {
-    setConvertedFiles((prevFiles) => {
-      const newFiles = prevFiles.filter((_, i) => i !== index);
-
-      // If no converted files left, reset completion and failed states
-      if (newFiles.length === 0) {
+  // Callback：处理待上传文件的删除
+  const handleDeleteFileCallback = useCallback(
+    (indexToDelete) => {
+      handleDeleteFile(indexToDelete);
+      if (files.length === 1 && indexToDelete === 0) {
         setIsComplete(false);
-        setIsConversionFailedOrCancelled(false); // Important: reset if converted files become empty
+        setIsConversionFailedOrCancelled(false);
         setShowDownloadPrompt(false);
       }
-      return newFiles;
-    });
-  }, [setConvertedFiles, setIsComplete, setShowDownloadPrompt]);
+    },
+    [handleDeleteFile, files.length, setIsComplete]
+  );
 
+  // 【修复第三步】: 优化已转换文件的删除逻辑
+  const handleDeleteConvertedFile = useCallback(
+    (index) => {
+      // 核心修复：在执行删除操作时，立即主动隐藏下载提示。
+      // 这可以防止任何因状态更新延迟而导致的闪烁问题。
+      setShowDownloadPrompt(false);
 
+      setConvertedFiles((prevFiles) => {
+        const newFiles = prevFiles.filter((_, i) => i !== index);
+        if (newFiles.length === 0) {
+          setIsComplete(false);
+          setIsConversionFailedOrCancelled(false);
+        }
+        return newFiles;
+      });
+    },
+    // 修正依赖项数组，确保所有用到的外部状态函数都被包括在内
+    [setConvertedFiles, setIsComplete, setIsConversionFailedOrCancelled]
+  );
+
+  // 下载所有转换后的文件
   const handleDownloadAll = async () => {
     convertedFiles.forEach((file, index) => {
       const url = URL.createObjectURL(file.blob);
@@ -153,6 +168,7 @@ export default function Home() {
     });
   };
 
+  // 下载单个转换后的文件
   const handleDownloadSingle = async (index) => {
     const file = convertedFiles[index];
     if (!file) return;
@@ -171,19 +187,19 @@ export default function Home() {
     }
   };
 
-  // Wrapped handleConvert to reset failure/cancellation state when starting a new conversion
+  // 封装的 handleConvert 函数
   const handleConvert = useCallback(() => {
-    setIsConversionFailedOrCancelled(false); // Reset before starting a new conversion
-    originalHandleConvert(); // Call the original conversion logic
+    setIsConversionFailedOrCancelled(false);
+    originalHandleConvert();
   }, [originalHandleConvert]);
 
-  // Wrapped handleCancel to set failure/cancellation state when cancelling
+  // 封装的 handleCancel 函数
   const handleCancel = useCallback(() => {
-    originalHandleCancel(); // Call the original cancel logic
-    // Set failed/cancelled state AFTER original handleCancel might have set isLoading to false
+    originalHandleCancel();
     setIsConversionFailedOrCancelled(true);
   }, [originalHandleCancel]);
 
+  // 返回组件的 JSX 结构
   return (
     <div
       className={`min-h-screen flex items-center justify-center ${backgroundScheme.light} ${backgroundScheme.dark}`}
@@ -214,27 +230,26 @@ export default function Home() {
         <UploadSection
           isDragging={isDragging}
           setIsDragging={setIsDragging}
-          isClicking={isClicking} // You might want to remove these if not used externally by UploadSection
-          setIsClicking={setIsClicking} // They seem to be internal to FileUploader
-          isHoveringUpload={isHoveringUpload} //
-          setIsHoveringUpload={setIsHoveringUpload} //
+          isClicking={isClicking}
+          setIsClicking={setIsClicking}
+          isHoveringUpload={isHoveringUpload}
+          setIsHoveringUpload={setIsHoveringUpload}
           isFileSelected={isFileSelected}
           files={files}
           handleFileChange={handleFileChange}
-          handleDeleteFile={handleDeleteFileCallback} // Use the wrapped callback
+          handleDeleteFile={handleDeleteFileCallback}
           isLoading={isLoading}
           progress={progress}
           isComplete={isComplete}
           isFileListOpen={isFileListOpen}
           setIsFileListOpen={setIsFileListOpen}
-          handleConvert={handleConvert} // Use the wrapped handler
-          handleCancel={handleCancel} // Use the wrapped handler
-          // Pass the new state to UploadSection, which then passes to ConversionButtons
+          handleConvert={handleConvert}
+          handleCancel={handleCancel}
           isConversionFailedOrCancelled={isConversionFailedOrCancelled}
         />
         <ConvertedSection
           isComplete={isComplete}
-          error={error} // Pass error to ConvertedSection for ErrorDisplay
+          error={error}
           successAnimation={successAnimation}
           showDownloadPrompt={showDownloadPrompt}
           scrollToConvertedFiles={scrollToConvertedFiles}

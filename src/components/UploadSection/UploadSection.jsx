@@ -1,4 +1,3 @@
-// src/components/UploadSection.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,27 +16,51 @@ import ProgressIndicator from "./ProgressIndicator";
  */
 const UploadSection = React.memo(
   ({
-    isDragging, // 是否正在拖拽文件
-    setIsDragging, // 设置拖拽状态的函数
-    isFileSelected, // 是否有文件被选中
-    files, // 已选择的文件列表
-    handleFileChange, // 处理文件选择或拖拽的函数
-    handleDeleteFile, // 处理删除文件从列表的函数
-    isLoading, // 是否正在进行转换
-    progress, // 转换进度
-    isComplete, // 转换是否完成
-    isFileListOpen, // 文件列表是否展开
-    setIsFileListOpen, // 设置文件列表展开状态的函数
-    handleConvert, // 处理开始转换的函数
-    handleCancel, // 处理取消转换的函数
-    conversionDirection, // 转换方向 (例如：简体到繁体)
-    setConversionDirection, // 设置转换方向的函数 (如果此组件不需要直接设置，可以从父组件传入)
+    isDragging, 
+    setIsDragging, 
+    isFileSelected, 
+    files, 
+    handleFileChange, 
+    handleDeleteFile, 
+    isLoading, 
+    progress, 
+    isComplete, 
+    isFileListOpen, 
+    setIsFileListOpen, 
+    handleConvert, 
+    handleCancel, 
+    conversionDirection
   }) => {
-    // 注意：isHoveringUpload 和 isClicking 等状态已内化到 FileUploader 组件中
+    // 文件类型过滤函数
+    const handleFilteredFileChange = (e) => {
+      const files = e.target.files || e.dataTransfer.files;
+      const epubFiles = Array.from(files).filter(file => 
+        file.name.toLowerCase().endsWith('.epub')
+      );
+      
+      if (epubFiles.length === 0 && files.length > 0) {
+        alert('只能上传EPUB格式的文件哦！😊');
+        return;
+      }
+      
+      const event = {
+        ...e,
+        target: {
+          ...e.target,
+          files: epubFiles
+        },
+        dataTransfer: {
+          ...e.dataTransfer,
+          files: epubFiles
+        }
+      };
+      
+      handleFileChange(event);
+    };
 
     return (
       <motion.div
-        className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-6 rounded-xl shadow-2xl border border-white/50 dark:border-gray-700/50 relative overflow-hidden"
+        className="relative p-6 rounded-xl shadow-2xl overflow-hidden"
         initial={{ opacity: 0, y: 50 }}
         animate={{
           opacity: 1,
@@ -59,86 +82,114 @@ const UploadSection = React.memo(
           transition: { duration: 0.4 },
         }}
       >
-        {/* 拖拽覆盖层组件 */}
-        <DragOverlay isDragging={isDragging} />
+        {/* 液态玻璃背景层 */}
+        <div className="absolute inset-0 z-0 
+              bg-white/30 dark:bg-gray-800/30 
+              backdrop-blur-xl 
+              border border-white/50 dark:border-gray-700/50
+              rounded-xl
+              [mask-image:linear-gradient(white,transparent)]">
+          
+          {/* 液态流动效果 - 使用多个渐变层 */}
+          <div className="absolute inset-0 
+                [background:radial-gradient(at_30%_20%,rgba(180,220,255,0.3)_0px,transparent_50%), 
+                         radial-gradient(at_70%_80%,rgba(220,180,255,0.2)_0px,transparent_50%)] 
+                dark:[background:radial-gradient(at_30%_20%,rgba(100,150,255,0.2)_0px,transparent_50%), 
+                         radial-gradient(at_70%_80%,rgba(180,100,255,0.15)_0px,transparent_50%)]">
+          </div>
+          
+          {/* 光泽反射效果 */}
+          <div className="absolute top-0 left-0 w-full h-20 
+                bg-gradient-to-b from-white/60 to-transparent 
+                dark:from-gray-800/40 dark:to-transparent">
+          </div>
+          
+          {/* 液态边缘高光 */}
+          <div className="absolute inset-0 border border-white/30 dark:border-white/10 rounded-xl"></div>
+        </div>
 
-        {/* 文件上传核心组件 */}
-        <FileUploader
-          onFileChange={handleFileChange}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-            handleFileChange(e);
-          }}
-          isDragging={isDragging}
-          isFileSelected={isFileSelected}
-          isLoading={isLoading}
-          progress={progress} // 传入进度，尽管 FileUploader 内部也有自己的进度条显示
-          conversionDirection={conversionDirection}
-        />
+        {/* 内容区域包裹层 */}
+        <div className="relative z-10">
+          {/* 拖拽覆盖层组件 */}
+          <DragOverlay isDragging={isDragging} />
 
-        {/* 文件列表组件，仅当有文件时显示 */}
-        <AnimatePresence>
-          {files.length > 0 && (
-            <motion.div
-              initial={{ maxHeight: 0, opacity: 0 }}
-              animate={{
-                maxHeight: isFileListOpen ? 300 : 50, // 控制列表展开/收起的高度
-                opacity: 1,
-                transition: {
-                  duration: 0.4,
-                  ease: "easeOut",
-                },
-              }}
-              exit={{
-                maxHeight: 0,
-                opacity: 0,
-                transition: {
-                  duration: 0.3,
-                  ease: "easeIn",
-                },
-              }}
-              className="mt-4 overflow-hidden"
-            >
-              <FileList
-                files={files}
-                isFileListOpen={isFileListOpen}
-                setIsFileListOpen={setIsFileListOpen}
-                handleDeleteFile={handleDeleteFile}
+          {/* 文件上传核心组件 */}
+          <FileUploader
+            onFileChange={handleFilteredFileChange}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              handleFilteredFileChange(e);
+            }}
+            isDragging={isDragging}
+            isFileSelected={isFileSelected}
+            isLoading={isLoading}
+            progress={progress}
+            conversionDirection={conversionDirection}
+          />
+
+          {/* 文件列表组件 */}
+          <AnimatePresence>
+            {files.length > 0 && (
+              <motion.div
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: 1,
+                  transition: { 
+                    duration: 0.4, 
+                    ease: "easeOut" 
+                  }
+                }}
+                exit={{ 
+                  opacity: 0,
+                  transition: { 
+                    duration: 0.3, 
+                    ease: "easeIn" 
+                  }
+                }}
+                className="mt-4"
+              >
+                <FileList
+                  files={files}
+                  isFileListOpen={isFileListOpen}
+                  setIsFileListOpen={setIsFileListOpen}
+                  handleDeleteFile={handleDeleteFile}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 提示信息组件 */}
+          <InfoMessage
+            isComplete={isComplete}
+            isLoading={isLoading}
+            filesLength={files.length}
+          />
+
+          {/* 转换操作按钮组件 */}
+          <AnimatePresence>
+            {files.length > 0 && (
+              <ConversionButtons
+                isLoading={isLoading}
+                isComplete={isComplete}
+                handleConvert={handleConvert}
+                handleCancel={handleCancel}
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
 
-        {/* 提示信息组件，根据状态显示不同的提示 */}
-        <InfoMessage
-          isComplete={isComplete}
-          isLoading={isLoading}
-          filesLength={files.length}
-        />
-
-        {/* 转换操作按钮组件，仅当有文件时显示 */}
-        <AnimatePresence>
-          {files.length > 0 && (
-            <ConversionButtons
-              isLoading={isLoading}
-              isComplete={isComplete}
-              handleConvert={handleConvert}
-              handleCancel={handleCancel}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* 进度指示器组件，仅当加载中时显示 */}
-        <ProgressIndicator progress={progress} />
+          {/* 进度指示器组件 */}
+          <ProgressIndicator progress={progress} />
+        </div>
       </motion.div>
     );
   }

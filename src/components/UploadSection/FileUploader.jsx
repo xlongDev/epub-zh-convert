@@ -1,4 +1,3 @@
-// src/components/FileUploader.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,13 +25,13 @@ const FileUploader = React.memo(
     return (
       <div className="relative">
         <motion.div
-          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300
+          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300
             ${
               isDragging
                 ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/20"
                 : isHoveringUpload
                 ? "border-blue-400 bg-blue-50/30 dark:bg-blue-900/10"
-                : "border-gray-300 dark:border-gray-600 bg-white/40 dark:bg-gray-700/40"
+                : "border-gray-300 dark:border-gray-600 backdrop-blur-lg bg-white/30 dark:bg-gray-700/30" // 将 backdrop-blur-md 改为 backdrop-blur-lg
             }`}
           onClick={() => document.getElementById("file-upload").click()} // 点击区域触发文件输入框
           onMouseDown={() => setIsClicking(true)} // 鼠标按下时设置点击状态
@@ -66,7 +65,6 @@ const FileUploader = React.memo(
                 />
               </svg>
             </div>
-
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 <span className="text-blue-600 dark:text-blue-400 font-semibold">
@@ -78,7 +76,6 @@ const FileUploader = React.memo(
                 仅支持.epub格式文件
               </p>
             </div>
-
             {/* 转换方向显示 */}
             {conversionDirection && (
               <div className="mt-2 px-3 py-1.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
@@ -89,7 +86,6 @@ const FileUploader = React.memo(
             )}
           </div>
         </motion.div>
-
         {/* 隐藏的文件输入框 */}
         <input
           id="file-upload"
@@ -100,7 +96,6 @@ const FileUploader = React.memo(
           multiple // 允许选择多个文件
           accept=".epub" // 仅接受.epub文件
         />
-
         {/* 加载中的覆盖层和进度百分比显示 */}
         {isLoading && (
           <motion.div

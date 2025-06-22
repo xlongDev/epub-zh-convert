@@ -11,29 +11,9 @@ const backgroundSchemes = [
     dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
-    // 暖色系渐变方案 - 欢快活泼氛围
-    light: "bg-gradient-to-r from-pink-50 via-orange-50 to-yellow-50",
-    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
-  },
-  {
     // 暖色调渐变方案 - 从橙色过渡到紫色
     light: "bg-gradient-to-r from-orange-200 via-pink-300 to-purple-400",
     dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
-  },
-  {
-    // 浅蓝绿色渐变方案 - 适合柔和背景需求
-    light: "bg-gradient-to-r from-teal-100 via-cyan-100 to-blue-100",
-    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
-  },
-  {
-    // 冷调科技感渐变 - indigo到violet
-    light: "bg-gradient-to-r from-indigo-200 via-violet-300 to-blue-200",
-    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
-  },
-  {
-    // 自然生态色系 - emerald到stone
-    light: "bg-gradient-to-r from-emerald-50 via-stone-100 to-lime-50",
-    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
     // 复古色系渐变 - amber到stone
@@ -64,11 +44,6 @@ const backgroundSchemes = [
     // 傍晚霞光渐变 - red到orange
     light: "bg-gradient-to-r from-red-200 via-orange-300 to-yellow-200",
     dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
-  },
-  {
-    // 深海蓝灰渐变 - sky到gray
-    light: "bg-gradient-to-r from-sky-100 via-gray-200 to-slate-300",
-    dark: "dark:from-gray-800 dark:via-gray-700 dark:to-gray-600",
   },
   {
     // 热带日落渐变 - amber到pink

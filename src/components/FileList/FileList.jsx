@@ -1,17 +1,48 @@
-import { FaFile, FaTrash, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaFile, FaTrash, FaChevronDown, FaChevronUp } from "react-icons/fa"; // 基础图标
+
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
-import Checkbox from "@/components/Checkbox/Checkbox";
+import Checkbox from "@/components/Checkbox/Checkbox"; // 确保路径正确
+
+// 辅助函数：根据文件扩展名返回对应的图标
+const getFileIcon = (fileName) => {
+  const extension = fileName.split(".").pop().toLowerCase();
+  switch (extension) {
+    case "epub":
+      return <FaFileEpub className="text-blue-500 text-xl" />;
+    case "pdf":
+      return <FaFilePdf className="text-red-500 text-xl" />;
+    case "doc":
+    case "docx":
+      return <FaFileWord className="text-blue-700 text-xl" />;
+    case "jpg":
+    case "jpeg":
+    case "png":
+    case "gif":
+      return <FaFileImage className="text-green-500 text-xl" />;
+    default:
+      return (
+        <FaFile className="text-gray-500 text-xl" /> // 默认图标
+      );
+  }
+};
 
 export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
+  // 添加调试日志
+  console.log("--- FileList Render ---");
+  console.log("FileList received files.length:", files.length);
+  console.log("FileList current files:", files); // 打印实际的文件对象
+  console.log("------------------------");
+
   // 使用 useCallback 优化事件处理函数
   const handleSelectAll = useCallback((e) => {
+    // 阻止事件冒泡到父 div，避免同时触发文件列表的开关
+    e.stopPropagation();
     setSelectedFiles(prev =>
       prev.size === files.length ? new Set() : new Set(files.map((_, i) => i))
     );
-    e.stopPropagation();
   }, [files.length]);
 
   const handleSelectFile = useCallback((index) => {
@@ -28,7 +59,7 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
       .sort((a, b) => b - a)
       .forEach(handleDeleteFile);
 
-    setSelectedFiles(new Set());
+    setSelectedFiles(new Set()); // 清空选中状态
   }, [selectedFiles, handleDeleteFile]);
 
   // 计算选中文件数量
@@ -39,6 +70,12 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
     files.length > 0 && selectedFiles.size === files.length,
     [files.length, selectedFiles.size]
   );
+
+  // 如果没有文件，直接返回 null，不渲染列表
+  if (files.length === 0) {
+    console.log("FileList: No files, returning null.");
+    return null;
+  }
 
   return (
     <motion.div
@@ -61,7 +98,7 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
             已选择 {files.length} 个文件
           </span>
         </div>
-        <div className="pointer-events-none">
+        <div className="pointer-events-none"> {/* 阻止鼠标事件穿透到子元素 */}
           {isFileListOpen ? (
             <FaChevronUp className="text-gray-500 dark:text-gray-400" />
           ) : (
@@ -83,7 +120,8 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
               <AnimatePresence initial={false}>
                 {files.map((file, index) => (
                   <motion.div
-                    key={index}
+                    // 使用 file.name + index 作为 key，更稳定
+                    key={file.name + "-" + index} 
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{
@@ -119,7 +157,7 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
                       onChange={() => handleSelectFile(index)}
                       className="mr-3"
                     />
-                    <FaFile className="text-[#60A5FA] dark:text-[#818CF8] mr-3 min-w-[16px]" />
+                    {getFileIcon(file.name)} {/* 调用辅助函数获取图标 */}
                     <span
                       className="text-gray-700 dark:text-gray-300 truncate flex-1"
                       title={file.name}
@@ -174,3 +212,6 @@ export const FileList = ({ files, isFileListOpen, setIsFileListOpen, handleDelet
     </motion.div>
   );
 };
+
+// 如果在 UploadSection.jsx 中不是命名导出，则保持默认导出
+// export default FileList;

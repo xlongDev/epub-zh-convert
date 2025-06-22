@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
  * 根据加载、完成、失败或取消状态显示不同的按钮文本和禁用状态。
  */
 const ConversionButtons = React.memo(
-  ({ isLoading, isComplete, isFailedOrCancelled, handleConvert, handleCancel }) => { // 增加 isFailedOrCancelled prop
+  ({ isLoading, isComplete, isFailedOrCancelled, handleConvert, handleCancel }) => {
     return (
       <AnimatePresence>
         {/* 仅在加载中、未完成、或失败/取消时显示按钮组 */}
-        {(isLoading || !isComplete || isFailedOrCancelled) && ( // 添加 isFailedOrCancelled 到显示条件
+        {/* 更改这里的条件，确保 isComplete 为 true 时也显示按钮组 */}
+        {(isLoading || !isComplete || isFailedOrCancelled || isComplete) && ( // 修复点：添加 isComplete 到显示条件
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{
@@ -33,11 +34,11 @@ const ConversionButtons = React.memo(
             }}
             className="mt-4 flex flex-wrap gap-3"
           >
-            {/* 开始转换 / 重试转换按钮 */}
+            {/* 开始转换 / 重试转换 / 转换完成按钮 */}
             <motion.button
               layout // 启用布局动画
               onClick={handleConvert}
-              disabled={isLoading || isComplete} // 正在加载或已完成时禁用
+              disabled={isLoading && !isComplete} // 正在加载中且未完成时禁用，完成时不再禁用
               whileHover={{
                 scale: 1.05, // 悬停时放大
                 transition: {
@@ -58,7 +59,7 @@ const ConversionButtons = React.memo(
               w-full
               relative bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-xl
               overflow-hidden shadow-md flex items-center justify-center
-              ${isLoading || isComplete ? "opacity-70 cursor-not-allowed" : ""}
+              ${isLoading && !isComplete ? "opacity-70 cursor-not-allowed" : ""}
             `}
             >
               {/* 按钮背景动画效果 */}
@@ -87,8 +88,8 @@ const ConversionButtons = React.memo(
               {/* 按钮文本和图标，根据状态动态显示 */}
               <span
                 className="relative flex items-center z-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                // initial={{ opacity: 0 }} // 移除此行，避免每次状态变化时重新播放动画
+                // animate={{ opacity: 1 }} // 移除此行，避免每次状态变化时重新播放动画
               >
                 {isLoading ? (
                   <>
@@ -134,7 +135,7 @@ const ConversionButtons = React.memo(
                     </svg>
                     转换完成
                   </>
-                ) : isFailedOrCancelled ? ( // 新增：如果失败或取消
+                ) : isFailedOrCancelled ? (
                   <>
                     {/* 重试转换图标 */}
                     <svg
@@ -178,7 +179,7 @@ const ConversionButtons = React.memo(
 
             {/* 取消转换按钮 (仅在加载中时显示) */}
             <AnimatePresence>
-              {isLoading && ( // 仅在加载中时显示取消按钮
+              {isLoading && (
                 <motion.button
                   layout
                   onClick={handleCancel}

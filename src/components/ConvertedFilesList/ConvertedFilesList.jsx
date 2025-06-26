@@ -9,6 +9,17 @@ import { saveAs } from "file-saver";
 // 音效文件路径
 const downloadSound = "/download-sound.mp3";
 
+// 文件大小格式化函数
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return "0 B";
+  
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
 const ConvertedFilesList = ({
   convertedFiles,
   handleDownloadSingle,
@@ -156,19 +167,24 @@ const ConvertedFilesList = ({
                         onChange={() => handleSelectFile(index)}
                         className="flex-shrink-0"
                       />
-                      <span
-                        className="text-gray-700 dark:text-gray-300 truncate min-w-0"
-                        title={file.name}
-                      >
-                        {file.name}
-                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span
+                          className="text-gray-700 dark:text-gray-300 truncate min-w-0"
+                          title={file.name}
+                        >
+                          {file.name}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatFileSize(file.blob.size)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex space-x-4 flex-shrink-0">
                     <ShareButton file={file.blob} fileName={file.name} />
                     <motion.button
                       id={`download-${index}`}
-                      onClick={() => wrappedHandleDownloadSingle(index)} // 使用包装函数
+                      onClick={() => wrappedHandleDownloadSingle(index)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{

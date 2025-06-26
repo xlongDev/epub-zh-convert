@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react"; // 添加 useEffect 导入
 import { convertEpub } from "@/utils/zipUtils";
 
 export const useFileConversion = (files, direction) => {
@@ -8,6 +8,14 @@ export const useFileConversion = (files, direction) => {
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const abortControllerRef = useRef(null);
+
+  // 使用 ref 来跟踪最新的 direction 值
+  const directionRef = useRef(direction);
+  
+  // 当 direction 变化时更新 ref
+  useEffect(() => {
+    directionRef.current = direction;
+  }, [direction]);
 
   // 用于记录已经转换过的文件名
   const [convertedFileNames, setConvertedFileNames] = useState(new Set());
@@ -25,6 +33,7 @@ export const useFileConversion = (files, direction) => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         try {
+          // 使用 directionRef.current 而不是闭包中的 direction
           const result = await convertEpub(
             file,
             (currentProgress) => {
@@ -32,7 +41,7 @@ export const useFileConversion = (files, direction) => {
               setProgress(totalProgress);
             },
             abortControllerRef.current.signal,
-            direction
+            directionRef.current // 使用 ref 的当前值
           );
 
           setConvertedFiles((prevFiles) => {

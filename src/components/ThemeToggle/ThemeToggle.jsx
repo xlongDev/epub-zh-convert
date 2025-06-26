@@ -52,7 +52,8 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      aria-label="切换主题"
     >
       {theme === 'dark' ? (
         <FaSun className="w-5 h-5 text-yellow-500" />

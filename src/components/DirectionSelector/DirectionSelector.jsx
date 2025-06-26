@@ -89,26 +89,6 @@ const DirectionSelector = React.memo(({ direction, setDirection }) => {
           ))}
         </div>
       </div>
-
-      {/* 装饰元素 - 动态点阵 */}
-      {/* <div className="flex justify-center mt-4 space-x-2">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="w-1.5 h-1.5 rounded-full bg-blue-400 dark:bg-blue-500"
-            animate={{
-              opacity: [0.3, 1, 0.3],
-              scale: [0.8, 1.2, 0.8],
-            }}
-            transition={{
-              duration: 1.5,
-              ease: "easeInOut",
-              repeat: Infinity,
-              delay: i * 0.2,
-            }}
-          />
-        ))}
-      </div> */}
     </motion.div>
   );
 });

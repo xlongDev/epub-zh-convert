@@ -1,4 +1,3 @@
-// 📁 src/pages/index.jsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 
@@ -41,10 +40,37 @@ export default function Home() {
   const prevIsComplete = useRef(false);
   // 添加转换成功提示音引用
   const completedSoundRef = useRef(null);
+  // 新增用户交互标记
+  const userInteractedRef = useRef(false);
 
   useEffect(() => {
     // 初始化提示音
     completedSoundRef.current = new Audio("/completed.mp3");
+
+    // 监听用户交互以解锁音频
+    const handleUserInteraction = () => {
+      if (!userInteractedRef.current && completedSoundRef.current) {
+        // 创建空的 AudioContext 来解锁音频
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        // 立即关闭以节省资源
+        audioContext.close();
+        userInteractedRef.current = true;
+        // 移除事件监听
+        window.removeEventListener("click", handleUserInteraction);
+        window.removeEventListener("keydown", handleUserInteraction);
+      }
+    };
+
+    // 添加用户交互监听
+    window.addEventListener("click", handleUserInteraction);
+    window.addEventListener("keydown", handleUserInteraction);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener("click", handleUserInteraction);
+      window.removeEventListener("keydown", handleUserInteraction);
+    };
   }, []);
 
   useEffect(() => {
@@ -120,19 +146,47 @@ export default function Home() {
       setIsConversionFailedOrCancelled(false);
       setIsComplete(false);
     }
-    
+
     // 添加转换成功提示音逻辑
     if (isComplete && !prevIsComplete.current && !error) {
       // 确保音频对象已初始化
-      if (completedSoundRef.current) {
-        completedSoundRef.current.play().catch((e) => {
-          console.error("播放转换成功提示音失败:", e);
-        });
+      if (completedSoundRef.current && userInteractedRef.current) {
+        playCompletedSound();
       }
     }
-    
+
     prevIsComplete.current = isComplete;
   }, [isComplete, error, isLoading, files.length]);
+
+  // 播放提示音的辅助函数
+  const playCompletedSound = () => {
+    // 重置音频
+    completedSoundRef.current.currentTime = 0;
+    // 设置音量为60%
+    completedSoundRef.current.volume = 0.4;
+
+    // 播放音频
+    completedSoundRef.current
+      .play()
+      .then(() => {
+        console.log("提示音播放成功");
+      })
+      .catch((e) => {
+        console.error("播放转换成功提示音失败:", e);
+        // 尝试恢复 AudioContext
+        try {
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          audioContext.resume().then(() => {
+            console.log("AudioContext 已恢复");
+            // 再次尝试播放
+            completedSoundRef.current.play();
+          });
+        } catch (err) {
+          console.error("无法恢复 AudioContext:", err);
+        }
+      });
+  };
 
   return (
     <LayoutWrapper backgroundScheme={backgroundScheme}>

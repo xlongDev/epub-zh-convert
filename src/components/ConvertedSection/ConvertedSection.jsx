@@ -7,21 +7,15 @@ const LottiePlayer = dynamic(() => import("react-lottie-player"), {
 });
 const ConvertedFilesList = dynamic(
   () => import("@/components/ConvertedFilesList/ConvertedFilesList"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 const DownloadPrompt = dynamic(
   () => import("@/components/DownloadPrompt/DownloadPrompt"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 const ErrorDisplay = dynamic(
   () => import("@/components/ErrorDisplay/ErrorDisplay"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 const ConvertedSection = React.memo(
@@ -36,7 +30,10 @@ const ConvertedSection = React.memo(
     handleDeleteConvertedFile,
     handleDownloadAll,
   }) => (
-    <>
+    <motion.div
+      layout
+      className="mt-4 min-h-[200px]" // 添加最小高度
+    >
       <AnimatePresence>
         {showDownloadPrompt && (
           <DownloadPrompt
@@ -53,7 +50,7 @@ const ConvertedSection = React.memo(
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
             layout
-            className="mt-4 text-center converted-section"
+            className="text-center converted-section"
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -83,7 +80,7 @@ const ConvertedSection = React.memo(
           />
         )}
       </AnimatePresence>
-    </>
+    </motion.div>
   )
 );
 

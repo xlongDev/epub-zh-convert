@@ -18,7 +18,7 @@ const InfoMessage = React.memo(({ isComplete, isLoading, filesLength }) => {
   // 根据完成状态选择不同的消息文本
   const message = isComplete
     ? "转换成功~ 😄 请下拉页面下载~ 如果觉得对您有帮助 可在 GitHub 给个 star ⭐️ 哦 ! 😊"
-    : "隐私: 仅在本地处理，不会上传到服务器, 请放心使用。";
+    : "隐私安全:  仅在本地处理，不会上传到服务器, 请放心使用。";
   
   // 根据完成状态选择不同的背景颜色
   const bgColor = isComplete

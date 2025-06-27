@@ -56,9 +56,11 @@ const ConvertedFilesList = ({
     });
   };
 
+  // 修复删除功能：一次性删除所有选中文件
   const handleDeleteSelected = () => {
-    const sortedIndices = Array.from(selectedFiles).sort((a, b) => b - a);
-    sortedIndices.forEach((index) => handleDeleteConvertedFile(index));
+    // 创建新数组，过滤掉选中的文件
+    const indicesToDelete = Array.from(selectedFiles);
+    handleDeleteConvertedFile(indicesToDelete);
     setSelectedFiles(new Set());
   };
 
@@ -197,7 +199,7 @@ const ConvertedFilesList = ({
                       <FaDownload className="w-5 h-5" />
                     </motion.button>
                     <motion.button
-                      onClick={() => handleDeleteConvertedFile(index)}
+                      onClick={() => handleDeleteConvertedFile([index])}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{

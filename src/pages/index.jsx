@@ -109,9 +109,13 @@ export default function Home() {
     setIsConversionFailedOrCancelled,
   });
 
-  // 使用封装的下载管理逻辑
-  const { handleDownloadSingle, handleDownloadAll, handleDeleteConvertedFile } =
-    useFileDownloadManager(setIsComplete, setIsConversionFailedOrCancelled);
+  // 使用封装的下载管理逻辑，并添加 handleDeleteMultiple
+  const {
+    handleDownloadSingle,
+    handleDownloadAll,
+    handleDeleteConvertedFile,
+    handleDeleteMultiple, // 新增
+  } = useFileDownloadManager(setIsComplete, setIsConversionFailedOrCancelled);
 
   // 删除待转换文件
   const handleDeleteFileCallback = useCallback(
@@ -230,8 +234,10 @@ export default function Home() {
         handleDownloadSingle={(index) =>
           handleDownloadSingle(convertedFiles, index)
         }
-        handleDeleteConvertedFile={(index) =>
-          handleDeleteConvertedFile(convertedFiles, index, setConvertedFiles)
+        handleDeleteConvertedFile={(
+          indices // 修改为接收索引数组
+        ) =>
+          handleDeleteConvertedFile(convertedFiles, indices, setConvertedFiles)
         }
         handleDownloadAll={() => handleDownloadAll(convertedFiles)}
       />
@@ -241,7 +247,7 @@ export default function Home() {
         convertedFiles={convertedFiles}
         error={error}
         setShowDownloadPrompt={setShowDownloadPrompt}
-        prevIsCompleteRef={prevIsComplete} // 👈 传递引用
+        prevIsCompleteRef={prevIsComplete}
       />
     </LayoutWrapper>
   );

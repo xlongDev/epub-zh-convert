@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react"; // 添加 useEffect 导入
-import { convertEpub } from "@/utils/zipUtils";
+import { useState, useRef, useEffect } from "react";
+import { convertFilename } from "@/utils/opencc";
 
 export const useFileConversion = (files, direction) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,18 +22,48 @@ export const useFileConversion = (files, direction) => {
 
   const handleConvert = async () => {
     if (files.length === 0) return;
+    
     setIsLoading(true);
     setError(null);
     setProgress(0);
     setIsComplete(false);
-    setConvertedFileNames(new Set()); // 清空已转换文件名，允许重新转换
+    setConvertedFileNames(new Set());
     abortControllerRef.current = new AbortController();
 
     try {
+      // 动态加载大型库（优化点）
+      const [{ Converter }, { default: JSZip }] = await Promise.all([
+        import('opencc-js'),
+        import('jszip')
+      ]);
+      
+      // 创建转换器实例
+      let from, to;
+      if (directionRef.current === 't2s') {
+        from = 't';
+        to = 'cn';
+      } else if (directionRef.current === 's2t') {
+        from = 'cn';
+        to = 't';
+      } else {
+        // 默认不转换
+        from = 't';
+        to = 't';
+      }
+      
+      const converter = Converter({ from, to });
+      
+      // 导入转换函数（按需加载）
+      const { convertEpub } = await import("@/utils/zipUtils");
+      
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        // 检查是否已取消
+        if (abortControllerRef.current.signal.aborted) {
+          return;
+        }
+        
         try {
-          // 使用 directionRef.current 而不是闭包中的 direction
           const result = await convertEpub(
             file,
             (currentProgress) => {
@@ -41,7 +71,9 @@ export const useFileConversion = (files, direction) => {
               setProgress(totalProgress);
             },
             abortControllerRef.current.signal,
-            directionRef.current // 使用 ref 的当前值
+            directionRef.current,
+            converter, // 传入转换器实例
+            JSZip // 传入JSZip类
           );
 
           setConvertedFiles((prevFiles) => {
@@ -57,13 +89,21 @@ export const useFileConversion = (files, direction) => {
 
           setConvertedFileNames((prevNames) => new Set(prevNames).add(file.name));
         } catch (err) {
-          console.error(`文件 ${file.name} 转换失败:`, err.message);
-          setError(`文件 ${file.name} 转换失败: ${err.message}`);
+          // 如果是取消操作，不显示错误
+          if (err.name !== 'AbortError') {
+            console.error(`文件 ${file.name} 转换失败:`, err.message);
+            setError(`文件 ${file.name} 转换失败: ${err.message || "未知错误"}`);
+          }
         }
       }
+      
       setIsComplete(true);
     } catch (err) {
-      setError(err.message);
+      // 如果是取消操作，不显示错误
+      if (err.name !== 'AbortError') {
+        console.error("转换过程出错:", err);
+        setError(err.message || "转换过程发生未知错误");
+      }
     } finally {
       setIsLoading(false);
     }

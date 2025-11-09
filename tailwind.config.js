@@ -23,6 +23,23 @@ module.exports = {
     'from-indigo-300', 'via-blue-300', 'to-cyan-300',
     'dark:from-gray-800', 'dark:via-gray-700', 'dark:to-gray-600',
     'dark:from-gray-900', 'dark:via-gray-800', 'dark:to-gray-700',
+    
+    // 新增的动画类名
+    'animate-pulse-slow',
+    'animate-spin-slow',
+    'animate-ping-slow',
+    'animate-ping-slower',
+    
+    // 新增的颜色类名（用于骨架屏）
+    'from-gray-100/60', 'to-gray-200/40',
+    'dark:from-gray-700/40', 'dark:to-gray-600/30',
+    'border-gray-200/30', 'dark:border-gray-600/30',
+    'from-blue-200/20', 'to-purple-200/20',
+    'dark:from-blue-400/10', 'dark:to-purple-400/10',
+    'border-t-blue-300/60', 'dark:border-t-blue-400/40',
+    'bg-blue-400/70', 'dark:bg-blue-300/60',
+    'border-blue-300/40', 'dark:border-blue-400/30',
+    'border-blue-200/50', 'dark:border-blue-300/30',
   ],
   darkMode: 'class',
   theme: {
@@ -31,6 +48,10 @@ module.exports = {
         fadeIn: 'fadeIn 1s ease-in-out',
         slideIn: 'slideIn 0.5s ease-out',
         scaleIn: 'scaleIn 0.5s ease-out',
+        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'ping-slow': 'ping-slow 2s ease-out infinite',
+        'ping-slower': 'ping-slower 2.5s ease-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -44,6 +65,22 @@ module.exports = {
         scaleIn: {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.8' },
+        },
+        'spin-slow': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+        'ping-slow': {
+          '0%': { transform: 'scale(0.8)', opacity: '0.8' },
+          '100%': { transform: 'scale(1.5)', opacity: '0' },
+        },
+        'ping-slower': {
+          '0%': { transform: 'scale(0.9)', opacity: '0.6' },
+          '100%': { transform: 'scale(1.8)', opacity: '0' },
         },
       },
     },

@@ -34,25 +34,20 @@ const WelcomeAnimation = React.memo(({ animationData, isVisible }) => {
           }`}
         >
           <div className="w-full h-full rounded-full flex items-center justify-center">
-            {/* 渐变背景 */}
-            <div 
-              className="w-full h-full rounded-full bg-gradient-to-br from-gray-100/60 to-gray-200/40 
-                         dark:from-gray-700/40 dark:to-gray-600/30 backdrop-blur-[1px]
-                         border border-gray-200/30 dark:border-gray-600/30"
-            />
+            {/* 移除最外层圆圈背景，只保留透明容器 */}
             
             {/* 脉动光晕效果 */}
-            <div className="absolute inset-0 rounded-full animate-pulse-slow bg-gradient-to-r from-blue-200/20 to-purple-200/20 dark:from-blue-400/10 dark:to-purple-400/10" />
+            <div className="absolute inset-0 rounded-full animate-pulse-slow bg-gradient-to-r from-blue-200/10 to-purple-200/5 dark:from-blue-400/5 dark:to-purple-400/5" />
             
             {/* 旋转圆环 */}
-            <div className="absolute w-24 h-24 border-2 border-transparent border-t-blue-300/60 dark:border-t-blue-400/40 rounded-full animate-spin-slow" />
+            <div className="absolute w-24 h-24 border-2 border-transparent border-t-blue-300/50 dark:border-t-blue-400/30 rounded-full animate-spin-slow" />
             
             {/* 跳动圆点 */}
             <div className="absolute flex space-x-1">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="w-1.5 h-1.5 bg-blue-400/70 dark:bg-blue-300/60 rounded-full animate-bounce"
+                  className="w-1.5 h-1.5 bg-blue-400/60 dark:bg-blue-300/50 rounded-full animate-bounce"
                   style={{
                     animationDelay: `${i * 0.2}s`,
                     animationDuration: '0.8s'
@@ -62,11 +57,14 @@ const WelcomeAnimation = React.memo(({ animationData, isVisible }) => {
             </div>
 
             {/* 波纹扩散效果 */}
-            <div className="absolute w-20 h-20 border-2 border-blue-300/40 dark:border-blue-400/30 rounded-full animate-ping-slow" />
+            <div className="absolute w-20 h-20 border-2 border-blue-300/30 dark:border-blue-400/20 rounded-full animate-ping-slow" />
             <div 
-              className="absolute w-16 h-16 border border-blue-200/50 dark:border-blue-300/30 rounded-full animate-ping-slower"
+              className="absolute w-16 h-16 border border-blue-200/40 dark:border-blue-300/20 rounded-full animate-ping-slower"
               style={{ animationDelay: '0.3s' }}
             />
+            
+            {/* 中心微光效果 */}
+            <div className="absolute w-8 h-8 bg-white/20 dark:bg-white/10 rounded-full blur-sm" />
           </div>
         </div>
 

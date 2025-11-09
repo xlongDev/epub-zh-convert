@@ -30,16 +30,14 @@ module.exports = {
     'animate-ping-slow',
     'animate-ping-slower',
     
-    // 新增的颜色类名（用于骨架屏）
-    'from-gray-100/60', 'to-gray-200/40',
-    'dark:from-gray-700/40', 'dark:to-gray-600/30',
-    'border-gray-200/30', 'dark:border-gray-600/30',
-    'from-blue-200/20', 'to-purple-200/20',
-    'dark:from-blue-400/10', 'dark:to-purple-400/10',
-    'border-t-blue-300/60', 'dark:border-t-blue-400/40',
-    'bg-blue-400/70', 'dark:bg-blue-300/60',
-    'border-blue-300/40', 'dark:border-blue-400/30',
-    'border-blue-200/50', 'dark:border-blue-300/30',
+    // 新增的颜色类名（用于透明骨架屏）
+    'from-blue-200/10', 'to-purple-200/5',
+    'dark:from-blue-400/5', 'dark:to-purple-400/5',
+    'border-t-blue-300/50', 'dark:border-t-blue-400/30',
+    'bg-blue-400/60', 'dark:bg-blue-300/50',
+    'border-blue-300/30', 'dark:border-blue-400/20',
+    'border-blue-200/40', 'dark:border-blue-300/20',
+    'bg-white/20', 'dark:bg-white/10',
   ],
   darkMode: 'class',
   theme: {

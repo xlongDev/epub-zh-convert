@@ -22,6 +22,9 @@ const FileUploader = React.memo(
     // 内部状态，用于控制鼠标悬停时的视觉效果
     const [isHoveringUpload, setIsHoveringUpload] = useState(false);
 
+    // 根据状态确定显示的文字
+    const hintText = isHoveringUpload || isDragging ? "支持批量上传哦~" : "仅支持.epub格式文件";
+
     return (
       <div className="relative">
         <motion.div
@@ -72,9 +75,20 @@ const FileUploader = React.memo(
                 </span>{" "}
                 或拖放文件到此处
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                仅支持.epub格式文件
-              </p>
+              <div className="h-5 mt-1 relative">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={hintText}
+                    className="text-xs text-gray-500 dark:text-gray-400 absolute inset-0"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {hintText}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </motion.div>

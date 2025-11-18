@@ -42,4 +42,112 @@ export default function useConversionStatus() {
     prevIsComplete,  // 上一次的转换完成状态（只读ref）
     updateStatus  // 更新所有状态的方法
   };
-}
+}// src/hooks/useFileConversion/useConversionState.js
+import { useState, useRef, useEffect } from "react";
+
+/**
+ * 管理文件转换的状态
+ */
+export const useConversionState = (files) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [convertedFiles, setConvertedFiles] = useState([]);
+  const [isComplete, setIsComplete] = useState(false);
+  const [convertedFileNames, setConvertedFileNames] = useState(new Set());
+
+  // 使用 ref 跟踪最新状态
+  const stateRef = useRef({
+    isLoading,
+    error,
+    convertedFiles,
+    isComplete,
+    convertedFileNames
+  });
+
+  // 同步 ref 与 state
+  useEffect(() => {
+    stateRef.current = {
+      isLoading,
+      error,
+      convertedFiles,
+      isComplete,
+      convertedFileNames
+    };
+  }, [isLoading, error, convertedFiles, isComplete, convertedFileNames]);
+
+  // 当文件列表变化时，清理不存在的转换结果
+  useEffect(() => {
+    const currentFileNames = new Set(files.map(file => file.name));
+    
+    setConvertedFiles(prev => 
+      prev.filter(convertedFile => 
+        currentFileNames.has(convertedFile.name.replace(/\.epub$/, '')) || 
+        currentFileNames.has(convertedFile.name)
+      )
+    );
+    
+    setConvertedFileNames(prev => {
+      const newNames = new Set();
+      for (const name of prev) {
+        if (currentFileNames.has(name)) {
+          newNames.add(name);
+        }
+      }
+      return newNames;
+    });
+  }, [files]);
+
+  // 更新转换文件（支持合并）
+  const updateConvertedFiles = (newFile) => {
+    setConvertedFiles(prevFiles => {
+      const existingFileIndex = prevFiles.findIndex((f) => f.name === newFile.name);
+      if (existingFileIndex !== -1) {
+        const newFiles = [...prevFiles];
+        newFiles[existingFileIndex] = newFile;
+        return newFiles;
+      } else {
+        return [...prevFiles, newFile];
+      }
+    });
+  };
+
+  // 重置所有状态
+  const resetState = () => {
+    setIsLoading(false);
+    setError(null);
+    setConvertedFiles([]);
+    setIsComplete(false);
+    setConvertedFileNames(new Set());
+  };
+
+  // 设置加载状态
+  const setLoading = (loading) => {
+    setIsLoading(loading);
+    if (loading) {
+      setError(null);
+      setIsComplete(false);
+    }
+  };
+
+  return {
+    // 状态
+    isLoading,
+    error,
+    convertedFiles,
+    isComplete,
+    convertedFileNames,
+    
+    // 状态引用（用于回调中获取最新值）
+    stateRef,
+    
+    // 更新方法
+    setIsLoading,
+    setError,
+    setConvertedFiles,
+    setIsComplete,
+    setConvertedFileNames,
+    updateConvertedFiles,
+    resetState,
+    setLoading
+  };
+};

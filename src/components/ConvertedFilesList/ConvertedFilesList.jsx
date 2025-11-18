@@ -90,7 +90,8 @@ const ConvertedFilesList = ({
     try {
       const content = await zip.generateAsync({ type: "blob" });
       playDownloadSound(); // 播放音效
-      saveAs(content, "批量下载文件.zip");
+      // 在文件名后面加上文件个数
+      saveAs(content, `批量下载文件(${selectedIndices.length}个).zip`);
       setSelectedFiles(new Set());
     } catch (error) {
       console.error("下载压缩包失败:", error);
@@ -118,7 +119,8 @@ const ConvertedFilesList = ({
     try {
       const content = await zip.generateAsync({ type: "blob" });
       playDownloadSound(); // 播放音效
-      saveAs(content, "全部文件.zip");
+      // 在文件名后面加上文件个数
+      saveAs(content, `全部文件(${convertedFiles.length}个).zip`);
     } catch (error) {
       console.error("下载压缩包失败:", error);
       alert("下载失败，请重试");

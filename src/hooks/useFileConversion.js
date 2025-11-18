@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { convertFilename } from "@/utils/opencc";
 
 export const useFileConversion = (files, direction) => {
   const [isLoading, setIsLoading] = useState(false);

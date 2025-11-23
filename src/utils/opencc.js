@@ -11,12 +11,21 @@ const s2tConverter = Converter({ from: "cn", to: "t" }); // 简转繁
  * @returns {string} - 转换后的文本
  */
 export const convertText = (text, direction = "t2s") => {
-  if (direction === "t2s") {
-    return t2sConverter(text);
-  } else if (direction === "s2t") {
-    return s2tConverter(text);
+  if (!text || typeof text !== 'string') {
+    return text;
   }
-  return text; // 默认不转换
+  
+  try {
+    if (direction === "t2s") {
+      return t2sConverter(text);
+    } else if (direction === "s2t") {
+      return s2tConverter(text);
+    }
+    return text; // 默认不转换
+  } catch (error) {
+    console.warn('文本转换失败:', error);
+    return text; // 转换失败时返回原文本
+  }
 };
 
 /**
@@ -26,6 +35,8 @@ export const convertText = (text, direction = "t2s") => {
  * @returns {string} - 转换后的文件名
  */
 export const convertFilename = (filename, direction = "t2s") => {
+  if (!filename) return filename;
+  
   // 移除现有的.epub扩展名（如果存在）
   const nameWithoutExt = filename.replace(/\.epub$/i, "");
 

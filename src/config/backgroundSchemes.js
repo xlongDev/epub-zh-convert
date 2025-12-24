@@ -55,6 +55,31 @@ const backgroundSchemes = [
     light: "bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300",
     dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
   },
+  {
+    // 森林晨曦 - 柔和的青绿色渐变
+    light: "bg-gradient-to-r from-emerald-100 via-teal-100 to-cyan-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 薰衣草庄园 - 梦幻紫粉渐变
+    light: "bg-gradient-to-r from-fuchsia-100 via-purple-100 to-indigo-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 沙漠琥珀 - 暖调大地色渐变
+    light: "bg-gradient-to-r from-yellow-50 via-amber-100 to-orange-100",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 冰雪极光 - 冷调蓝紫渐变
+    light: "bg-gradient-to-r from-sky-100 via-violet-100 to-blue-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
+  {
+    // 热带珊瑚 - 活力橙红渐变
+    light: "bg-gradient-to-r from-rose-200 via-orange-100 to-pink-200",
+    dark: "dark:from-gray-900 dark:via-gray-800 dark:to-gray-700",
+  },
 ];
 
 export default backgroundSchemes;

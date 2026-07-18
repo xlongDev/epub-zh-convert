@@ -23,7 +23,7 @@ export function useConversionManager({
   const handleConvert = useCallback(() => {
     setIsConversionFailedOrCancelled(false);
     originalHandleConvert();
-  }, [originalHandleConvert]);
+  }, [originalHandleConvert, setIsConversionFailedOrCancelled]);
 
   /**
    * 封装后的取消处理函数
@@ -33,7 +33,7 @@ export function useConversionManager({
   const handleCancel = useCallback(() => {
     originalHandleCancel();
     setIsConversionFailedOrCancelled(true);
-  }, [originalHandleCancel]);
+  }, [originalHandleCancel, setIsConversionFailedOrCancelled]);
 
   return {
     handleConvert,

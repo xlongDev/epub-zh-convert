@@ -2,90 +2,92 @@ import JSZip from 'jszip';
 import { convertText, convertFilename } from './opencc';
 
 /**
- * 转换 EPUB 文件
+ * 转换 EPUB（纯函数核心，不依赖浏览器 File/FileReader）
+ * @param {ArrayBuffer} arrayBuffer - EPUB 文件的二进制内容
+ * @param {string} direction - 转换方向 ('t2s' 或 's2t')
+ * @param {function} onProgress - 进度回调，入参为 0-100 的整数
+ * @param {function} isCancelled - 取消判定，返回 true 时中止并抛出 AbortError
+ * @returns {Promise<{ blob: Blob }>} - 转换后的 Blob 对象
+ */
+export const convertEpubBuffer = async (
+  arrayBuffer,
+  direction = 't2s',
+  onProgress = () => {},
+  isCancelled = () => false
+) => {
+  const zip = new JSZip();
+  const epubZip = await JSZip.loadAsync(arrayBuffer);
+  const totalFiles = Object.keys(epubZip.files).length;
+  let processedFiles = 0;
+
+  const isTextFile = (path) =>
+    path.endsWith('.html') ||
+    path.endsWith('.xhtml') ||
+    path.endsWith('.txt') ||
+    path.endsWith('toc.ncx') ||
+    path.endsWith('nav.xhtml');
+
+  for (const [path, fileEntry] of Object.entries(epubZip.files)) {
+    if (isCancelled()) {
+      throw new DOMException('转换已取消', 'AbortError');
+    }
+
+    if (!fileEntry.dir) {
+      let content;
+      if (isTextFile(path)) {
+        content = await fileEntry.async('text');
+        content = convertText(content, direction);
+      } else if (path.endsWith('.opf')) {
+        // 转换 OPF 文件中的元数据（包括作者信息）
+        content = await fileEntry.async('text');
+        content = convertOpfMetadata(content, direction);
+      } else {
+        content = await fileEntry.async('uint8array');
+      }
+
+      zip.file(path, content, {
+        compression: fileEntry.options.compression,
+        compressionOptions: fileEntry.options.compressionOptions,
+      });
+    }
+
+    processedFiles++;
+    onProgress(Math.round((processedFiles / totalFiles) * 100));
+  }
+
+  if (isCancelled()) {
+    throw new DOMException('转换已取消', 'AbortError');
+  }
+
+  const newEpub = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 },
+    platform: 'UNIX',
+    comment: '',
+  });
+
+  return { blob: newEpub };
+};
+
+/**
+ * 转换 EPUB 文件（基于 File 的薄包装，供主线程降级路径使用）
  * @param {File} file - 用户上传的 EPUB 文件
  * @param {function} setProgress - 更新进度的回调函数
  * @param {AbortSignal} signal - 取消信号
  * @param {string} direction - 转换方向 ('t2s' 或 's2t')
- * @returns {Promise<{ blob: Blob, name: string }>} - 返回转换后的 Blob 对象和文件名
+ * @returns {Promise<{ blob: Blob, name: string }>} - 转换后的 Blob 与文件名
  */
 export const convertEpub = async (file, setProgress, signal, direction = 't2s') => {
-  try {
-    const zip = new JSZip();
-    const reader = new FileReader();
-
-    // 读取文件内容
-    const arrayBuffer = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('文件读取失败'));
-      reader.readAsArrayBuffer(file);
-    });
-
-    // 检查是否取消
-    if (signal.aborted) throw new Error('转换已取消');
-
-    // 加载 ZIP 文件
-    const epubZip = await JSZip.loadAsync(arrayBuffer);
-    const totalFiles = Object.keys(epubZip.files).length;
-    let processedFiles = 0;
-
-    // 遍历 ZIP 文件中的每个文件
-    for (const [path, fileEntry] of Object.entries(epubZip.files)) {
-      if (signal.aborted) throw new Error('转换已取消'); // 检查是否取消
-
-      if (!fileEntry.dir) {
-        let content;
-        
-        // 处理文本文件
-        if (path.endsWith('.html') || path.endsWith('.xhtml') || path.endsWith('.txt')) {
-          // 转换文本内容
-          content = await fileEntry.async('text');
-          content = convertText(content, direction);
-        } else if (path.endsWith('toc.ncx') || path.endsWith('nav.xhtml')) {
-          // 转换目录文件内容
-          content = await fileEntry.async('text');
-          content = convertText(content, direction);
-        } else if (path.endsWith('.opf')) {
-          // 转换 OPF 文件中的元数据（包括作者信息）
-          content = await fileEntry.async('text');
-          content = convertOpfMetadata(content, direction);
-        } else {
-          // 直接复制非文本文件
-          content = await fileEntry.async('uint8array');
-        }
-
-        // 使用原始文件的压缩参数
-        zip.file(path, content, {
-          compression: fileEntry.options.compression,
-          compressionOptions: fileEntry.options.compressionOptions,
-        });
-      }
-
-      // 更新进度
-      processedFiles++;
-      setProgress(Math.round((processedFiles / totalFiles) * 100));
-    }
-
-    // 检查是否取消
-    if (signal.aborted) throw new Error('转换已取消');
-
-    // 生成新的 EPUB 文件
-    const newEpub = await zip.generateAsync({
-      type: 'blob',
-      compression: 'DEFLATE',
-      compressionOptions: { level: 9 },
-      platform: 'UNIX',
-      comment: '',
-    });
-
-    // 转换文件名
-    const originalFilename = file.name;
-    const convertedFilename = convertFilename(originalFilename, direction);
-
-    return { blob: newEpub, name: convertedFilename };
-  } catch (err) {
-    throw new Error(err.message);
-  }
+  const arrayBuffer = await file.arrayBuffer();
+  const { blob } = await convertEpubBuffer(
+    arrayBuffer,
+    direction,
+    setProgress,
+    () => signal?.aborted
+  );
+  const name = convertFilename(file.name, direction);
+  return { blob, name };
 };
 
 /**
@@ -114,7 +116,7 @@ const convertOpfMetadata = (opfContent, direction) => {
 
   let convertedContent = opfContent;
 
-  metadataPatterns.forEach(pattern => {
+  metadataPatterns.forEach((pattern) => {
     convertedContent = convertedContent.replace(pattern, (match, content) => {
       // 只转换中文字符内容
       if (containsChinese(content)) {
@@ -134,5 +136,5 @@ const convertOpfMetadata = (opfContent, direction) => {
  * @returns {boolean} - 是否包含中文
  */
 const containsChinese = (text) => {
-  return /[\u4e00-\u9fff]/.test(text);
+  return /[一-鿿]/.test(text);
 };

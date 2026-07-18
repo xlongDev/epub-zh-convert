@@ -1,20 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DirectionSelector = React.memo(({ direction, setDirection }) => {
   const [activePosition, setActivePosition] = useState({ x: 0, width: 0 });
-  const [isMounted, setIsMounted] = useState(false);
+  // 客户端挂载标记（hydration 安全，避免首屏动画突变）
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   // 获取激活项的位置信息
   useEffect(() => {
-    setIsMounted(true);
-    const activeElement = document.querySelector(
-      `[data-direction="${direction}"]`
-    );
-    if (activeElement) {
-      const { offsetLeft, offsetWidth } = activeElement;
-      setActivePosition({ x: offsetLeft, width: offsetWidth });
-    }
+    const raf = requestAnimationFrame(() => {
+      const activeElement = document.querySelector(
+        `[data-direction="${direction}"]`
+      );
+      if (activeElement) {
+        const { offsetLeft, offsetWidth } = activeElement;
+        setActivePosition({ x: offsetLeft, width: offsetWidth });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
   }, [direction]);
 
   // 处理方向切换

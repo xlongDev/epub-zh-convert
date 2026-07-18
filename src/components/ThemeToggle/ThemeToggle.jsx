@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  // 用 useSyncExternalStore 判断是否已完成客户端挂载：服务端快照为 false、客户端为 true，
+  // React 会在水合后自动切换到客户端值，避免 hydration 不匹配；同时消除 effect 内同步 setState 的告警
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
-    setMounted(true);
-
     // 检测系统主题
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const systemTheme = mediaQuery.matches ? 'dark' : 'light';

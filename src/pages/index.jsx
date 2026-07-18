@@ -74,17 +74,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const savedScheme = sessionStorage.getItem("backgroundScheme");
-    if (savedScheme) {
-      const randomScheme =
-        backgroundSchemes[Math.floor(Math.random() * backgroundSchemes.length)];
-      setBackgroundScheme(randomScheme);
-    } else {
-      sessionStorage.setItem(
-        "backgroundScheme",
-        JSON.stringify(backgroundSchemes[0])
-      );
-    }
+    // 延迟到下一帧读取 sessionStorage 并随机选取背景，避免 effect 内同步 setState 的级联渲染告警；
+    // effect 不执行于服务端，首帧仍为默认值，因此 SSR 安全且水合一致
+    const id = requestAnimationFrame(() => {
+      const savedScheme = sessionStorage.getItem("backgroundScheme");
+      if (savedScheme) {
+        const randomScheme =
+          backgroundSchemes[Math.floor(Math.random() * backgroundSchemes.length)];
+        setBackgroundScheme(randomScheme);
+      } else {
+        sessionStorage.setItem(
+          "backgroundScheme",
+          JSON.stringify(backgroundSchemes[0])
+        );
+      }
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
   const { files, isFileSelected, handleFileChange, handleDeleteFile } =
@@ -127,7 +132,7 @@ export default function Home() {
         setShowDownloadPrompt(false);
       }
     },
-    [handleDeleteFile, files.length]
+    [handleDeleteFile, files.length, setIsComplete, setIsConversionFailedOrCancelled, setShowDownloadPrompt]
   );
 
   // 滚动至转换结果区域
@@ -139,31 +144,9 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (error && !isLoading) {
-      setIsConversionFailedOrCancelled(true);
-      setIsComplete(false);
-    } else if (isLoading) {
-      setIsConversionFailedOrCancelled(false);
-      setIsComplete(false);
-    } else if (files.length === 0) {
-      setIsConversionFailedOrCancelled(false);
-      setIsComplete(false);
-    }
-
-    // 添加转换成功提示音逻辑
-    if (isComplete && !prevIsComplete.current && !error) {
-      // 确保音频对象已初始化
-      if (completedSoundRef.current && userInteractedRef.current) {
-        playCompletedSound();
-      }
-    }
-
-    prevIsComplete.current = isComplete;
-  }, [isComplete, error, isLoading, files.length]);
-
-  // 播放提示音的辅助函数
-  const playCompletedSound = () => {
+  // 播放提示音的辅助函数（用 useCallback 稳定引用，避免每次渲染重建）
+  const playCompletedSound = useCallback(() => {
+    if (!completedSoundRef.current) return;
     // 重置音频
     completedSoundRef.current.currentTime = 0;
     // 设置音量为60%
@@ -190,7 +173,36 @@ export default function Home() {
           console.error("无法恢复 AudioContext:", err);
         }
       });
-  };
+  }, []);
+
+  // 复位「失败/取消」与「完成」状态：延迟到下一帧执行 setState，
+  // 既避免 effect 内同步 setState 的级联渲染告警，又保持原有行为不变
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      if (error && !isLoading) {
+        setIsConversionFailedOrCancelled(true);
+        setIsComplete(false);
+      } else if (isLoading) {
+        setIsConversionFailedOrCancelled(false);
+        setIsComplete(false);
+      } else if (files.length === 0) {
+        setIsConversionFailedOrCancelled(false);
+        setIsComplete(false);
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [error, isLoading, files.length, setIsComplete, setIsConversionFailedOrCancelled]);
+
+  // 转换成功提示音（副作用，不在渲染期同步 setState）
+  useEffect(() => {
+    if (isComplete && !prevIsComplete.current && !error) {
+      // 确保音频对象已初始化
+      if (completedSoundRef.current && userInteractedRef.current) {
+        playCompletedSound();
+      }
+    }
+    prevIsComplete.current = isComplete;
+  }, [isComplete, error, playCompletedSound]);
 
   return (
     <LayoutWrapper backgroundScheme={backgroundScheme}>

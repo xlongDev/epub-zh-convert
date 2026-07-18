@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * 自定义钩子：管理文件转换状态（成功、失败、取消等）
@@ -42,8 +42,10 @@ export default function useConversionStatus() {
     prevIsComplete,  // 上一次的转换完成状态（只读ref）
     updateStatus  // 更新所有状态的方法
   };
-}// src/hooks/useFileConversion/useConversionState.js
-import { useState, useRef, useEffect } from "react";
+};
+
+// 以下为远程引入的 useConversionState（同源文件，已合并导入以避免重复声明）
+
 
 /**
  * 管理文件转换的状态
@@ -78,23 +80,25 @@ export const useConversionState = (files) => {
   // 当文件列表变化时，清理不存在的转换结果
   useEffect(() => {
     const currentFileNames = new Set(files.map(file => file.name));
-    
-    setConvertedFiles(prev => 
-      prev.filter(convertedFile => 
-        currentFileNames.has(convertedFile.name.replace(/\.epub$/, '')) || 
-        currentFileNames.has(convertedFile.name)
-      )
-    );
-    
-    setConvertedFileNames(prev => {
-      const newNames = new Set();
-      for (const name of prev) {
-        if (currentFileNames.has(name)) {
-          newNames.add(name);
+    const raf = requestAnimationFrame(() => {
+      setConvertedFiles(prev =>
+        prev.filter(convertedFile =>
+          currentFileNames.has(convertedFile.name.replace(/\.epub$/, '')) ||
+          currentFileNames.has(convertedFile.name)
+        )
+      );
+
+      setConvertedFileNames(prev => {
+        const newNames = new Set();
+        for (const name of prev) {
+          if (currentFileNames.has(name)) {
+            newNames.add(name);
+          }
         }
-      }
-      return newNames;
+        return newNames;
+      });
     });
+    return () => cancelAnimationFrame(raf);
   }, [files]);
 
   // 更新转换文件（支持合并）

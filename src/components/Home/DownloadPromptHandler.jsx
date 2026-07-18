@@ -28,13 +28,13 @@ export default function DownloadPromptHandler({
 
     // 每次更新 isComplete，都同步 prev 值
     prevIsCompleteRef.current = isComplete;
-  }, [isComplete, convertedFiles.length, error]);
+  }, [isComplete, convertedFiles.length, error, setShowDownloadPrompt, prevIsCompleteRef]);
 
   useEffect(() => {
     const handleScroll = () => setShowDownloadPrompt(false);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [setShowDownloadPrompt]);
 
   return null;
 }

@@ -6,18 +6,18 @@ const WelcomeAnimation = React.memo(({ animationData, isVisible }) => {
   const timeoutRef = useRef(null);
 
   useEffect(() => {
+    // 延迟到下一帧再设置加载态，避免 effect 内同步 setState
+    const raf = requestAnimationFrame(() => setIsLoading(isVisible));
+    let timer;
     if (isVisible) {
-      setIsLoading(true);
-      timeoutRef.current = setTimeout(() => {
+      timer = setTimeout(() => {
         setIsLoading(false);
       }, 600);
-    } else {
-      setIsLoading(false);
     }
-
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      cancelAnimationFrame(raf);
+      if (timer) {
+        clearTimeout(timer);
       }
     };
   }, [isVisible]);

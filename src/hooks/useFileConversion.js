@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
+import { convertFilename } from "@/utils/opencc";
 
 export const useFileConversion = (files, direction) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -7,39 +8,31 @@ export const useFileConversion = (files, direction) => {
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const abortControllerRef = useRef(null);
+  const workerRef = useRef(null);
 
   // 使用 ref 来跟踪最新的 direction 值
   const directionRef = useRef(direction);
-  
-  // 使用 ref 来跟踪最新的 files 值
-  const filesRef = useRef(files);
-  
-  // 当 direction 或 files 变化时更新 ref
+
+  // 当 direction 变化时更新 ref
   useEffect(() => {
     directionRef.current = direction;
-    filesRef.current = files;
-  }, [direction, files]);
+  }, [direction]);
 
   // 用于记录已经转换过的文件名
   const [convertedFileNames, setConvertedFileNames] = useState(new Set());
 
-  // 清除已转换的文件（当文件列表变化时）
+  // 清除已转换的文件（当文件列表变化时）—— 来自远程的健壮性改进
   useEffect(() => {
-    // 获取当前文件名的集合
-    const currentFileNames = new Set(files.map(file => file.name));
-    
-    // 过滤掉不存在的文件的转换结果
-    setConvertedFiles(prevConvertedFiles => 
-      prevConvertedFiles.filter(convertedFile => 
-        currentFileNames.has(convertedFile.name.replace(/\.epub$/, '')) || 
-        currentFileNames.has(convertedFile.name)
+    const currentFileNames = new Set(files.map((file) => file.name));
+    setConvertedFiles((prevConvertedFiles) =>
+      prevConvertedFiles.filter(
+        (convertedFile) =>
+          currentFileNames.has(convertedFile.name.replace(/\.epub$/, "")) ||
+          currentFileNames.has(convertedFile.name)
       )
     );
-    
-    // 更新已转换的文件名集合
-    setConvertedFileNames(prevNames => {
+    setConvertedFileNames((prevNames) => {
       const newNames = new Set(prevNames);
-      // 只保留当前存在的文件名
       for (const name of newNames) {
         if (!currentFileNames.has(name)) {
           newNames.delete(name);
@@ -47,126 +40,150 @@ export const useFileConversion = (files, direction) => {
       }
       return newNames;
     });
-  }, [files]); // 当 files 变化时执行
+  }, [files]);
 
-  const handleConvert = useCallback(async () => {
-    // 使用最新的 filesRef.current 而不是闭包中的 files
-    const currentFiles = filesRef.current;
-    if (currentFiles.length === 0) return;
-    
+  // 在主线程降级路径下转换单个文件
+  const convertOnMainThread = async (file, index, total) => {
+    const { convertEpub } = await import("@/utils/zipUtils");
+    return convertEpub(
+      file,
+      (currentProgress) => {
+        const totalProgress =
+          ((index + currentProgress / 100) / total) * 100;
+        setProgress(totalProgress);
+      },
+      abortControllerRef.current.signal,
+      directionRef.current
+    );
+  };
+
+  // 在 Web Worker 中转换单个文件（顺序处理，逐个 await）
+  const convertInWorker = (worker, file, index, total) =>
+    new Promise((resolve, reject) => {
+      const onMessage = (e) => {
+        const { type, percent, buffer, message, name: errName } = e.data;
+        if (type === "progress") {
+          const totalProgress =
+            ((index + percent / 100) / total) * 100;
+          setProgress(totalProgress);
+        } else if (type === "done") {
+          worker.removeEventListener("message", onMessage);
+          resolve({
+            blob: new Blob([buffer]),
+            name: convertFilename(file.name, directionRef.current),
+          });
+        } else if (type === "error") {
+          worker.removeEventListener("message", onMessage);
+          const err = new Error(message);
+          err.name = errName || "Error";
+          reject(err);
+        }
+      };
+      worker.addEventListener("message", onMessage);
+      worker.postMessage({
+        type: "convert",
+        file,
+        direction: directionRef.current,
+      });
+    });
+
+  const handleConvert = async () => {
+    if (files.length === 0) return;
+
     setIsLoading(true);
     setError(null);
     setProgress(0);
     setIsComplete(false);
-    
-    // 只重置当前不存在的文件的转换状态
-    setConvertedFileNames(prevNames => {
-      const currentFileNames = new Set(currentFiles.map(file => file.name));
-      const newNames = new Set();
-      // 只保留当前存在的文件名
-      for (const name of prevNames) {
-        if (currentFileNames.has(name)) {
-          newNames.add(name);
-        }
-      }
-      return newNames;
-    });
-    
+    setConvertedFileNames(new Set());
     abortControllerRef.current = new AbortController();
 
-    try {
-      // 动态加载大型库（优化点）
-      const [{ Converter }, { default: JSZip }] = await Promise.all([
-        import('opencc-js'),
-        import('jszip')
-      ]);
-      
-      // 创建转换器实例
-      let from, to;
-      if (directionRef.current === 't2s') {
-        from = 't';
-        to = 'cn';
-      } else if (directionRef.current === 's2t') {
-        from = 'cn';
-        to = 't';
-      } else {
-        // 默认不转换
-        from = 't';
-        to = 't';
+    // 优先尝试 Web Worker，失败则降级到主线程
+    let worker = null;
+    if (typeof Worker !== "undefined") {
+      try {
+        worker = new Worker(
+          new URL("../workers/convert.worker.js", import.meta.url),
+          { type: "module" }
+        );
+      } catch {
+        worker = null;
       }
-      
-      const converter = Converter({ from, to });
-      
-      // 导入转换函数（按需加载）
-      const { convertEpub } = await import("@/utils/zipUtils");
-      
-      // 只转换当前存在的文件
-      for (let i = 0; i < currentFiles.length; i++) {
-        const file = currentFiles[i];
-        
+    }
+    workerRef.current = worker;
+
+    const runOne = (file, index) =>
+      worker
+        ? convertInWorker(worker, file, index, files.length)
+        : convertOnMainThread(file, index, files.length);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         // 检查是否已取消
         if (abortControllerRef.current.signal.aborted) {
-          return;
+          break;
         }
-        
-        // 跳过已经转换过的文件（如果用户重新添加了同名文件，需要重新转换）
-        // 这里我们总是重新转换，以确保使用最新的文件内容
-        // 如果您想优化，可以添加文件内容哈希检查
-        
+
         try {
-          const result = await convertEpub(
-            file,
-            (currentProgress) => {
-              const totalProgress = ((i + currentProgress / 100) / currentFiles.length) * 100;
-              setProgress(totalProgress);
-            },
-            abortControllerRef.current.signal,
-            directionRef.current,
-            converter,
-            JSZip
-          );
+          const result = await runOne(file, i);
 
           setConvertedFiles((prevFiles) => {
-            const existingFileIndex = prevFiles.findIndex((f) => f.name === result.name);
+            const existingFileIndex = prevFiles.findIndex(
+              (f) => f.name === result.name
+            );
             if (existingFileIndex !== -1) {
               const newFiles = [...prevFiles];
-              newFiles[existingFileIndex] = { name: result.name, blob: result.blob };
+              newFiles[existingFileIndex] = {
+                name: result.name,
+                blob: result.blob,
+              };
               return newFiles;
             } else {
               return [...prevFiles, { name: result.name, blob: result.blob }];
             }
           });
 
-          setConvertedFileNames((prevNames) => new Set(prevNames).add(file.name));
+          setConvertedFileNames((prevNames) =>
+            new Set(prevNames).add(file.name)
+          );
         } catch (err) {
           // 如果是取消操作，不显示错误
-          if (err.name !== 'AbortError') {
+          if (err.name !== "AbortError") {
             console.error(`文件 ${file.name} 转换失败:`, err.message);
             setError(`文件 ${file.name} 转换失败: ${err.message || "未知错误"}`);
           }
         }
       }
-      
-      setIsComplete(true);
+
+      if (!abortControllerRef.current.signal.aborted) {
+        setIsComplete(true);
+      }
     } catch (err) {
       // 如果是取消操作，不显示错误
-      if (err.name !== 'AbortError') {
+      if (err.name !== "AbortError") {
         console.error("转换过程出错:", err);
         setError(err.message || "转换过程发生未知错误");
       }
     } finally {
+      if (worker) worker.terminate();
+      workerRef.current = null;
       setIsLoading(false);
     }
-  }, []); // 依赖项为空，因为我们都使用 ref 来获取最新值
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+      if (workerRef.current) {
+        workerRef.current.postMessage({ type: "cancel" });
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
       setIsLoading(false);
       setError("转换已取消");
       setIsComplete(false);
     }
-  }, []);
+  };
 
   return {
     isLoading,

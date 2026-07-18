@@ -1,82 +1,92 @@
-# EPUB 繁简转换工具 / EPUB 繁簡轉換工具 / EPUB Traditional-Simplified Converter
+[中文](README_zh.md) · English
 
-## 简介 / 簡介 / Introduction
+# EPUB Traditional-Simplified Converter
 
-这是一个基于 React 和 Next.js 的 EPUB 繁简转换工具，支持将 EPUB 文件中的繁体中文转换为简体中文，或简体中文转换为繁体中文。工具提供了友好的用户界面，支持拖拽上传、批量转换和下载功能。
+A React + Next.js web tool that converts the Chinese text inside EPUB files between Traditional and Simplified scripts. It offers a friendly UI with drag-and-drop upload, batch conversion, real-time progress, and individual / bulk download. **All conversion runs entirely in your browser — no files are uploaded to any server.**
 
-這是一個基於 React 和 Next.js 的 EPUB 繁簡轉換工具，支援將 EPUB 文件中的繁體中文轉換為簡體中文，或簡體中文轉換為繁體中文。工具提供了友好的用戶界面，支援拖拽上傳、批量轉換和下載功能。
+## Introduction
 
-This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter. It supports converting Traditional Chinese to Simplified Chinese or Simplified Chinese to Traditional Chinese in EPUB files. The tool provides a user-friendly interface with drag-and-drop upload, batch conversion, and download features.
+This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter. It supports converting Traditional Chinese to Simplified Chinese, or Simplified Chinese to Traditional Chinese, inside EPUB files. The tool provides a user-friendly interface with drag-and-drop upload, batch conversion, and download features.
 
----
+## Features
 
-## 功能 / 功能 / Features
+- **Traditional ⇄ Simplified conversion**: convert Traditional Chinese to Simplified Chinese, or vice versa.
+- **Drag-and-drop upload**: drop EPUB files directly onto the upload area.
+- **Batch conversion**: upload and convert multiple EPUB files at once.
+- **Live progress**: real-time progress bar and animations during conversion.
+- **Flexible download**: download each converted file individually or all at once.
+- **Theme support**: light / dark / system themes via `next-themes`.
+- **Client-side & private**: conversion happens in the browser; nothing leaves your machine.
 
-- **繁简转换**：支持繁体转简体或简体转繁体。
-- **拖拽上传**：支持拖拽 EPUB 文件到上传区域。
-- **批量转换**：支持一次性上传多个 EPUB 文件并批量转换。
-- **进度显示**：实时显示转换进度和动画。
-- **下载功能**：转换完成后可单独或批量下载文件。
+## Tech Stack
 
-- **繁簡轉換**：支援繁體轉簡體或簡體轉繁體。
-- **拖拽上傳**：支援拖拽 EPUB 文件到上傳區域。
-- **批量轉換**：支援一次性上傳多個 EPUB 文件並批量轉換。
-- **進度顯示**：實時顯示轉換進度和動畫。
-- **下載功能**：轉換完成後可單獨或批量下載文件。
-
-- **Traditional-Simplified Conversion**: Supports converting Traditional Chinese to Simplified Chinese or vice versa.
-- **Drag-and-Drop Upload**: Supports dragging and dropping EPUB files into the upload area.
-- **Batch Conversion**: Supports uploading and converting multiple EPUB files at once.
-- **Progress Display**: Real-time conversion progress and animation.
-- **Download Feature**: Allows downloading files individually or in bulk after conversion.
-
----
-
-## 技术栈 / 技術棧 / Tech Stack
-
-- **前端**：React, Next.js, Tailwind CSS, Framer Motion
-- **工具库**：JSZip, opencc-js
-- **动画**：Lottie
-
-- **前端**：React, Next.js, Tailwind CSS, Framer Motion
-- **工具庫**：JSZip, opencc-js
-- **動畫**：Lottie
-
-- **Frontend**: React, Next.js, Tailwind CSS, Framer Motion
+- **Frontend**: React 19, Next.js 16 (Pages Router), Tailwind CSS v4, Framer Motion
 - **Libraries**: JSZip, opencc-js
-- **Animation**: Lottie
+- **Animation**: Framer Motion, react-lottie-player
+- **Testing**: Vitest
+- **Runtime**: conversion runs in a Web Worker when available, keeping the UI responsive for large books
 
----
-
-## 使用方法 / 使用方法 / Usage
-
-### 1. 安装依赖 / 安裝依賴 / Install Dependencies
+## Installation
 
 ```bash
 pnpm install
-# 或 / 或 / or
+# or
 npm install
+# or
 yarn install
+```
 
-贡献指南 / 貢獻指南 / Contributing
-欢迎提交 Issue 或 Pull Request！请确保代码风格一致，并附上详细的说明。
+## Usage
 
-歡迎提交 Issue 或 Pull Request！請確保代碼風格一致，並附上詳細的說明。
+1. **Start the dev server**
 
-Welcome to submit Issues or Pull Requests! Please ensure consistent code style and provide detailed descriptions.
+   ```bash
+   pnpm dev
+   ```
 
-许可证 / 許可證 / License
-本项目采用 MIT 许可证。详情请参阅 LICENSE 文件。
+   Then open the printed local URL (default http://localhost:3000).
 
-本項目採用 MIT 許可證。詳情請參閱 LICENSE 文件。
+2. **Choose a direction** — use the selector to pick Traditional → Simplified (`t2s`) or Simplified → Traditional (`s2t`).
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+3. **Add EPUB files** — drag EPUB files into the upload area, or click to select them. You may add multiple files for batch conversion.
 
-联系 / 聯繫 / Contact
-如有问题或建议，请联系：
-如有問題或建議，請聯繫：
-For questions or suggestions, please contact:
+4. **Convert** — click the convert button. A progress bar shows the live status. Large books are processed in a background Web Worker so the UI stays responsive.
 
-邮箱 / 郵箱 / Email: byte7956@gmail.com
+5. **Download** — once a file finishes, download it individually, or use "download all" to grab everything at once.
 
-GitHub: xlongDev
+## Configuration Options
+
+Most behavior is driven by the UI, but a few areas are easy to customize in code:
+
+- **Conversion direction** — `t2s` (Traditional → Simplified) and `s2t` (Simplified → Traditional) are defined in [`src/utils/opencc.js`](src/utils/opencc.js). The active direction is chosen via the on-screen `DirectionSelector`.
+- **Background gradient schemes** — edit [`src/config/backgroundSchemes.js`](src/config/backgroundSchemes.js). Each entry is a `{ light, dark }` pair of Tailwind gradient class strings. A scheme is picked at random per session (persisted in `sessionStorage`). Append a new object to the array to add your own.
+- **Theme** — powered by `next-themes`. The `ThemeToggle` component lets users switch between light / dark, and the system preference is auto-detected. A manual choice is stored in `sessionStorage` under the `theme` key.
+- **Conversion engine** — the core pure function [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.js) performs the work and is intentionally free of browser `File` / `FileReader` APIs, so it can run inside the Web Worker ([`src/workers/convert.worker.js`](src/workers/convert.worker.js)). If Worker creation fails, the app transparently falls back to the main thread.
+
+## Development & Testing
+
+Common scripts:
+
+```bash
+pnpm install        # install dependencies
+pnpm dev            # local dev server (Turbopack)
+pnpm build          # production build
+pnpm start          # start the production server
+pnpm lint           # lint with ESLint
+pnpm test           # run unit tests with Vitest
+```
+
+**Build environment note:** if you run `pnpm build` inside a sandboxed environment that forces Node options such as `--use-system-ca`, Turbopack may fail to spawn its Worker with `ERR_WORKER_INVALID_EXEC_ARGV`. Strip that option (keep only the necessary shim) before building; a normal local environment does not need this.
+
+## Contributing
+
+Issues and Pull Requests are welcome! Please keep the code style consistent and include a clear description of your change.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+- Email: byte7956@gmail.com
+- GitHub: xlongDev

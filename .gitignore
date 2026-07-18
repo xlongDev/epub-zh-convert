@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# workspace agent data (WorkBuddy)
+.workbuddy/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -10,7 +10,7 @@ const Checkbox = ({ checked, onChange, label, title, className = '' }) => {
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="hidden peer"
+        className="sr-only peer"
       />
       <div 
         className={`

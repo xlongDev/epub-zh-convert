@@ -40,7 +40,7 @@ const DirectionSelector = React.memo(({ direction, setDirection }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="mb-8"
-      role="radiogroup"
+      role="group"
       aria-label="选择转换方向"
     >
       <div className="relative bg-white/20 dark:bg-gray-800/30 backdrop-blur-lg rounded-xl p-1 border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
@@ -81,7 +81,8 @@ const DirectionSelector = React.memo(({ direction, setDirection }) => {
             <motion.button
               key={option.value}
               data-direction={option.value}
-              className={`relative flex-1 py-3 px-6 rounded-lg text-center cursor-pointer select-none ${
+              aria-pressed={direction === option.value}
+              className={`relative flex-1 py-3 px-6 rounded-lg text-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
                 direction === option.value
                   ? "text-blue-600 dark:text-blue-300 font-medium"
                   : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"

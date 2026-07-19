@@ -1,6 +1,6 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import errorAnimation from "public/animations/error.json";
 
 // 动态导入 LottiePlayer，并禁用 SSR，提高客户端渲染性能
 const LottiePlayer = dynamic(() => import("react-lottie-player"), {
@@ -17,6 +17,15 @@ const LottiePlayer = dynamic(() => import("react-lottie-player"), {
  * @param {string} props.error - 要显示的错误消息
  */
 const ErrorDisplay = ({ error }) => {
+  // 错误动画 JSON 改为运行时 fetch，避免打进首屏主包
+  const [errorAnimation, setErrorAnimation] = useState(null);
+
+  useEffect(() => {
+    fetch("/animations/error.json")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then(setErrorAnimation)
+      .catch(() => setErrorAnimation(null));
+  }, []);
   return (
     <motion.div
       // 容器动画：从下方淡入，增加视觉流畅感
@@ -36,12 +45,14 @@ const ErrorDisplay = ({ error }) => {
         className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-6 rounded-xl shadow-lg border border-red-200 dark:border-red-700/50 flex flex-col items-center justify-center"
       >
         {/* Lottie 错误动画播放器 */}
-        <LottiePlayer
-          animationData={errorAnimation} // 动画数据
-          loop={false} // 不循环播放
-          play // 播放动画
-          style={{ width: 100, height: 100, margin: "0 auto" }} // 动画尺寸和居中
-        />
+        {errorAnimation && (
+          <LottiePlayer
+            animationData={errorAnimation} // 动画数据
+            loop={false} // 不循环播放
+            play // 播放动画
+            style={{ width: 100, height: 100, margin: "0 auto" }} // 动画尺寸和居中
+          />
+        )}
         {/* 错误文本：使用红色系，与错误主题相符，并提供深色模式支持 */}
         <p className="text-red-600 dark:text-red-400 text-md mt-1 font-semibold leading-relaxed">
           {error}

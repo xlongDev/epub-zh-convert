@@ -44,15 +44,14 @@ export default function Header() {
   const title = "EPUB 繁简转换器";
 
   return (
-    <motion.nav
+    <motion.header
       initial="hidden" // 初始动画状态
       animate="visible" // 目标动画状态
       variants={titleVariants} // 应用标题动画配置
       className="flex justify-between items-center mb-8"
-      aria-label="导航栏"
     >
-      {/* 标题区域 - 字符级动画效果 */}
-      <motion.div
+      {/* 标题区域 - 字符级动画效果（h1 提供页面主标题语义，字符拆分仅作视觉动画） */}
+      <motion.h1
         className="text-3xl font-bold text-gray-800 dark:text-gray-100"
         initial="hidden"
         animate="visible"
@@ -78,13 +77,13 @@ export default function Header() {
             {char === " " ? "\u00A0" : char}
           </motion.span>
         ))}
-      </motion.div>
+      </motion.h1>
 
       {/* 功能按钮区域 - 包含主题切换和GitHub链接 */}
       <motion.div variants={titleVariants} className="flex space-x-4">
         <ThemeToggle /> 
         <GitHubLink /> 
       </motion.div>
-    </motion.nav>
+    </motion.header>
   );
 }

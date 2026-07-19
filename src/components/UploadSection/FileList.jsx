@@ -99,7 +99,7 @@ const FileList = React.memo(
                 <ul className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
                   {files.map((file, index) => (
                     <motion.li
-                      key={index}
+                      key={file.name}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{
                         opacity: 1,

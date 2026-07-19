@@ -17,8 +17,18 @@ export const convertEpubBuffer = async (
 ) => {
   const zip = new JSZip();
   const epubZip = await JSZip.loadAsync(arrayBuffer);
-  const totalFiles = Object.keys(epubZip.files).length;
+  let totalFiles = Object.keys(epubZip.files).length;
   let processedFiles = 0;
+
+  // EPUB 规范要求 mimetype 必须为 ZIP 首个条目且以 STORED（不压缩）方式存储，
+  // 否则部分阅读器会判定为不合规 EPUB。这里先把 mimetype 以 STORED 固定写入首位，
+  // 并在下方循环中跳过它（进度计数相应减一）。
+  const mimetypeEntry = epubZip.files["mimetype"];
+  if (mimetypeEntry && !mimetypeEntry.dir) {
+    const mimetypeContent = await mimetypeEntry.async("uint8array");
+    zip.file("mimetype", mimetypeContent, { compression: "STORE" });
+    totalFiles -= 1;
+  }
 
   const isTextFile = (path) =>
     path.endsWith('.html') ||
@@ -28,6 +38,7 @@ export const convertEpubBuffer = async (
     path.endsWith('nav.xhtml');
 
   for (const [path, fileEntry] of Object.entries(epubZip.files)) {
+    if (path === "mimetype") continue; // 已在循环外首位固定写入
     if (isCancelled()) {
       throw new DOMException('转换已取消', 'AbortError');
     }

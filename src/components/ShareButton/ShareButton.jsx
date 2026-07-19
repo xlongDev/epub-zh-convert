@@ -4,6 +4,13 @@ import { motion } from "framer-motion";
 
 const ShareButton = ({ file, fileName }) => {
   const [isSharing, setIsSharing] = useState(false);
+  const [message, setMessage] = useState("");
+
+  // 用非阻塞的轻提示替代 alert()：不中断操作，且对屏幕阅读器友好
+  const showMessage = (text) => {
+    setMessage(text);
+    setTimeout(() => setMessage(""), 3000);
+  };
 
   const handleShare = async () => {
     if (isSharing) return;
@@ -12,7 +19,6 @@ const ShareButton = ({ file, fileName }) => {
     try {
       let validFile = file;
       if (!(file instanceof File)) {
-        console.warn("文件不是 File 类型，尝试转换...");
         validFile = new File([file], fileName || "default.epub", {
           type: "application/epub+zip",
         });
@@ -29,9 +35,7 @@ const ShareButton = ({ file, fileName }) => {
         isDesktop && navigator.userAgent.includes("Chrome");
 
       if (isDesktopChrome) {
-        alert(
-          "桌面版 Chrome 不完全支持分享功能，请尝试使用移动设备或 Safari 浏览器。"
-        );
+        showMessage("桌面版 Chrome 不完全支持分享，请尝试移动设备或 Safari。");
         setIsSharing(false);
         return; // 停止流程，不触发下载
       }
@@ -45,16 +49,15 @@ const ShareButton = ({ file, fileName }) => {
       } else {
         const url = URL.createObjectURL(validFile);
         await navigator.clipboard.writeText(url);
-        alert("浏览器不支持文件分享，文件链接已复制到剪贴板！");
-        URL.revokeObjectURL(url);
+        // 复制到剪贴板的是 blob: URL，必须保留对象引用，
+        // 因此这里不能立即 revoke，否则用户粘贴出的链接会失效。
+        showMessage("浏览器不支持文件分享，文件链接已复制到剪贴板！");
       }
     } catch (error) {
       if (error.name === "AbortError" || error.name === "NotAllowedError") {
-        console.log("用户取消了分享操作。");
-        // 不显示错误提示，静默处理用户取消分享的情况
+        // 用户主动取消分享，静默处理
       } else {
-        console.error("分享失败:", error);
-        alert("分享失败，请检查文件类型或浏览器支持。");
+        showMessage("分享失败，请检查文件类型或浏览器支持。");
       }
     } finally {
       setIsSharing(false);
@@ -62,18 +65,30 @@ const ShareButton = ({ file, fileName }) => {
   };
 
   return (
-    <motion.button
-      onClick={handleShare}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 300, damping: 10 }}
-      className={`p-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors shadow-md ${
-        isSharing ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-      disabled={isSharing}
-    >
-      <FaShareAlt className="w-5 h-5" />
-    </motion.button>
+    <div className="relative flex flex-col items-end">
+      <motion.button
+        onClick={handleShare}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 300, damping: 10 }}
+        className={`p-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors shadow-md ${
+          isSharing ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={isSharing}
+        aria-label="分享文件"
+      >
+        <FaShareAlt className="w-5 h-5" />
+      </motion.button>
+      {message && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mt-2 text-xs text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 shadow-sm max-w-[200px] text-center"
+        >
+          {message}
+        </div>
+      )}
+    </div>
   );
 };
 

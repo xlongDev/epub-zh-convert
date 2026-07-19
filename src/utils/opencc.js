@@ -15,17 +15,14 @@ export const convertText = (text, direction = "t2s") => {
     return text;
   }
   
-  try {
-    if (direction === "t2s") {
-      return t2sConverter(text);
-    } else if (direction === "s2t") {
-      return s2tConverter(text);
-    }
-    return text; // 默认不转换
-  } catch (error) {
-    console.warn('文本转换失败:', error);
-    return text; // 转换失败时返回原文本
+  // 不再静默吞错：转换失败直接抛出，由上层（worker / EPUB 打包）捕获并提示用户，
+  // 避免产生「看似成功但内容未转换」的静默错误输出。
+  if (direction === "t2s") {
+    return t2sConverter(text);
+  } else if (direction === "s2t") {
+    return s2tConverter(text);
   }
+  return text; // 默认不转换
 };
 
 /**

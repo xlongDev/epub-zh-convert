@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -22,66 +22,81 @@ const ConvertedSection = React.memo(
   ({
     isComplete,
     error,
-    successAnimation,
     showDownloadPrompt,
     scrollToConvertedFiles,
     convertedFiles,
     handleDownloadSingle,
     handleDeleteConvertedFile,
     handleDownloadAll,
-  }) => (
-    <motion.div
-      layout
-      className="mt-4 min-h-[200px]" // 添加最小高度
-    >
-      <AnimatePresence>
-        {showDownloadPrompt && (
-          <DownloadPrompt
-            showDownloadPrompt={showDownloadPrompt}
-            scrollToConvertedFiles={scrollToConvertedFiles}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {isComplete && !error && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
-            layout
-            className="text-center converted-section"
-          >
+  }) => {
+    // 成功动画 JSON 改为运行时 fetch，避免打进首屏主包
+    const [successAnimation, setSuccessAnimation] = useState(null);
+
+    useEffect(() => {
+      if (isComplete && !error) {
+        fetch("/animations/success.json")
+          .then((res) => (res.ok ? res.json() : Promise.reject()))
+          .then(setSuccessAnimation)
+          .catch(() => setSuccessAnimation(null));
+      }
+    }, [isComplete, error]);
+
+    return (
+      <motion.div
+        layout
+        className="mt-4 min-h-[200px]" // 添加最小高度
+      >
+        <AnimatePresence>
+          {showDownloadPrompt && (
+            <DownloadPrompt
+              showDownloadPrompt={showDownloadPrompt}
+              scrollToConvertedFiles={scrollToConvertedFiles}
+            />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {isComplete && !error && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              layout
+              className="text-center converted-section"
             >
-              <LottiePlayer
-                animationData={successAnimation}
-                loop={false}
-                play
-                style={{ width: 120, height: 120, margin: "0 auto" }}
-              />
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                {successAnimation && (
+                  <LottiePlayer
+                    animationData={successAnimation}
+                    loop={false}
+                    play
+                    style={{ width: 120, height: 120, margin: "0 auto" }}
+                  />
+                )}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {error && <ErrorDisplay error={error} />}
-      </AnimatePresence>
-      <AnimatePresence>
-        {convertedFiles.length > 0 && (
-          <ConvertedFilesList
-            convertedFiles={convertedFiles}
-            handleDownloadSingle={handleDownloadSingle}
-            handleDeleteConvertedFile={handleDeleteConvertedFile}
-            handleDownloadAll={handleDownloadAll}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {error && <ErrorDisplay error={error} />}
+        </AnimatePresence>
+        <AnimatePresence>
+          {convertedFiles.length > 0 && (
+            <ConvertedFilesList
+              convertedFiles={convertedFiles}
+              handleDownloadSingle={handleDownloadSingle}
+              handleDeleteConvertedFile={handleDeleteConvertedFile}
+              handleDownloadAll={handleDownloadAll}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  }
 );
 
 export default ConvertedSection;

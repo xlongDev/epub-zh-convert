@@ -7,8 +7,6 @@ import { useFileConversion } from "@/hooks/useFileConversion";
 
 // 动画与配置
 import backgroundSchemes from "@/config/backgroundSchemes";
-import welcomeAnimation from "public/animations/welcome.json";
-import successAnimation from "public/animations/success.json";
 
 // 子组件
 import LayoutWrapper from "@/components/Home/LayoutWrapper";
@@ -155,9 +153,6 @@ export default function Home() {
     // 播放音频
     completedSoundRef.current
       .play()
-      .then(() => {
-        console.log("提示音播放成功");
-      })
       .catch((e) => {
         console.error("播放转换成功提示音失败:", e);
         // 尝试恢复 AudioContext
@@ -206,10 +201,7 @@ export default function Home() {
 
   return (
     <LayoutWrapper backgroundScheme={backgroundScheme}>
-      <WelcomeAnimation
-        animationData={welcomeAnimation}
-        isVisible={isWelcomeVisible}
-      />
+      <WelcomeAnimation isVisible={isWelcomeVisible} />
 
       <Header />
 
@@ -239,7 +231,6 @@ export default function Home() {
       <ConvertedSection
         isComplete={isComplete}
         error={error}
-        successAnimation={successAnimation}
         showDownloadPrompt={showDownloadPrompt}
         scrollToConvertedFiles={scrollToConvertedFiles}
         convertedFiles={convertedFiles}

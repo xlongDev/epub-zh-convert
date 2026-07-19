@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 
+/* Tailwind v4：让 dark: 工具类基于 .dark 类生效（next-themes 会在 <html> 上切换该类），
+   而非默认跟随 prefers-color-scheme，使主题切换真正作用于组件级样式。 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 自定义暗夜模式样式 */
 @layer utilities {
   .dark {
@@ -72,5 +76,18 @@ body, html {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+/* 尊重「减少动态效果」系统偏好：关闭 Tailwind 自定义关键帧动画与过渡。
+   （Framer Motion 的 JS 动画由 _app.js 中的 <MotionConfig reducedMotion="user"> 统一处理） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 

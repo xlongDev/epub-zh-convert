@@ -28,7 +28,7 @@ const FileUploader = React.memo(
     return (
       <div className="relative">
         <motion.div
-          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300
+          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2
             ${
               isDragging
                 ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/20"
@@ -36,6 +36,15 @@ const FileUploader = React.memo(
                 ? "border-blue-400 bg-blue-50/30 dark:bg-blue-900/10"
                 : "border-gray-300 dark:border-gray-600 backdrop-blur-lg bg-white/30 dark:bg-gray-700/30" // 将 backdrop-blur-md 改为 backdrop-blur-lg
             }`}
+          role="button"
+          tabIndex={0}
+          aria-label="点击或按回车选择 EPUB 文件，也可将文件拖放至此处"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              document.getElementById("file-upload").click();
+            }
+          }}
           onClick={() => document.getElementById("file-upload").click()} // 点击区域触发文件输入框
           onMouseDown={() => setIsClicking(true)} // 鼠标按下时设置点击状态
           onMouseUp={() => setIsClicking(false)} // 鼠标松开时取消点击状态
@@ -98,6 +107,7 @@ const FileUploader = React.memo(
           name="file-upload"
           type="file"
           className="sr-only"
+          aria-label="选择 EPUB 文件上传"
           onChange={onFileChange}
           multiple // 允许选择多个文件
           accept=".epub" // 仅接受.epub文件

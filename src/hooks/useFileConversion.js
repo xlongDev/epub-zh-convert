@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { convertFilename } from "@/utils/opencc";
 
 export const useFileConversion = (files, direction) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,6 +8,9 @@ export const useFileConversion = (files, direction) => {
   const [isComplete, setIsComplete] = useState(false);
   const abortControllerRef = useRef(null);
   const workerRef = useRef(null);
+  // 跟踪当前在途 Promise 的 reject，便于在 worker 被终止（取消）时主动 reject，
+  // 避免 Promise 永久悬挂导致 isLoading 卡死。
+  const pendingRejectRef = useRef(null);
 
   // 使用 ref 来跟踪最新的 direction 值
   const directionRef = useRef(direction);
@@ -60,26 +62,49 @@ export const useFileConversion = (files, direction) => {
   // 在 Web Worker 中转换单个文件（顺序处理，逐个 await）
   const convertInWorker = (worker, file, index, total) =>
     new Promise((resolve, reject) => {
+      pendingRejectRef.current = reject;
+
+      const cleanup = () => {
+        worker.removeEventListener("message", onMessage);
+        worker.removeEventListener("error", onError);
+        worker.removeEventListener("messageerror", onMessageError);
+        pendingRejectRef.current = null;
+      };
+
       const onMessage = (e) => {
-        const { type, percent, buffer, message, name: errName } = e.data;
+        const { type, percent, buffer, name, message, name: errName } = e.data;
         if (type === "progress") {
           const totalProgress =
             ((index + percent / 100) / total) * 100;
           setProgress(totalProgress);
         } else if (type === "done") {
-          worker.removeEventListener("message", onMessage);
+          cleanup();
           resolve({
             blob: new Blob([buffer]),
-            name: convertFilename(file.name, directionRef.current),
+            // 文件名由 Worker 回传（已包含方向转换后的名称）
+            name: name || file.name,
           });
         } else if (type === "error") {
-          worker.removeEventListener("message", onMessage);
+          cleanup();
           const err = new Error(message);
           err.name = errName || "Error";
           reject(err);
         }
       };
+
+      // worker 传输/脚本错误兜底：避免在 worker 崩溃时 Promise 永久悬挂
+      const onError = (e) => {
+        cleanup();
+        reject(new Error(e.message || "转换 Worker 运行出错"));
+      };
+      const onMessageError = () => {
+        cleanup();
+        reject(new Error("转换 Worker 消息解析失败"));
+      };
+
       worker.addEventListener("message", onMessage);
+      worker.addEventListener("error", onError);
+      worker.addEventListener("messageerror", onMessageError);
       worker.postMessage({
         type: "convert",
         file,
@@ -175,9 +200,13 @@ export const useFileConversion = (files, direction) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       if (workerRef.current) {
+        // 终止 worker 后原 Promise 不会再收到消息，需手动 reject 避免悬挂
+        const reject = pendingRejectRef.current;
         workerRef.current.postMessage({ type: "cancel" });
         workerRef.current.terminate();
         workerRef.current = null;
+        pendingRejectRef.current = null;
+        if (reject) reject(new DOMException("转换已取消", "AbortError"));
       }
       setIsLoading(false);
       setError("转换已取消");

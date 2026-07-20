@@ -11,7 +11,7 @@ const DragOverlay = React.memo(({ isDragging }) => {
     <AnimatePresence>
       {isDragging && (
         <motion.div
-          className="absolute inset-0 flex items-center justify-center bg-black/40 dark:bg-gray-900/80 rounded-xl backdrop-blur-sm"
+          className="absolute inset-0 flex items-center justify-center bg-black/40 dark:bg-gray-900/80 rounded-xl backdrop-blur-sm pointer-events-none"
           initial={{ opacity: 0 }}
           animate={{
             opacity: 1,

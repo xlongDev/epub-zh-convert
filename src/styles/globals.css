@@ -5,6 +5,404 @@
    而非默认跟随 prefers-color-scheme，使主题切换真正作用于组件级样式。 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* 设计令牌（T11）：集中定义品牌色与圆角，供组件按需采纳，避免散落魔法值。
+   注：tailwind.config.js 中的 safelist 暂予保留——背景渐变类名是在
+   config/backgroundSchemes.js 中以完整字符串组合而成，需确保被扫描/保留。 */
+@theme {
+  --radius-card: 1rem;
+  --color-brand: #3b82f6;
+  --color-brand-dark: #60a5fa;
+}
+
+/* ──────────────────── 液态玻璃设计系统 (Liquid Glass) ──────────────────── */
+/* 核心特征：backdrop-blur + 半透明背景 + 微妙边框 + 顶部高光 + 柔和阴影 */
+
+/* 基础玻璃卡片 — 容器级 */
+.glass {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+}
+.dark .glass {
+  background: rgba(30, 35, 45, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* 玻璃按钮 — 交互控件 */
+.glass-btn {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.dark .glass-btn {
+  background: rgba(40, 48, 62, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.dark .glass-btn:hover {
+  background: rgba(50, 58, 72, 0.6);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.glass-btn:active {
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+.dark .glass-btn:active {
+  background: rgba(60, 68, 82, 0.65);
+}
+
+/* ── 色调玻璃按钮（带品牌色/语义色 tint）── */
+.glass-btn-brand {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.22) 0%,
+    rgba(99, 102, 241, 0.18) 100%
+  );
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #3730a3;
+  box-shadow:
+    0 4px 20px rgba(59, 130, 246, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.08);
+  transition: all 0.25s ease;
+}
+.dark .glass-btn-brand {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.28) 0%,
+    rgba(99, 102, 241, 0.22) 100%
+  );
+  border-color: rgba(129, 140, 248, 0.3);
+  color: #a5b4fc;
+  box-shadow:
+    0 4px 20px rgba(59, 130, 246, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.glass-btn-brand:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.34) 0%,
+    rgba(99, 102, 241, 0.28) 100%
+  );
+  border-color: rgba(99, 102, 241, 0.42);
+  box-shadow:
+    0 6px 28px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.dark .glass-btn-brand:hover {
+  box-shadow: 0 6px 28px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.glass-btn-brand:active {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.42) 0%,
+    rgba(99, 102, 241, 0.35) 100%
+  );
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.18);
+}
+
+/* 危险色调玻璃（删除） */
+.glass-btn-danger {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.18) 0%,
+    rgba(220, 38, 38, 0.14) 100%
+  );
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(239, 68, 68, 0.26);
+  color: #b91c1c;
+  box-shadow:
+    0 4px 20px rgba(239, 68, 68, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+}
+.dark .glass-btn-danger {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.22) 0%,
+    rgba(220, 38, 38, 0.17) 100%
+  );
+  border-color: rgba(248, 113, 113, 0.25);
+  color: #fca5a5;
+  box-shadow:
+    0 4px 20px rgba(239, 68, 68, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.glass-btn-danger:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.28) 0%,
+    rgba(220, 38, 38, 0.22) 100%
+  );
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.18);
+}
+.dark .glass-btn-danger:hover {
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.22);
+}
+.glass-btn-danger:active {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.36) 0%,
+    rgba(220, 38, 38, 0.3) 100%
+  );
+}
+
+/* 成功色调玻璃（下载） */
+.glass-btn-success {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.18) 0%,
+    rgba(16, 185, 129, 0.14) 100%
+  );
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  color: #15803d;
+  box-shadow:
+    0 4px 20px rgba(34, 197, 94, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+}
+.dark .glass-btn-success {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.22) 0%,
+    rgba(16, 185, 129, 0.17) 100%
+  );
+  border-color: rgba(74, 222, 128, 0.25);
+  color: #86efac;
+  box-shadow:
+    0 4px 20px rgba(34, 197, 94, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.glass-btn-success:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.28) 0%,
+    rgba(16, 185, 129, 0.22) 100%
+  );
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.18);
+}
+.dark .glass-btn-success:hover {
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.22);
+}
+.glass-btn-success:active {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.36) 0%,
+    rgba(16, 185, 129, 0.3) 100%
+  );
+}
+
+/* 强调色玻璃（批量全部下载等次要操作） */
+.glass-btn-accent {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.18) 0%,
+    rgba(124, 58, 237, 0.14) 100%
+  );
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(139, 92, 246, 0.26);
+  color: #7c3aed;
+  box-shadow:
+    0 4px 20px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+}
+.dark .glass-btn-accent {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.22) 0%,
+    rgba(124, 58, 237, 0.17) 100%
+  );
+  border-color: rgba(167, 139, 250, 0.25);
+  color: #c4b5fd;
+  box-shadow:
+    0 4px 20px rgba(139, 92, 246, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.glass-btn-accent:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.28) 0%,
+    rgba(124, 58, 237, 0.22) 100%
+  );
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 24px rgba(139, 92, 246, 0.18);
+}
+.dark .glass-btn-accent:hover {
+  box-shadow: 0 6px 24px rgba(139, 92, 246, 0.22);
+}
+.glass-btn-accent:active {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.36) 0%,
+    rgba(124, 58, 237, 0.3) 100%
+  );
+}
+
+/* 液态玻璃复选框 — 取代实色白/绿方块 */
+.glass-checkbox {
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.dark .glass-checkbox {
+  background: rgba(40, 48, 62, 0.45);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.glass-checkbox:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.glass-checkbox-checked {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.42) 0%,
+    rgba(99, 102, 241, 0.38) 100%
+  );
+  border-color: rgba(99, 102, 241, 0.55);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 10px rgba(59, 130, 246, 0.25);
+}
+.dark .glass-checkbox-checked {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.5) 0%,
+    rgba(99, 102, 241, 0.44) 100%
+  );
+  border-color: rgba(129, 140, 248, 0.5);
+}
+/* 键盘聚焦可见性（无障碍） */
+.peer:focus-visible + .glass-checkbox {
+  outline: 2px solid rgba(99, 102, 241, 0.55);
+  outline-offset: 2px;
+}
+/* 勾选标记弹入动画 */
+@keyframes glass-check-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.glass-checkbox-checked svg {
+  animation: glass-check-pop 0.18s ease-out;
+}
+
+/* 玻璃内嵌面板 — 进度条/信息卡片容器 */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.dark .glass-panel {
+  background: rgba(30, 35, 45, 0.45);
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* 流体光泽扫过动画 (shimmer sweep) — 用于进度条填充或加载状态 */
+@keyframes glass-shimmer {
+  0% { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+.glass-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.25) 60%,
+    transparent 100%
+  );
+  animation: glass-shimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .glass-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 100%
+  );
+}
+
+/* 环形流体旋转 — 用于上传遮罩的 spinner 替代 */
+@keyframes glass-ring-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes glass-ring-dash {
+  0% { stroke-dashoffset: 280; }
+  100% { stroke-dashoffset: 70; } /* 75% visible arc */
+}
+
 /* 自定义暗夜模式样式 */
 @layer utilities {
   .dark {

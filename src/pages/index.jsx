@@ -22,11 +22,8 @@ import UploadSection from "@/components/UploadSection/UploadSection";
 import ConvertedSection from "@/components/ConvertedSection/ConvertedSection";
 
 export default function Home() {
-  const [backgroundScheme, setBackgroundScheme] = useState(
-    backgroundSchemes[0]
-  );
+  const [backgroundScheme, setBackgroundScheme] = useState(backgroundSchemes[0]);
   const [direction, setDirection] = useState("t2s");
-  const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [isFileListOpen, setIsFileListOpen] = useState(false);
   const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -101,6 +98,9 @@ export default function Home() {
     setConvertedFiles,
     isComplete,
     setIsComplete,
+    failedFiles,
+    isCancelled,
+    currentFileIndex,
     handleConvert: originalHandleConvert,
     handleCancel: originalHandleCancel,
   } = useFileConversion(files, direction);
@@ -174,9 +174,16 @@ export default function Home() {
   // 既避免 effect 内同步 setState 的级联渲染告警，又保持原有行为不变
   useEffect(() => {
     const id = requestAnimationFrame(() => {
-      if (error && !isLoading) {
+      if (isCancelled) {
+        // 用户主动取消：中性状态，不视为失败
+        setIsConversionFailedOrCancelled(false);
+        setIsComplete(false);
+      } else if (error && !isLoading) {
         setIsConversionFailedOrCancelled(true);
         setIsComplete(false);
+      } else if (failedFiles.length > 0 && !isLoading) {
+        // 批量转换有失败项
+        setIsConversionFailedOrCancelled(true);
       } else if (isLoading) {
         setIsConversionFailedOrCancelled(false);
         setIsComplete(false);
@@ -186,7 +193,7 @@ export default function Home() {
       }
     });
     return () => cancelAnimationFrame(id);
-  }, [error, isLoading, files.length, setIsComplete, setIsConversionFailedOrCancelled]);
+  }, [error, failedFiles, isLoading, isCancelled, files.length, setIsComplete, setIsConversionFailedOrCancelled]);
 
   // 转换成功提示音（副作用，不在渲染期同步 setState）
   useEffect(() => {
@@ -201,7 +208,7 @@ export default function Home() {
 
   return (
     <LayoutWrapper backgroundScheme={backgroundScheme}>
-      <WelcomeAnimation isVisible={isWelcomeVisible} />
+      <WelcomeAnimation isVisible={true} />
 
       <Header />
 
@@ -220,6 +227,7 @@ export default function Home() {
         handleDeleteFile={handleDeleteFileCallback}
         isLoading={isLoading}
         progress={progress}
+        currentFileIndex={currentFileIndex}
         isComplete={isComplete}
         isFileListOpen={isFileListOpen}
         setIsFileListOpen={setIsFileListOpen}
@@ -231,6 +239,8 @@ export default function Home() {
       <ConvertedSection
         isComplete={isComplete}
         error={error}
+        failedFiles={failedFiles}
+        isCancelled={isCancelled}
         showDownloadPrompt={showDownloadPrompt}
         scrollToConvertedFiles={scrollToConvertedFiles}
         convertedFiles={convertedFiles}

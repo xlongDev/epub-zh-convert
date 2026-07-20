@@ -6,6 +6,9 @@ export const useFileConversion = (files, direction) => {
   const [error, setError] = useState(null);
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [failedFiles, setFailedFiles] = useState([]); // 聚合单文件失败清单
+  const [isCancelled, setIsCancelled] = useState(false); // 用户主动取消（非错误）
+  const [currentFileIndex, setCurrentFileIndex] = useState(0); // 当前正在转换的文件序号
   const abortControllerRef = useRef(null);
   const workerRef = useRef(null);
   // 跟踪当前在途 Promise 的 reject，便于在 worker 被终止（取消）时主动 reject，
@@ -117,6 +120,9 @@ export const useFileConversion = (files, direction) => {
 
     setIsLoading(true);
     setError(null);
+    setIsCancelled(false);
+    setFailedFiles([]);
+    setCurrentFileIndex(0);
     setProgress(0);
     setIsComplete(false);
     setConvertedFileNames(new Set());
@@ -141,6 +147,7 @@ export const useFileConversion = (files, direction) => {
         ? convertInWorker(worker, file, index, files.length)
         : convertOnMainThread(file, index, files.length);
 
+    const failedList = [];
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -149,6 +156,7 @@ export const useFileConversion = (files, direction) => {
           break;
         }
 
+        setCurrentFileIndex(i); // 更新当前处理文件序号，供进度区展示「第 i/N」
         try {
           const result = await runOne(file, i);
 
@@ -172,10 +180,10 @@ export const useFileConversion = (files, direction) => {
             new Set(prevNames).add(file.name)
           );
         } catch (err) {
-          // 如果是取消操作，不显示错误
+          // 如果是取消操作，不显示为错误；否则聚合进失败清单
           if (err.name !== "AbortError") {
             console.error(`文件 ${file.name} 转换失败:`, err.message);
-            setError(`文件 ${file.name} 转换失败: ${err.message || "未知错误"}`);
+            failedList.push({ name: file.name, message: err.message || "未知错误" });
           }
         }
       }
@@ -193,6 +201,7 @@ export const useFileConversion = (files, direction) => {
       if (worker) worker.terminate();
       workerRef.current = null;
       setIsLoading(false);
+      setFailedFiles(failedList); // 统一提交失败清单
     }
   };
 
@@ -209,7 +218,7 @@ export const useFileConversion = (files, direction) => {
         if (reject) reject(new DOMException("转换已取消", "AbortError"));
       }
       setIsLoading(false);
-      setError("转换已取消");
+      setIsCancelled(true); // 用户主动取消，视为中性状态而非错误
       setIsComplete(false);
     }
   };
@@ -222,6 +231,9 @@ export const useFileConversion = (files, direction) => {
     setConvertedFiles,
     isComplete,
     setIsComplete,
+    failedFiles,
+    isCancelled,
+    currentFileIndex,
     handleConvert,
     handleCancel,
   };

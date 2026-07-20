@@ -162,7 +162,8 @@ const ConvertedFilesList = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, translateX: "100%" }}
                   transition={{ duration: 0.2, delay: index * 0.05 }}
-                  className="flex justify-between items-center p-4 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                  className="flex justify-between items-center p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200
+                    bg-white/25 dark:bg-gray-800/35 backdrop-blur-lg border border-white/30 dark:border-white/[0.06]"
                 >
                   <div className="flex items-center min-w-0 flex-1">
                     <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -184,34 +185,28 @@ const ConvertedFilesList = ({
                       </div>
                     </div>
                   </div>
-                  <div className="flex space-x-4 flex-shrink-0">
+                  <div className="flex space-x-2.5 flex-shrink-0">
                     <ShareButton file={file.blob} fileName={file.name} />
                     <motion.button
                       id={`download-${index}`}
                       onClick={() => wrappedHandleDownloadSingle(index)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 10,
-                      }}
-                      className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors shadow-md"
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 12 }}
+                      className="p-2.5 rounded-xl glass-btn-success shadow-sm"
+                      aria-label={`下载 ${file.name}`}
                     >
-                      <FaDownload className="w-5 h-5" />
+                      <FaDownload className="w-4.5 h-4.5" />
                     </motion.button>
                     <motion.button
                       onClick={() => handleDeleteConvertedFile([index])}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 10,
-                      }}
-                      className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-md"
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 12 }}
+                      className="p-2.5 rounded-xl glass-btn-danger shadow-sm"
+                      aria-label={`删除 ${file.name}`}
                     >
-                      <FaTrash className="w-5 h-5" />
+                      <FaTrash className="w-4.5 h-4.5" />
                     </motion.button>
                   </div>
                 </motion.li>
@@ -234,22 +229,22 @@ const ConvertedFilesList = ({
                 }}
                 className="mt-4 space-y-4"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <motion.button
                     onClick={handleDeleteSelected}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                    className="w-full mt-2 bg-red-500 text-white py-3 px-6 rounded-xl hover:bg-red-600 transition-colors shadow-md"
+                    whileHover={{ scale: 1.015 }}
+                    whileTap={{ scale: 0.975 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 14 }}
+                    className="w-full mt-2 py-3 px-6 rounded-xl glass-btn-danger shadow-sm font-medium"
                   >
                     删除所选 ({selectedFiles.size})
                   </motion.button>
                   <motion.button
                     onClick={handleDownloadSelected}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                    className="w-full mt-2 bg-green-500 text-white py-3 px-6 rounded-xl hover:bg-green-600 transition-colors shadow-md"
+                    whileHover={{ scale: 1.015 }}
+                    whileTap={{ scale: 0.975 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 14 }}
+                    className="w-full mt-2 py-3 px-6 rounded-xl glass-btn-success shadow-sm font-medium"
                   >
                     批量下载所选 ({selectedFiles.size})
                   </motion.button>
@@ -260,10 +255,10 @@ const ConvertedFilesList = ({
           
           <motion.button
             onClick={handleDownloadAllFiles}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 300, damping: 10 }}
-            className="mt-6 w-full bg-[#8B5CF6] text-white py-3 px-6 rounded-xl hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors shadow-md"
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.975 }}
+            transition={{ type: "spring", stiffness: 350, damping: 14 }}
+            className="mt-5 w-full py-3 px-6 rounded-xl glass-btn-accent shadow-sm font-medium"
           >
             批量下载所有文件
           </motion.button>

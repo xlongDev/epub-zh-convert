@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-
-// 动态导入 Lottie 播放器（禁用 SSR），将 lottie-web 移出首屏主包
-const LottiePlayer = dynamic(() => import("react-lottie-player"), {
-  ssr: false,
-});
+import { motion } from "framer-motion";
+import Lottie from "@/components/Lottie/Lottie";
 
 const WelcomeAnimation = React.memo(({ isVisible }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +39,12 @@ const WelcomeAnimation = React.memo(({ isVisible }) => {
   if (!isVisible) return null;
 
   return (
-    <div className="mb-4 text-center">
+    <motion.div
+      className="mb-4 text-center"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.5 } }}
+    >
       <div className="mx-auto relative" style={{ width: 150, height: 150 }}>
         {/* 动感骨架占位 */}
         <div
@@ -51,8 +53,6 @@ const WelcomeAnimation = React.memo(({ isVisible }) => {
           }`}
         >
           <div className="w-full h-full rounded-full flex items-center justify-center">
-            {/* 移除最外层圆圈背景，只保留透明容器 */}
-
             {/* 脉动光晕效果 */}
             <div className="absolute inset-0 rounded-full animate-pulse-slow bg-gradient-to-r from-blue-200/10 to-purple-200/5 dark:from-blue-400/5 dark:to-purple-400/5" />
 
@@ -92,16 +92,17 @@ const WelcomeAnimation = React.memo(({ isVisible }) => {
               isLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
             }`}
           >
-            <LottiePlayer
+            <Lottie
               animationData={animationData}
               loop={true}
               play={!isLoading}
               style={{ width: 150, height: 150 }}
+              ariaLabel="欢迎"
             />
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 });
 

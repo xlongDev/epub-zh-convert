@@ -9,8 +9,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const FileUploader = React.memo(
   ({
     onFileChange, // 文件选择事件处理器
-    onDragOver, // 拖拽进入事件处理器
-    onDragLeave, // 拖拽离开事件处理器
+    onDragEnter, // 拖拽进入事件处理器（计数 +1）
+    onDragOver, // 拖拽悬停事件处理器
+    onDragLeave, // 拖拽离开事件处理器（计数 -1）
     onDrop, // 拖拽释放事件处理器
     isDragging, // 外部传入的拖拽状态
     isLoading, // 外部传入的加载状态
@@ -50,8 +51,9 @@ const FileUploader = React.memo(
           onMouseUp={() => setIsClicking(false)} // 鼠标松开时取消点击状态
           onMouseEnter={() => setIsHoveringUpload(true)} // 鼠标进入时设置悬停状态
           onMouseLeave={() => setIsHoveringUpload(false)} // 鼠标离开时取消悬停状态
-          onDragOver={onDragOver} // 拖拽进入事件
-          onDragLeave={onDragLeave} // 拖拽离开事件
+          onDragEnter={onDragEnter} // 拖拽进入事件（计数）
+          onDragOver={onDragOver} // 拖拽悬停事件
+          onDragLeave={onDragLeave} // 拖拽离开事件（计数）
           onDrop={onDrop} // 拖拽释放事件
           whileHover={{ scale: 1.01 }} // 悬停时轻微放大
           whileTap={{ scale: 0.99 }} // 点击时轻微缩小
@@ -112,26 +114,86 @@ const FileUploader = React.memo(
           multiple // 允许选择多个文件
           accept=".epub" // 仅接受.epub文件
         />
-        {/* 加载中的覆盖层和进度百分比显示 */}
+        {/* 液态玻璃加载遮罩 — 流体进度环 + 玻璃质感 */}
         {isLoading && (
           <motion.div
-            className="absolute inset-0 bg-transparent backdrop-blur-md backdrop-brightness-90 dark:backdrop-brightness-110 rounded-xl flex items-center justify-center"
+            className="absolute inset-0 rounded-xl flex items-center justify-center"
+            style={{
+              background: "rgba(255,255,255,0.12)",
+              backdropFilter: "blur(8px) saturate(140%)",
+              WebkitBackdropFilter: "blur(8px) saturate(140%)",
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            aria-hidden="true"
           >
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 relative flex items-center justify-center">
-                <div className="absolute w-full h-full flex items-center justify-center">
-                  <div className="w-14 h-14 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
-                </div>
-                <div className="text-blue-600 dark:text-blue-400 font-medium text-sm z-10">
+            {/* 流体玻璃进度环 */}
+            <div className="relative w-20 h-20">
+              {/* 外层光晕 */}
+              <div
+                className="absolute -inset-3 rounded-full opacity-30 blur-lg"
+                style={{ background: "conic-gradient(from 0deg, #60a5fa, #a78bfa, #34d399, #60a5fa)" }}
+              />
+              {/* SVG 环形进度 */}
+              <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                {/* 背景轨道 */}
+                <circle
+                  cx="40" cy="40" r="34"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.25)"
+                  strokeWidth="4.5"
+                  className="dark:stroke-white/[0.08]"
+                />
+                {/* 动画填充环 */}
+                <motion.circle
+                  cx="40" cy="40" r="34"
+                  fill="none"
+                  stroke="url(#glass-progress-gradient)"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 34}
+                  initial={{ strokeDashoffset: 2 * Math.PI * 34 }}
+                  animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - progress / 100) }}
+                  transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+                />
+                {/* 渐变定义 */}
+                <defs>
+                  <linearGradient id="glass-progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="50%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              {/* 旋转外圈装饰（独立于进度的持续旋转） */}
+              <div
+                className="absolute inset-0 rounded-full border-[3px] border-transparent"
+                style={{
+                  borderTopColor: "rgba(96,165,250,0.45)",
+                  borderRightColor: "rgba(167,139,250,0.25)",
+                  animation: "glass-ring-spin 2s linear infinite",
+                }}
+              />
+              <style>{`
+                @keyframes glass-ring-spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+              {/* 中心百分比文字 */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="
+                    text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-md
+                    bg-white/50 dark:bg-white/[0.08]
+                    backdrop-blur-md
+                    text-indigo-600 dark:text-indigo-300
+                    shadow-sm
+                  "
+                >
                   {Math.round(progress)}%
-                </div>
+                </span>
               </div>
-              {/* <p className="text-sm text-gray-800 dark:text-gray-300">
-                正在转换中...
-              </p> */}
             </div>
           </motion.div>
         )}

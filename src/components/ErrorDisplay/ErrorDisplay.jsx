@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-
-// 动态导入 LottiePlayer，并禁用 SSR，提高客户端渲染性能
-const LottiePlayer = dynamic(() => import("react-lottie-player"), {
-  ssr: false,
-});
+import Lottie from "@/components/Lottie/Lottie";
 
 /**
  * ErrorDisplay 组件
@@ -46,11 +41,12 @@ const ErrorDisplay = ({ error }) => {
       >
         {/* Lottie 错误动画播放器 */}
         {errorAnimation && (
-          <LottiePlayer
+          <Lottie
             animationData={errorAnimation} // 动画数据
             loop={false} // 不循环播放
             play // 播放动画
             style={{ width: 100, height: 100, margin: "0 auto" }} // 动画尺寸和居中
+            ariaLabel="转换失败"
           />
         )}
         {/* 错误文本：使用红色系，与错误主题相符，并提供深色模式支持 */}

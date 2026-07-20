@@ -12,23 +12,14 @@ const Checkbox = ({ checked, onChange, label, title, className = '' }) => {
         onChange={onChange}
         className="sr-only peer"
       />
-      <div 
-        className={`
-          w-5 h-5 flex items-center justify-center
-          border-2 rounded-md transition-all duration-200  // 修改为rounded-md
-          border-gray-300 bg-white  // 日间模式优化为白色背景和浅灰色边框
-          peer-checked:border-green-500 peer-checked:bg-green-500
-          dark:border-gray-500 dark:bg-gray-700
-          dark:peer-checked:border-green-500 dark:peer-checked:bg-green-500
-          peer-focus:ring-2 peer-focus:ring-green-300 dark:peer-focus:ring-green-500/50
-          hover:border-green-400 dark:hover:border-green-400
-        `}
+      <div
+        className={`glass-checkbox ${checked ? "glass-checkbox-checked" : ""}`}
       >
         {checked && (
-          <svg 
-            className="w-3 h-3 text-white" 
-            viewBox="0 0 12 10" 
-            fill="none" 
+          <svg
+            className="w-3 h-3"
+            viewBox="0 0 12 10"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path 

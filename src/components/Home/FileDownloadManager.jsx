@@ -38,18 +38,42 @@ export function useFileDownloadManager(setIsComplete, setIsConversionFailedOrCan
 
   /**
    * 下载所有转换后的文件
+   * 多个文件时打包为单个 ZIP（已依赖 jszip），规避浏览器对多次触发下载的拦截（T9）
    * @param {Array} convertedFiles - 转换后的文件数组
    */
-  const handleDownloadAll = (convertedFiles) => {
-    convertedFiles.forEach((file, index) => {
-      const url = URL.createObjectURL(file.blob);
+  const handleDownloadAll = async (convertedFiles) => {
+    if (!convertedFiles || convertedFiles.length === 0) return;
+    // 单文件直接下载，无需打包
+    if (convertedFiles.length === 1) {
+      handleDownloadSingle(convertedFiles, 0);
+      return;
+    }
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      convertedFiles.forEach((file) => {
+        zip.file(file.name, file.blob);
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = file.name;
+      a.download = "epub-zh-convert.zip";
       a.click();
       URL.revokeObjectURL(url);
-      animateDownloadButton(`download-${index}`); // 为每个下载按钮添加动画
-    });
+    } catch (err) {
+      console.error("打包下载失败，回退为逐个下载:", err);
+      // 回退：逐个下载
+      convertedFiles.forEach((file, index) => {
+        const url = URL.createObjectURL(file.blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        animateDownloadButton(`download-${index}`);
+      });
+    }
   };
 
   /**

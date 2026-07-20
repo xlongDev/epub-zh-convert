@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { fadeInUp, entranceStagger } from "@/utils/animations";
 
 const DirectionSelector = React.memo(({ direction, setDirection }) => {
   const [activePosition, setActivePosition] = useState({ x: 0, width: 0 });
@@ -36,9 +37,9 @@ const DirectionSelector = React.memo(({ direction, setDirection }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      variants={fadeInUp(entranceStagger.direction)}
+      initial="hidden"
+      animate="visible"
       className="mb-8"
       role="group"
       aria-label="选择转换方向"

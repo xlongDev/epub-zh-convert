@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
  * 优化了毛玻璃效果和文件项视觉层次
  */
 const FileList = React.memo(
-  ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile }) => {
+  ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile, isLoading = false, currentFileIndex = 0 }) => {
     // Helper function to format file size
     const formatFileSize = (sizeInBytes) => {
       if (sizeInBytes === 0) return "0 MB";
@@ -17,7 +17,7 @@ const FileList = React.memo(
 
     return (
       <motion.div
-        className="bg-white/10 dark:bg-gray-800/10 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/40 dark:border-gray-700/60 shadow-xl overflow-hidden"
+        className="glass rounded-2xl shadow-lg overflow-hidden"
         layout // 添加布局动画
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -25,7 +25,7 @@ const FileList = React.memo(
       >
         {/* 文件列表头部，点击可展开/收起 */}
         <div
-          className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/30 dark:hover:bg-gray-700/30 transition-colors rounded-t-2xl backdrop-blur-lg shadow-sm"
+          className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/20 dark:hover:bg-white/[0.04] transition-colors duration-200 rounded-t-2xl"
           onClick={() => setIsFileListOpen(!isFileListOpen)}
         >
           <div className="flex items-center">
@@ -95,22 +95,35 @@ const FileList = React.memo(
               }}
               className="overflow-hidden"
             >
-              <div className="border-t border-white/40 dark:border-gray-700/60 p-3 bg-gradient-to-b from-white/10 to-transparent dark:from-gray-800/10">
-                <ul className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                  {files.map((file, index) => (
+              <div className="border-t border-white/20 dark:border-white/[0.05] p-3 bg-white/5 dark:bg-black/10">
+                <ul className="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
+                  {files.map((file, index) => {
+                    // 逐文件状态（顺序转换）：已完成 / 转换中 / 待转换（T6）
+                    const status = !isLoading
+                      ? null
+                      : index < currentFileIndex
+                      ? "done"
+                      : index === currentFileIndex
+                      ? "active"
+                      : "pending";
+                    return (
                     <motion.li
                       key={file.name}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{
                         opacity: 1,
                         y: 0,
                         transition: {
-                          delay: index * 0.05,
-                          duration: 0.3,
+                          delay: index * 0.04,
+                          duration: 0.28,
                         },
                       }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="flex items-center justify-between bg-white/60 dark:bg-gray-700/50 backdrop-blur-md backdrop-saturate-150 p-3 rounded-xl border border-white/50 dark:border-gray-600/60 shadow-sm hover:shadow transition-all duration-200"
+                      className={`flex items-center justify-between p-3 rounded-xl border backdrop-blur-md transition-all duration-200 shadow-sm hover:shadow ${
+                        status === "active"
+                          ? "bg-blue-50/40 dark:bg-blue-900/15 border-blue-300/50 dark:border-blue-500/30 ring-1 ring-blue-300/40 dark:ring-blue-500/25"
+                          : "glass-btn bg-white/18 dark:bg-white/[0.04] border-white/25 dark:border-white/08"
+                      }`}
                     >
                       <div className="flex items-center truncate min-w-0 flex-1">
                         {/* 文件类型图标 */}
@@ -141,7 +154,25 @@ const FileList = React.memo(
                           )}
                         </div>
                       </div>
-                      {/* 删除文件按钮 */}
+                      {/* 逐文件状态徽标（T6） */}
+                      {status && (
+                        <span
+                          className={`mr-2 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                            status === "active"
+                              ? "bg-blue-100/70 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
+                              : status === "done"
+                              ? "bg-green-100/70 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                              : "bg-gray-100/70 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
+                          {status === "active" && (
+                            <span className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                          )}
+                          {status === "done" && "✓"}
+                          {status === "active" ? "转换中" : status === "done" ? "已完成" : "待转换"}
+                        </span>
+                      )}
+                      {/* 删除文件按钮 — 玻璃风格 */}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -149,7 +180,7 @@ const FileList = React.memo(
                           e.stopPropagation();
                           handleDeleteFile(index);
                         }}
-                        className="text-gray-600 hover:text-red-500 dark:text-gray-300 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-red-100/60 dark:hover:bg-red-900/30 backdrop-blur-sm transition-colors flex-shrink-0"
+                        className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-red-100/50 dark:hover:bg-red-900/25 backdrop-blur-sm transition-colors duration-200 flex-shrink-0"
                         aria-label="删除文件"
                       >
                         <svg
@@ -168,7 +199,8 @@ const FileList = React.memo(
                         </svg>
                       </motion.button>
                     </motion.li>
-                  ))}
+                  );
+                  })}
                 </ul>
               </div>
             </motion.div>

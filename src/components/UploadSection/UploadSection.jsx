@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { uploadVariants } from "@/utils/animations";
 
 // ⬇️ 拆分后的子组件
 import DragOverlay from "./DragOverlay";
@@ -27,6 +28,7 @@ const UploadSection = React.memo(
     handleDeleteFile,
     isLoading,
     progress,
+    currentFileIndex,
     isComplete,
     isFileListOpen,
     setIsFileListOpen,
@@ -52,19 +54,34 @@ const UploadSection = React.memo(
       handleFileChange(event);
     };
 
+    // 🖱️ 拖拽计数器：规避子元素边界 dragenter/leave 互相抵消导致的遮罩闪烁
+    const dragCounter = useRef(0);
+    const handleDragEnter = (e) => {
+      e.preventDefault();
+      dragCounter.current += 1;
+      setIsDragging(true);
+    };
+    const handleDragLeave = (e) => {
+      e.preventDefault();
+      dragCounter.current -= 1;
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setIsDragging(false);
+      }
+    };
+    const handleDrop = (e) => {
+      e.preventDefault();
+      dragCounter.current = 0;
+      setIsDragging(false);
+      handleFilteredFileChange(e);
+    };
+
     return (
       <motion.div
         className="relative p-6 rounded-xl shadow-2xl overflow-hidden"
-        initial={{ opacity: 0, y: 50 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: 0.6,
-            ease: [0.4, 0, 0.2, 1],
-            delay: 0.2,
-          },
-        }}
+        variants={uploadVariants}
+        initial="hidden"
+        animate="visible"
         exit={{
           opacity: 0,
           y: 20,
@@ -102,19 +119,10 @@ const UploadSection = React.memo(
 
           <FileUploader
             onFileChange={handleFilteredFileChange}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-              handleFilteredFileChange(e);
-            }}
+            onDragEnter={handleDragEnter}
+            onDragOver={(e) => e.preventDefault()}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
             isDragging={isDragging}
             isFileSelected={isFileSelected}
             isLoading={isLoading}
@@ -147,6 +155,8 @@ const UploadSection = React.memo(
                   isFileListOpen={isFileListOpen}
                   setIsFileListOpen={setIsFileListOpen}
                   handleDeleteFile={handleDeleteFile}
+                  isLoading={isLoading}
+                  currentFileIndex={currentFileIndex}
                 />
               </motion.div>
             )}
@@ -170,7 +180,11 @@ const UploadSection = React.memo(
             )}
           </AnimatePresence>
 
-          <ProgressIndicator progress={progress} />
+          <ProgressIndicator
+            progress={progress}
+            currentFileIndex={currentFileIndex}
+            totalFiles={files.length}
+          />
         </div>
       </motion.div>
     );

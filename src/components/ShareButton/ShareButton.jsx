@@ -68,22 +68,22 @@ const ShareButton = ({ file, fileName }) => {
     <div className="relative flex flex-col items-end">
       <motion.button
         onClick={handleShare}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: "spring", stiffness: 300, damping: 10 }}
-        className={`p-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors shadow-md ${
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+        transition={{ type: "spring", stiffness: 350, damping: 12 }}
+        className={`p-2.5 rounded-xl glass-btn-brand shadow-sm ${
           isSharing ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={isSharing}
         aria-label="分享文件"
       >
-        <FaShareAlt className="w-5 h-5" />
+        <FaShareAlt className="w-4.5 h-4.5" />
       </motion.button>
       {message && (
         <div
           role="status"
           aria-live="polite"
-          className="mt-2 text-xs text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 shadow-sm max-w-[200px] text-center"
+          className="mt-2 text-xs text-gray-700 dark:text-gray-200 glass rounded-lg px-3 py-1.5 shadow-lg max-w-[200px] text-center"
         >
           {message}
         </div>

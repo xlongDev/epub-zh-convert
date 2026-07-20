@@ -87,7 +87,7 @@ export default function Home() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const { files, isFileSelected, handleFileChange, handleDeleteFile } =
+  const { files, isFileSelected, handleFileChange, handleDeleteFile, clearFiles } =
     useFileHandling();
 
   const {
@@ -101,8 +101,12 @@ export default function Home() {
     failedFiles,
     isCancelled,
     currentFileIndex,
+    isPaused,
     handleConvert: originalHandleConvert,
     handleCancel: originalHandleCancel,
+    handlePause,
+    handleResume,
+    resetConversion,
   } = useFileConversion(files, direction);
 
   // 使用封装的转换管理逻辑
@@ -132,6 +136,15 @@ export default function Home() {
     },
     [handleDeleteFile, files.length, setIsComplete, setIsConversionFailedOrCancelled, setShowDownloadPrompt]
   );
+
+  // 一键清空：上传列表 + 转换结果全部重置，回到初始上传状态
+  const handleClearAll = useCallback(() => {
+    clearFiles();
+    resetConversion();
+    setIsConversionFailedOrCancelled(false);
+    setIsFileListOpen(false);
+    setShowDownloadPrompt(false);
+  }, [clearFiles, resetConversion, setIsConversionFailedOrCancelled, setIsFileListOpen, setShowDownloadPrompt]);
 
   // 滚动至转换结果区域
   const scrollToConvertedFiles = () => {
@@ -233,7 +246,11 @@ export default function Home() {
         setIsFileListOpen={setIsFileListOpen}
         handleConvert={handleConvert}
         handleCancel={handleCancel}
+        isPaused={isPaused}
+        handlePause={handlePause}
+        handleResume={handleResume}
         isConversionFailedOrCancelled={isConversionFailedOrCancelled}
+        onClearUploads={handleClearAll}
       />
 
       <ConvertedSection
@@ -254,6 +271,9 @@ export default function Home() {
           handleDeleteConvertedFile(convertedFiles, indices, setConvertedFiles)
         }
         handleDownloadAll={() => handleDownloadAll(convertedFiles)}
+        onClearAll={handleClearAll}
+        uploadFileCount={files.length}
+        isLoading={isLoading}
       />
 
       <DownloadPromptHandler

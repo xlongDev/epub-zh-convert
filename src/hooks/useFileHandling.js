@@ -23,10 +23,17 @@ export const useFileHandling = () => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  // 一键清空上传列表（用于「清空全部」重置流程）
+  const clearFiles = () => {
+    setFiles([]);
+    setIsFileSelected(false);
+  };
+
   return {
     files,
     isFileSelected,
     handleFileChange,
     handleDeleteFile,
+    clearFiles,
   };
 };

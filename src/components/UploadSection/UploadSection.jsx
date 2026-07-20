@@ -34,7 +34,11 @@ const UploadSection = React.memo(
     setIsFileListOpen,
     handleConvert,
     handleCancel,
+    isPaused,
+    handlePause,
+    handleResume,
     isConversionFailedOrCancelled,
+    onClearUploads,
   }) => {
     // 🎯 仅接收 EPUB 文件的封装逻辑
     const handleFilteredFileChange = (e) => {
@@ -157,6 +161,7 @@ const UploadSection = React.memo(
                   handleDeleteFile={handleDeleteFile}
                   isLoading={isLoading}
                   currentFileIndex={currentFileIndex}
+                  onClearUploads={onClearUploads}
                 />
               </motion.div>
             )}
@@ -176,6 +181,9 @@ const UploadSection = React.memo(
                 isComplete={isComplete}
                 handleConvert={handleConvert}
                 handleCancel={handleCancel}
+                isPaused={isPaused}
+                handlePause={handlePause}
+                handleResume={handleResume}
               />
             )}
           </AnimatePresence>
@@ -184,6 +192,7 @@ const UploadSection = React.memo(
             progress={progress}
             currentFileIndex={currentFileIndex}
             totalFiles={files.length}
+            isPaused={isPaused}
           />
         </div>
       </motion.div>

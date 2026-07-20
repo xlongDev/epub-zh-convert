@@ -7,6 +7,25 @@ const TOOLTIP_WIDTH = 220;
 const TOOLTIP_GAP = 8;
 const SHOW_DURATION = 3500;
 
+// 记录因「复制到剪贴板」而创建的 blob URL。这类 URL 不能在复制后立即 revoke
+// （否则用户粘贴出的链接会失效），因此累积在会话内。页面卸载时统一回收，
+// 防止多次分享后 blob URL 在内存中持续堆积造成泄漏。
+const sharedBlobUrls = new Set();
+if (typeof window !== "undefined") {
+  const revokeAllShared = () => {
+    sharedBlobUrls.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        /* 已失效则忽略 */
+      }
+    });
+    sharedBlobUrls.clear();
+  };
+  window.addEventListener("pagehide", revokeAllShared);
+  window.addEventListener("beforeunload", revokeAllShared);
+}
+
 const ShareButton = ({ file, fileName }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [message, setMessage] = useState("");
@@ -85,6 +104,7 @@ const ShareButton = ({ file, fileName }) => {
         });
       } else {
         const url = URL.createObjectURL(validFile);
+        sharedBlobUrls.add(url); // 记录以便页面卸载时统一回收
         await navigator.clipboard.writeText(url);
         // 复制到剪贴板的是 blob: URL，必须保留对象引用，
         // 因此这里不能立即 revoke，否则用户粘贴出的链接会失效。

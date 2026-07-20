@@ -98,6 +98,9 @@ const ConvertedSection = React.memo(
     handleDownloadSingle,
     handleDeleteConvertedFile,
     handleDownloadAll,
+    onClearAll,
+    uploadFileCount = 0,
+    isLoading = false,
   }) => {
     // 成功状态判定（传递给 ConvertedFilesList 的 header badge 使用）
     const isFullSuccess =
@@ -139,6 +142,9 @@ const ConvertedSection = React.memo(
                 handleDeleteConvertedFile={handleDeleteConvertedFile}
                 handleDownloadAll={handleDownloadAll}
                 isComplete={isFullSuccess}
+                onClearAll={onClearAll}
+                uploadFileCount={uploadFileCount}
+                isLoading={isLoading}
               />
             </>
           )}

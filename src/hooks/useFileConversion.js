@@ -15,6 +15,11 @@ export const useFileConversion = (files, direction) => {
   // 避免 Promise 永久悬挂导致 isLoading 卡死。
   const pendingRejectRef = useRef(null);
 
+  // 暂停 / 继续状态
+  const [isPaused, setIsPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const resumeResolverRef = useRef(null); // 暂停时挂起主循环的 resolve，用于「继续」时放行
+
   // 使用 ref 来跟踪最新的 direction 值
   const directionRef = useRef(direction);
 
@@ -160,6 +165,13 @@ export const useFileConversion = (files, direction) => {
     try {
       for (let i = 0; i < currentFiles.length; i++) {
         const file = currentFiles[i];
+        // 暂停等待：当前文件已 await 完成，在「处理下一个文件前」挂起，
+        // 直到 handleResume 调用 resumeResolverRef.current() 放行
+        if (pausedRef.current) {
+          await new Promise((resolve) => {
+            resumeResolverRef.current = resolve;
+          });
+        }
         // 检查是否已取消
         if (abortControllerRef.current.signal.aborted) {
           break;
@@ -214,7 +226,30 @@ export const useFileConversion = (files, direction) => {
     }
   }, []);
 
+  // 暂停：仅置标志，不 abort、不触发取消/失败状态
+  const handlePause = useCallback(() => {
+    pausedRef.current = true;
+    setIsPaused(true);
+  }, []);
+
+  // 继续：清标志并放行被挂起的主循环
+  const handleResume = useCallback(() => {
+    pausedRef.current = false;
+    setIsPaused(false);
+    const resolver = resumeResolverRef.current;
+    resumeResolverRef.current = null;
+    if (resolver) resolver();
+  }, []);
+
   const handleCancel = useCallback(() => {
+    // 若处于暂停挂起状态，先放行被阻塞的循环，使其落到 aborted 检查后 break
+    if (resumeResolverRef.current) {
+      const resolver = resumeResolverRef.current;
+      resumeResolverRef.current = null;
+      resolver();
+    }
+    pausedRef.current = false;
+    setIsPaused(false);
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       if (workerRef.current) {
@@ -232,6 +267,36 @@ export const useFileConversion = (files, direction) => {
     }
   }, []);
 
+  // 一键重置所有转换结果状态（用于「清空全部」），并防御性终止在途 worker
+  const resetConversion = useCallback(() => {
+    // 兜底：若循环正因暂停而挂起，先放行并中止，避免残留循环永久悬挂
+    if (resumeResolverRef.current) {
+      const resolver = resumeResolverRef.current;
+      resumeResolverRef.current = null;
+      resolver();
+    }
+    pausedRef.current = false;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (workerRef.current) {
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
+    pendingRejectRef.current = null;
+    setIsPaused(false);
+    setConvertedFiles([]);
+    setConvertedFileNames(new Set());
+    setFailedFiles([]);
+    setIsComplete(false);
+    setIsCancelled(false);
+    setProgress(0);
+    setError(null);
+    setIsLoading(false);
+    setCurrentFileIndex(0);
+  }, []);
+
   return {
     isLoading,
     progress,
@@ -243,7 +308,11 @@ export const useFileConversion = (files, direction) => {
     failedFiles,
     isCancelled,
     currentFileIndex,
+    isPaused,
     handleConvert,
     handleCancel,
+    handlePause,
+    handleResume,
+    resetConversion,
   };
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
@@ -7,12 +7,32 @@ import { motion, AnimatePresence } from "framer-motion";
  * 优化了毛玻璃效果和文件项视觉层次
  */
 const FileList = React.memo(
-  ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile, isLoading = false, currentFileIndex = 0 }) => {
+  ({ files, isFileListOpen, setIsFileListOpen, handleDeleteFile, isLoading = false, currentFileIndex = 0, onClearUploads }) => {
     // Helper function to format file size
     const formatFileSize = (sizeInBytes) => {
       if (sizeInBytes === 0) return "0 MB";
       const sizeInMB = sizeInBytes / (1024 * 1024);
       return `${sizeInMB.toFixed(2)} MB`;
+    };
+
+    // 本地文件列表（用于清空时的退出动画）
+    const [displayFiles, setDisplayFiles] = useState(files);
+    const [clearPulseKey, setClearPulseKey] = useState(0);
+
+    // 同步父级 files 变化到本地（非清空场景）
+    useEffect(() => {
+      if (files.length > 0 || displayFiles.length === 0) {
+        setDisplayFiles(files);
+      }
+    }, [files]);
+
+    // 清空全部上传文件：先触发退出动画，动画结束后真正清空父级
+    const handleClearUploads = () => {
+      if (!onClearUploads || displayFiles.length === 0) return;
+      setClearPulseKey(k => k + 1);   // 触发脉冲环
+      setDisplayFiles([]);              // 触发文件项退出动画
+      // 等待退出动画完成后调用父级真正清空
+      setTimeout(() => onClearUploads(), 450);
     };
 
     return (
@@ -47,10 +67,54 @@ const FileList = React.memo(
               </svg>
             </div>
             <h3 className="font-medium text-gray-800 dark:text-gray-200 ml-3">
-              已选文件 ({files.length})
+              已选文件 ({displayFiles.length})
             </h3>
           </div>
-          {/* 展开/收起指示箭头 */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* 清空全部上传文件按钮 — 复用文件项小叉叉图标风格 */}
+            {displayFiles.length > 0 && !isLoading && onClearUploads && (
+              <div className="relative">
+                {/* 脉冲环：每次点击扩散一圈 */}
+                <AnimatePresence>
+                  <motion.div
+                    key={`clear-pulse-${clearPulseKey}`}
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-full border-2 border-red-400"
+                    initial={{ opacity: 0.5, scale: 0.9 }}
+                    animate={{ opacity: 0, scale: 1.35 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.55, ease: "easeOut" }}
+                  />
+                </AnimatePresence>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClearUploads();
+                  }}
+                  className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-red-100/50 dark:hover:bg-red-900/25 backdrop-blur-sm transition-colors duration-200 flex-shrink-0"
+                  aria-label="清空全部上传文件"
+                  title="清空全部上传文件"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.8}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
+            {/* 展开/收起指示箭头 */}
           <motion.div
             animate={{ rotate: isFileListOpen ? 180 : 0 }} // 旋转箭头以指示状态
             transition={{ duration: 0.3 }}
@@ -70,6 +134,7 @@ const FileList = React.memo(
               />
             </svg>
           </motion.div>
+          </div>
         </div>
 
         {/* 文件列表内容，根据 isFileListOpen 状态显示或隐藏 */}
@@ -97,7 +162,8 @@ const FileList = React.memo(
             >
               <div className="border-t border-white/20 dark:border-white/[0.05] p-3 bg-white/5 dark:bg-black/10">
                 <ul className="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
-                  {files.map((file, index) => {
+                  <AnimatePresence>
+                  {displayFiles.map((file, index) => {
                     // 逐文件状态（顺序转换）：已完成 / 转换中 / 待转换（T6）
                     const status = !isLoading
                       ? null
@@ -118,7 +184,7 @@ const FileList = React.memo(
                           duration: 0.28,
                         },
                       }}
-                      exit={{ opacity: 0, scale: 0.95 }}
+                      exit={{ opacity: 0, x: 60, scale: 0.92 }}
                       className={`flex items-center justify-between p-3 rounded-xl border backdrop-blur-md transition-all duration-200 shadow-sm hover:shadow ${
                         status === "active"
                           ? "bg-blue-50/40 dark:bg-blue-900/15 border-blue-300/50 dark:border-blue-500/30 ring-1 ring-blue-300/40 dark:ring-blue-500/25"
@@ -201,6 +267,7 @@ const FileList = React.memo(
                     </motion.li>
                   );
                   })}
+                  </AnimatePresence>
                 </ul>
               </div>
             </motion.div>

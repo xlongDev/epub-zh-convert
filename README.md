@@ -1,4 +1,4 @@
-[中文](README_zh.md) · English
+[中文](README_zh.md) · [繁體中文](README_zh-Hant.md) · English
 
 # EPUB Traditional-Simplified Converter
 
@@ -15,8 +15,10 @@ This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter.
 - **Batch conversion**: upload and convert multiple EPUB files at once.
 - **Live progress**: real-time progress bar and animations during conversion.
 - **Flexible download**: download each converted file individually or all at once.
+- **Pause / resume**: pause the conversion queue mid-run (the current file finishes, then the queue waits) and resume to continue — already-converted results are never lost.
+- **Clear all**: a single "Clear all" action in the result area wipes both the upload list and the converted files after a confirmation, so you can start a fresh batch quickly.
 - **Theme support**: light / dark / system themes via `next-themes`.
-- **Client-side & private**: conversion happens in the browser; nothing leaves your machine.
+- **Client-side & private**: conversion happens in the browser; nothing leaves your machine. Blob URLs are released as soon as downloads finish, and clipboard-shared URLs are reclaimed when the page unloads, so memory stays bounded.
 
 ## Tech Stack
 
@@ -53,6 +55,10 @@ yarn install
 4. **Convert** — click the convert button. A progress bar shows the live status. Large books are processed in a background Web Worker so the UI stays responsive.
 
 5. **Download** — once a file finishes, download it individually, or use "download all" to grab everything at once.
+
+6. **Pause / resume** — while converting, click **暂停** to pause the queue after the current file; the progress area shows "已暂停". Click **继续** to resume from where it stopped. Pausing is a neutral action and never discards the files already converted.
+
+7. **Clear all** — after conversion, the result area header shows a **清空全部** button (disabled while converting). Clicking it opens a confirmation dialog listing how many upload-list and result files will be removed; confirming clears both lists at once and returns you to a clean upload state.
 
 ## Configuration Options
 

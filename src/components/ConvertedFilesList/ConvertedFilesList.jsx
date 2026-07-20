@@ -5,6 +5,7 @@ import { useState } from "react";
 import Checkbox from "@/components/Checkbox/Checkbox";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import ClearConfirmModal from "@/components/ClearConfirmModal/ClearConfirmModal";
 
 // 音效文件路径
 const downloadSound = "/download-sound.mp3";
@@ -26,8 +27,17 @@ const ConvertedFilesList = ({
   handleDeleteConvertedFile,
   handleDownloadAll,
   isComplete = false,
+  onClearAll,
+  uploadFileCount = 0,
+  isLoading = false,
 }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleConfirmClear = () => {
+    setShowClearConfirm(false);
+    onClearAll?.();
+  };
 
   // 播放下载音效
   const playDownloadSound = () => {
@@ -145,9 +155,15 @@ const ConvertedFilesList = ({
         <>
           {/* ── 玻璃面板容器：sticky header + 滚动列表 ── */}
           <div className="glass-panel rounded-xl overflow-hidden">
-            {/* Sticky 头部：标题 + 成功徽标 + 选中计数 + 全选 */}
+            {/* Sticky 头部：全选 + 标题 + 成功徽标 + 选中计数 | 清空全部 */}
             <div className="sticky top-0 z-10 flex items-center justify-between py-2.5 px-4 bg-gradient-to-b from-white/55 to-white/25 dark:from-gray-800/55 dark:to-gray-800/25 backdrop-blur-xl border-b border-white/15 dark:border-white/[0.05]">
               <div className="flex items-center gap-2.5 min-w-0">
+                {/* 全选 checkbox — 作为列表主控件放在标题左侧 */}
+                <Checkbox
+                  checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
+                  onChange={handleSelectAll}
+                  title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
+                />
                 <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
                   转换后的文件
                 </h2>
@@ -173,11 +189,19 @@ const ConvertedFilesList = ({
                   )}
                 </AnimatePresence>
               </div>
-              <Checkbox
-                checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
-                onChange={handleSelectAll}
-                title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
-              />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <motion.button
+                  onClick={() => setShowClearConfirm(true)}
+                  disabled={isLoading}
+                  whileHover={{ scale: isLoading ? 1 : 1.04 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.96 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 14 }}
+                  className="px-3 py-1.5 rounded-xl glass-btn-danger shadow-sm text-xs font-medium whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="清空全部内容"
+                >
+                  清空全部
+                </motion.button>
+              </div>
             </div>
 
             {/* 可滚动文件列表 */}
@@ -275,14 +299,14 @@ const ConvertedFilesList = ({
                     transition={{ type: "spring", stiffness: 350, damping: 14 }}
                     className="w-full py-2.5 px-6 rounded-xl glass-btn-success shadow-sm font-medium"
                   >
-                    批量下载所选 ({selectedFiles.size})
+                    下载所选 ({selectedFiles.size})
                   </motion.button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
           
-          {/* 「批量下载所有文件」— 未全选时显示（全选时与「批量下载所选」功能重复） */}
+          {/* 「全部下载」— 未全选时显示（全选时与「下载所选」功能重复） */}
           <AnimatePresence>
             {selectedFiles.size < convertedFiles.length && (
               <motion.button
@@ -296,12 +320,20 @@ const ConvertedFilesList = ({
                 transition={{ type: "spring", stiffness: 350, damping: 14 }}
                 className="mt-4 w-full py-2.5 px-6 rounded-xl glass-btn-accent shadow-sm font-medium"
               >
-                批量下载所有文件
+                全部下载
               </motion.button>
             )}
           </AnimatePresence>
         </>
       )}
+
+      <ClearConfirmModal
+        open={showClearConfirm}
+        uploadCount={uploadFileCount}
+        convertedCount={convertedFiles.length}
+        onConfirm={handleConfirmClear}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </motion.div>
   );
 };

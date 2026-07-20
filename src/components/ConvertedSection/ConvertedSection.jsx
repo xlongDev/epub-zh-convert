@@ -31,10 +31,10 @@ const NeutralNotice = ({ tone = "neutral", title, children }) => (
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className={`backdrop-blur-md p-6 rounded-xl shadow-lg border flex flex-col items-center justify-center ${
+      className={`glass-panel p-6 rounded-xl shadow-lg flex flex-col items-center justify-center ${
         tone === "danger"
-          ? "bg-red-50/70 dark:bg-red-900/30 border-red-200 dark:border-red-700/50"
-          : "bg-white/60 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700/50"
+          ? "!bg-[rgba(239,68,68,0.08)] dark:!bg-[rgba(239,68,68,0.12)] !border-[rgba(239,68,68,0.26)]"
+          : ""
       }`}
     >
       <p

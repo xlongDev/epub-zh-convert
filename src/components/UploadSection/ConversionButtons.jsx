@@ -16,8 +16,8 @@ const useButtonState = (isLoading, isComplete, isFailedOrCancelled, isPaused) =>
     return {
       isLoading: true,
       disabled: true,
-      icon: <LoadingIcon />,
-      text: "转换中..."
+      icon: null,
+      text: "正在转换"
     };
   }
 
@@ -71,7 +71,7 @@ const GlassButton = React.memo(({
       w-full relative flex items-center justify-center
       py-3 px-6 rounded-xl overflow-hidden
       ${variant === "brand" ? "glass-btn-brand" : "glass-btn"}
-      ${disabled ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}
+      ${disabled ? "opacity-85 cursor-not-allowed" : ""}
       ${className}
     `}
   >
@@ -143,13 +143,6 @@ const GlassCancelButton = React.memo(({ handleCancel }) => (
 ));
 
 // ── 图标组件 ──
-const LoadingIcon = () => (
-  <svg className="animate-spin h-5 w-5" style={{ color: "inherit" }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-  </svg>
-);
-
 const CompleteIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -294,14 +287,20 @@ const ConversionButtons = React.memo(
             exit={{ opacity: 0, y: 8, transition: { duration: 0.25 } }}
             className="mt-4 flex flex-col gap-3"
           >
-            <GlassButton
-              onClick={handleConvert}
-              disabled={buttonState.isLoading && !isComplete}
-              variant="brand"
-            >
-              {buttonState.icon}
-              {buttonState.text}
-            </GlassButton>
+            {/* 主按钮：非加载时显示（加载时隐藏，只保留暂停/取消） */}
+            <AnimatePresence>
+              {!isLoading && (
+                <GlassButton
+                  onClick={handleConvert}
+                  disabled={false}
+                  variant="brand"
+                  layout
+                >
+                  {buttonState.icon && <>{buttonState.icon}</>}
+                  {buttonState.text}
+                </GlassButton>
+              )}
+            </AnimatePresence>
 
             {isLoading && (
               <div className="grid grid-cols-2 gap-3">

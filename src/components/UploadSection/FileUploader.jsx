@@ -128,29 +128,32 @@ const FileUploader = React.memo(
             exit={{ opacity: 0 }}
             aria-hidden="true"
           >
-            {/* 流体玻璃进度环 */}
-            <div className="relative w-20 h-20">
-              {/* 外层光晕 */}
+            {/* 流体玻璃进度环 — 纯视觉氛围动画（无数字，数据由底部进度条承载） */}
+            <div className="relative w-24 h-24">
+              {/* 外层光晕 — 慢速旋转增加流动感 */}
               <div
                 className="absolute -inset-3 rounded-full opacity-30 blur-lg"
-                style={{ background: "conic-gradient(from 0deg, #60a5fa, #a78bfa, #34d399, #60a5fa)" }}
+                style={{
+                  background: "conic-gradient(from 0deg, #60a5fa, #a78bfa, #34d399, #60a5fa)",
+                  animation: "glass-glow-rotate 10s linear infinite",
+                }}
               />
               {/* SVG 环形进度 */}
-              <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
                 {/* 背景轨道 */}
                 <circle
                   cx="40" cy="40" r="34"
                   fill="none"
                   stroke="rgba(255,255,255,0.25)"
-                  strokeWidth="4.5"
+                  strokeWidth="6"
                   className="dark:stroke-white/[0.08]"
                 />
-                {/* 动画填充环 */}
+                {/* 动画填充环 — 加粗更有分量感 */}
                 <motion.circle
                   cx="40" cy="40" r="34"
                   fill="none"
                   stroke="url(#glass-progress-gradient)"
-                  strokeWidth="4.5"
+                  strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={2 * Math.PI * 34}
                   initial={{ strokeDashoffset: 2 * Math.PI * 34 }}
@@ -166,34 +169,46 @@ const FileUploader = React.memo(
                   </linearGradient>
                 </defs>
               </svg>
-              {/* 旋转外圈装饰（独立于进度的持续旋转） */}
+              {/* 双层旋转外圈装饰 — 错向错速 */}
               <div
-                className="absolute inset-0 rounded-full border-[3px] border-transparent"
+                className="absolute inset-0 rounded-full border-[2.5px] border-transparent"
                 style={{
                   borderTopColor: "rgba(96,165,250,0.45)",
                   borderRightColor: "rgba(167,139,250,0.25)",
                   animation: "glass-ring-spin 2s linear infinite",
                 }}
               />
+              {/* 外圈反向慢旋 */}
+              <div
+                className="absolute -inset-2 rounded-full border-[1.5px] border-transparent"
+                style={{
+                  borderTopColor: "rgba(52,211,153,0.20)",
+                  borderBottomColor: "rgba(96,165,250,0.15)",
+                  animation: "glass-ring-spin-reverse 3s linear infinite",
+                }}
+              />
+              {/* 中心呼吸光点 — 柔和脉动替代数字 */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                animate={{
+                  scale: [1, 1.35, 1],
+                  opacity: [0.45, 0.8, 0.45],
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className="w-3 h-3 rounded-full bg-white/50 dark:bg-white/25 shadow-sm" />
+              </motion.div>
               <style>{`
                 @keyframes glass-ring-spin {
                   to { transform: rotate(360deg); }
                 }
+                @keyframes glass-ring-spin-reverse {
+                  to { transform: rotate(-360deg); }
+                }
+                @keyframes glass-glow-rotate {
+                  to { transform: rotate(360deg); }
+                }
               `}</style>
-              {/* 中心百分比文字 */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span
-                  className="
-                    text-sm font-bold tabular-nums px-1.5 py-0.5 rounded-md
-                    bg-white/50 dark:bg-white/[0.08]
-                    backdrop-blur-md
-                    text-indigo-600 dark:text-indigo-300
-                    shadow-sm
-                  "
-                >
-                  {Math.round(progress)}%
-                </span>
-              </div>
             </div>
           </motion.div>
         )}

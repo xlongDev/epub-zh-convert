@@ -206,7 +206,11 @@ const ConversionButtons = React.memo(
   (prevProps, nextProps) =>
     prevProps.isLoading === nextProps.isLoading &&
     prevProps.isComplete === nextProps.isComplete &&
-    prevProps.isFailedOrCancelled === nextProps.isFailedOrCancelled
+    prevProps.isFailedOrCancelled === nextProps.isFailedOrCancelled &&
+    // 关键：handleConvert/handleCancel 闭包捕获了最新的 files，
+    // 仅比较状态字段会导致新增文件后按钮仍引用旧闭包（只处理首次上传的文件）
+    prevProps.handleConvert === nextProps.handleConvert &&
+    prevProps.handleCancel === nextProps.handleCancel
 );
 
 export default ConversionButtons;

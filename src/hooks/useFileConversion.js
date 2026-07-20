@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 export const useFileConversion = (files, direction) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +22,13 @@ export const useFileConversion = (files, direction) => {
   useEffect(() => {
     directionRef.current = direction;
   }, [direction]);
+
+  // 跟踪最新的待转换文件队列，避免转换函数闭包捕获过期的 files，
+  // 否则新增文件后点击「开始转换」只会处理首次上传的文件
+  const filesRef = useRef(files);
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
 
   // 用于记录已经转换过的文件名
   const [convertedFileNames, setConvertedFileNames] = useState(new Set());
@@ -115,8 +122,10 @@ export const useFileConversion = (files, direction) => {
       });
     });
 
-  const handleConvert = async () => {
-    if (files.length === 0) return;
+  const handleConvert = useCallback(async () => {
+    // 始终读取最新的待转换队列（filesRef），避免闭包捕获过期列表
+    const currentFiles = filesRef.current;
+    if (currentFiles.length === 0) return;
 
     setIsLoading(true);
     setError(null);
@@ -144,13 +153,13 @@ export const useFileConversion = (files, direction) => {
 
     const runOne = (file, index) =>
       worker
-        ? convertInWorker(worker, file, index, files.length)
-        : convertOnMainThread(file, index, files.length);
+        ? convertInWorker(worker, file, index, currentFiles.length)
+        : convertOnMainThread(file, index, currentFiles.length);
 
     const failedList = [];
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < currentFiles.length; i++) {
+        const file = currentFiles[i];
         // 检查是否已取消
         if (abortControllerRef.current.signal.aborted) {
           break;
@@ -203,9 +212,9 @@ export const useFileConversion = (files, direction) => {
       setIsLoading(false);
       setFailedFiles(failedList); // 统一提交失败清单
     }
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       if (workerRef.current) {
@@ -221,7 +230,7 @@ export const useFileConversion = (files, direction) => {
       setIsCancelled(true); // 用户主动取消，视为中性状态而非错误
       setIsComplete(false);
     }
-  };
+  }, []);
 
   return {
     isLoading,

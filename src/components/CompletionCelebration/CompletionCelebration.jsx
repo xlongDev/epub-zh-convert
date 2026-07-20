@@ -13,10 +13,64 @@ const DEFAULT_COLORS = [
   "#ec4899",
 ];
 
+/* ----------------------------- 颜色工具 ----------------------------- */
+// 将 #rrggbb 转为 {h,s,l}（h: 0-360, s/l: 0-1）；非法输入返回 null
+function hexToHsl(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+  if (!m) return null;
+  const r = parseInt(m[1], 16) / 255;
+  const g = parseInt(m[2], 16) / 255;
+  const b = parseInt(m[3], 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s, l };
+}
+
+// 将 {h,s,l} 转回 #rrggbb
+function hslToHex({ h, s, l }) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const mm = l - c / 2;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const to = (v) =>
+    Math.round((v + mm) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${to(r)}${to(g)}${to(b)}`;
+}
+
+// 保留背景色相，但强制拉满饱和与对比，使礼花在淡背景下清晰可见
+function getContrastColor(hex, theme) {
+  const hsl = hexToHsl(hex);
+  if (!hsl) return hex; // 解析失败回退原值
+  const s = Math.max(hsl.s, 0.7);
+  const l = theme === "dark" ? Math.max(hsl.l, 0.6) : 0.55;
+  return hslToHex({ h: hsl.h, s, l });
+}
+
 /**
  * 转换完成庆祝礼花（方案 C）
  * - 仅作庆祝点缀：从区块中心迸发一轮粒子，约 2.6s 播放一次后淡出
- * - 配色自动适配当前随机背景：由 scheme.colors 提供，按当前主题(light/dark)取对应底色板
+ * - 配色自动适配当前随机背景：由 scheme.colors 提供色相，再程序化提升对比度
  * - 不显示文字：文件数量已由列表头部绿色徽标承载，避免信息重复
  * - prefers-reduced-motion 下完全不渲染
  * - 容器 pointer-events-none，不阻挡列表交互
@@ -34,12 +88,12 @@ const CompletionCelebration = ({ show, scheme }) => {
     return () => mq.removeEventListener?.("change", update);
   }, []);
 
-  // 根据当前背景方案 + 主题解析粒子调色板
+  // 根据当前背景方案 + 主题解析粒子调色板（取色相后提升对比度）
   const palette = useMemo(() => {
     const schemeColors = scheme?.colors;
-    if (!schemeColors) return DEFAULT_COLORS;
     const key = resolvedTheme === "dark" ? "dark" : "light";
-    return schemeColors[key] ?? DEFAULT_COLORS;
+    const base = schemeColors?.[key] ?? DEFAULT_COLORS;
+    return base.map((c) => getContrastColor(c, resolvedTheme));
   }, [scheme, resolvedTheme]);
 
   const particles = useMemo(
@@ -82,6 +136,14 @@ const CompletionCelebration = ({ show, scheme }) => {
               height: p.size * 0.75,
               borderRadius: 3,
               background: p.color,
+              boxShadow:
+                resolvedTheme === "dark"
+                  ? "0 1px 4px rgba(0,0,0,0.4)"
+                  : "0 1px 4px rgba(15,23,42,0.25)",
+              border:
+                resolvedTheme === "dark"
+                  ? "1px solid rgba(255,255,255,0.18)"
+                  : "1px solid rgba(255,255,255,0.5)",
             }}
           />
         ))}

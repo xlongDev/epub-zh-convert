@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import Lottie from "@/components/Lottie/Lottie";
 
 const ConvertedFilesList = dynamic(
   () => import("@/components/ConvertedFilesList/ConvertedFilesList"),
+  { ssr: false }
+);
+const CompletionCelebration = dynamic(
+  () => import("@/components/CompletionCelebration/CompletionCelebration"),
+  { ssr: false }
+);
+const CancellationNotice = dynamic(
+  () => import("@/components/CancellationNotice/CancellationNotice"),
   { ssr: false }
 );
 const DownloadPrompt = dynamic(
@@ -86,30 +93,20 @@ const ConvertedSection = React.memo(
     isCancelled = false,
     showDownloadPrompt,
     scrollToConvertedFiles,
+    backgroundScheme,
     convertedFiles,
     handleDownloadSingle,
     handleDeleteConvertedFile,
     handleDownloadAll,
   }) => {
-    // 成功动画 JSON 改为运行时 fetch，避免打进首屏主包
-    const [successAnimation, setSuccessAnimation] = useState(null);
-    // 仅「全部成功」时才展示成功 Lottie，避免与失败清单冲突
+    // 成功状态判定（传递给 ConvertedFilesList 的 header badge 使用）
     const isFullSuccess =
       isComplete && !error && failedFiles.length === 0 && convertedFiles.length > 0;
-
-    useEffect(() => {
-      if (isFullSuccess) {
-        fetch("/animations/success.json")
-          .then((res) => (res.ok ? res.json() : Promise.reject()))
-          .then(setSuccessAnimation)
-          .catch(() => setSuccessAnimation(null));
-      }
-    }, [isFullSuccess]);
 
     return (
       <motion.div
         layout
-        className="mt-4 min-h-[200px]" // 添加最小高度
+        className="mt-4"
       >
         <AnimatePresence>
           {showDownloadPrompt && (
@@ -121,49 +118,11 @@ const ConvertedSection = React.memo(
         </AnimatePresence>
 
         <AnimatePresence>
-          {isFullSuccess && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              layout
-              className="text-center converted-section"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                {successAnimation && (
-                  <Lottie
-                    animationData={successAnimation}
-                    loop={false}
-                    play
-                    style={{ width: 120, height: 120, margin: "0 auto" }}
-                    ariaLabel="转换成功"
-                  />
-                )}
-              </motion.div>
-              <p className="text-green-600 dark:text-green-400 font-semibold mt-1">
-                转换完成，共 {convertedFiles.length} 个文件
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
           {error && <ErrorDisplay error={error} />}
         </AnimatePresence>
 
         <AnimatePresence>
-          {isCancelled && (
-            <NeutralNotice title="已取消转换">
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-                已转换的文件仍可在下方下载。
-              </p>
-            </NeutralNotice>
-          )}
+          {isCancelled && <CancellationNotice show={isCancelled} />}
         </AnimatePresence>
 
         <AnimatePresence>
@@ -172,12 +131,16 @@ const ConvertedSection = React.memo(
 
         <AnimatePresence>
           {convertedFiles.length > 0 && (
-            <ConvertedFilesList
-              convertedFiles={convertedFiles}
-              handleDownloadSingle={handleDownloadSingle}
-              handleDeleteConvertedFile={handleDeleteConvertedFile}
-              handleDownloadAll={handleDownloadAll}
-            />
+            <>
+              <CompletionCelebration show={isFullSuccess} scheme={backgroundScheme} />
+              <ConvertedFilesList
+                convertedFiles={convertedFiles}
+                handleDownloadSingle={handleDownloadSingle}
+                handleDeleteConvertedFile={handleDeleteConvertedFile}
+                handleDownloadAll={handleDownloadAll}
+                isComplete={isFullSuccess}
+              />
+            </>
           )}
         </AnimatePresence>
       </motion.div>

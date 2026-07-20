@@ -71,13 +71,13 @@ const ShareButton = ({ file, fileName }) => {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         transition={{ type: "spring", stiffness: 350, damping: 12 }}
-        className={`p-2.5 rounded-xl glass-btn-brand shadow-sm ${
+        className={`p-2 rounded-xl glass-btn-brand shadow-sm ${
           isSharing ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={isSharing}
         aria-label="分享文件"
       >
-        <FaShareAlt className="w-4.5 h-4.5" />
+        <FaShareAlt className="w-4 h-4" />
       </motion.button>
       {message && (
         <div

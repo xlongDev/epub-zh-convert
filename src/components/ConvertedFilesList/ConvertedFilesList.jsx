@@ -25,6 +25,7 @@ const ConvertedFilesList = ({
   handleDownloadSingle,
   handleDeleteConvertedFile,
   handleDownloadAll,
+  isComplete = false,
 }) => {
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
@@ -136,83 +137,111 @@ const ConvertedFilesList = ({
       id="converted-files"
       className="mt-8 pb-12"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
-          转换后的文件
-        </h2>
-        <Checkbox
-          checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
-          onChange={handleSelectAll}
-          title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
-        />
-      </div>
       {convertedFiles.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400 text-center">
           暂无转换后的文件，请上传并转换文件。
         </p>
       ) : (
         <>
-          <ul className="space-y-4">
-            <AnimatePresence>
-              {convertedFiles.map((file, index) => (
-                <motion.li
-                  key={file.name}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, translateX: "100%" }}
-                  transition={{ duration: 0.2, delay: index * 0.05 }}
-                  className="flex justify-between items-center p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200
-                    bg-white/25 dark:bg-gray-800/35 backdrop-blur-lg border border-white/30 dark:border-white/[0.06]"
-                >
-                  <div className="flex items-center min-w-0 flex-1">
-                    <div className="flex items-center space-x-2 min-w-0 flex-1">
-                      <Checkbox
-                        checked={selectedFiles.has(index)}
-                        onChange={() => handleSelectFile(index)}
-                        className="flex-shrink-0"
-                      />
-                      <div className="flex flex-col min-w-0">
-                        <span
-                          className="text-gray-700 dark:text-gray-300 truncate min-w-0"
-                          title={file.name}
-                        >
-                          {file.name}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatFileSize(file.blob.size)}
-                        </span>
+          {/* ── 玻璃面板容器：sticky header + 滚动列表 ── */}
+          <div className="glass-panel rounded-xl overflow-hidden">
+            {/* Sticky 头部：标题 + 成功徽标 + 选中计数 + 全选 */}
+            <div className="sticky top-0 z-10 flex items-center justify-between py-2.5 px-4 bg-gradient-to-b from-white/55 to-white/25 dark:from-gray-800/55 dark:to-gray-800/25 backdrop-blur-xl border-b border-white/15 dark:border-white/[0.05]">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  转换后的文件
+                </h2>
+                {/* 成功完成徽标 */}
+                {isComplete && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 bg-green-500/10 dark:bg-green-400/10 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                    <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    {convertedFiles.length} 个文件
+                  </span>
+                )}
+                {/* 已选计数徽标 */}
+                <AnimatePresence>
+                  {selectedFiles.size > 0 && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                      className="inline-flex items-center text-xs font-semibold text-indigo-700 dark:text-indigo-300 glass-btn-brand px-2.5 py-0.5 rounded-full whitespace-nowrap"
+                    >
+                      已选 {selectedFiles.size} 项
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+              <Checkbox
+                checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
+                onChange={handleSelectAll}
+                title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
+              />
+            </div>
+
+            {/* 可滚动文件列表 */}
+            <ul className="max-h-[60vh] overflow-y-auto overflow-x-hidden scroll-glass px-4 pb-4 pt-3 space-y-2.5">
+              <AnimatePresence>
+                {convertedFiles.map((file, index) => (
+                  <motion.li
+                    key={file.name}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, translateX: "100%" }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className="flex justify-between items-center p-3 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200
+                      bg-white/25 dark:bg-gray-800/35 backdrop-blur-lg border border-white/30 dark:border-white/[0.06]"
+                  >
+                    <div className="flex items-center min-w-0 flex-1">
+                      <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                        <Checkbox
+                          checked={selectedFiles.has(index)}
+                          onChange={() => handleSelectFile(index)}
+                          className="flex-shrink-0"
+                        />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate min-w-0" title={file.name}>
+                            {file.name}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatFileSize(file.blob.size)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex space-x-2.5 flex-shrink-0">
-                    <ShareButton file={file.blob} fileName={file.name} />
-                    <motion.button
-                      id={`download-${index}`}
-                      onClick={() => wrappedHandleDownloadSingle(index)}
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.92 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 12 }}
-                      className="p-2.5 rounded-xl glass-btn-success shadow-sm"
-                      aria-label={`下载 ${file.name}`}
-                    >
-                      <FaDownload className="w-4.5 h-4.5" />
-                    </motion.button>
-                    <motion.button
-                      onClick={() => handleDeleteConvertedFile([index])}
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.92 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 12 }}
-                      className="p-2.5 rounded-xl glass-btn-danger shadow-sm"
-                      aria-label={`删除 ${file.name}`}
-                    >
-                      <FaTrash className="w-4.5 h-4.5" />
-                    </motion.button>
-                  </div>
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
+                    <div className="flex space-x-2 flex-shrink-0">
+                      <ShareButton file={file.blob} fileName={file.name} />
+                      <motion.button
+                        id={`download-${index}`}
+                        onClick={() => wrappedHandleDownloadSingle(index)}
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.92 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 12 }}
+                        className="p-2 rounded-xl glass-btn-success shadow-sm"
+                        aria-label={`下载 ${file.name}`}
+                      >
+                        <FaDownload className="w-4 h-4" />
+                      </motion.button>
+                      <motion.button
+                        onClick={() => handleDeleteConvertedFile([index])}
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.92 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 12 }}
+                        className="p-2 rounded-xl glass-btn-danger shadow-sm"
+                        aria-label={`删除 ${file.name}`}
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+          </div>
+
+          {/* ── 操作按钮区（面板外部，始终可见）── */}
           
           <AnimatePresence>
             {selectedFiles.size > 0 && (
@@ -227,7 +256,7 @@ const ConvertedFilesList = ({
                   damping: 20,
                   duration: 0.3
                 }}
-                className="mt-4 space-y-4"
+                className="mt-3 space-y-3"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <motion.button
@@ -235,7 +264,7 @@ const ConvertedFilesList = ({
                     whileHover={{ scale: 1.015 }}
                     whileTap={{ scale: 0.975 }}
                     transition={{ type: "spring", stiffness: 350, damping: 14 }}
-                    className="w-full mt-2 py-3 px-6 rounded-xl glass-btn-danger shadow-sm font-medium"
+                    className="w-full py-2.5 px-6 rounded-xl glass-btn-danger shadow-sm font-medium"
                   >
                     删除所选 ({selectedFiles.size})
                   </motion.button>
@@ -244,7 +273,7 @@ const ConvertedFilesList = ({
                     whileHover={{ scale: 1.015 }}
                     whileTap={{ scale: 0.975 }}
                     transition={{ type: "spring", stiffness: 350, damping: 14 }}
-                    className="w-full mt-2 py-3 px-6 rounded-xl glass-btn-success shadow-sm font-medium"
+                    className="w-full py-2.5 px-6 rounded-xl glass-btn-success shadow-sm font-medium"
                   >
                     批量下载所选 ({selectedFiles.size})
                   </motion.button>
@@ -253,15 +282,24 @@ const ConvertedFilesList = ({
             )}
           </AnimatePresence>
           
-          <motion.button
-            onClick={handleDownloadAllFiles}
-            whileHover={{ scale: 1.015 }}
-            whileTap={{ scale: 0.975 }}
-            transition={{ type: "spring", stiffness: 350, damping: 14 }}
-            className="mt-5 w-full py-3 px-6 rounded-xl glass-btn-accent shadow-sm font-medium"
-          >
-            批量下载所有文件
-          </motion.button>
+          {/* 「批量下载所有文件」— 未全选时显示（全选时与「批量下载所选」功能重复） */}
+          <AnimatePresence>
+            {selectedFiles.size < convertedFiles.length && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={handleDownloadAllFiles}
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.975 }}
+                transition={{ type: "spring", stiffness: 350, damping: 14 }}
+                className="mt-4 w-full py-2.5 px-6 rounded-xl glass-btn-accent shadow-sm font-medium"
+              >
+                批量下载所有文件
+              </motion.button>
+            )}
+          </AnimatePresence>
         </>
       )}
     </motion.div>

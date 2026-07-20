@@ -403,6 +403,36 @@
   100% { stroke-dashoffset: 70; } /* 75% visible arc */
 }
 
+/* 液态玻璃滚动条 — 文件列表等可滚区域使用，细圆角 + 半透明玻璃质感 */
+.scroll-glass {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 150, 170, 0.35) transparent;
+}
+.scroll-glass::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-glass::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+.scroll-glass::-webkit-scrollbar-thumb {
+  background: rgba(140, 150, 170, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+.scroll-glass::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 150, 170, 0.5);
+}
+.dark .scroll-glass {
+  scrollbar-color: rgba(180, 190, 210, 0.25) transparent;
+}
+.dark .scroll-glass::-webkit-scrollbar-thumb {
+  background: rgba(180, 190, 210, 0.2);
+}
+.dark .scroll-glass::-webkit-scrollbar-thumb:hover {
+  background: rgba(180, 190, 210, 0.38);
+}
+
 /* 自定义暗夜模式样式 */
 @layer utilities {
   .dark {
@@ -417,6 +447,18 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* 取消提示 — 同心环脉冲扩散（CancellationNotice 组件使用） */
+@keyframes cancelPulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
   }
 }
 

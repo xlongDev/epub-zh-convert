@@ -243,6 +243,7 @@ export default function Home() {
         isCancelled={isCancelled}
         showDownloadPrompt={showDownloadPrompt}
         scrollToConvertedFiles={scrollToConvertedFiles}
+        backgroundScheme={backgroundScheme}
         convertedFiles={convertedFiles}
         handleDownloadSingle={(index) =>
           handleDownloadSingle(convertedFiles, index)

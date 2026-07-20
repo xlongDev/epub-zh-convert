@@ -234,7 +234,7 @@ const FileList = React.memo(
                           {status === "active" && (
                             <span className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                           )}
-                          {status === "done" && "✓"}
+                          {status === "done" && "✓ "}
                           {status === "active" ? "转换中" : status === "done" ? "已完成" : "待转换"}
                         </span>
                       )}

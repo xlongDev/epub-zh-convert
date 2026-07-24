@@ -22,11 +22,12 @@
 
 ## 技术栈
 
-- **前端**：React 19、Next.js 16（Pages Router）、Tailwind CSS v4、Framer Motion
-- **工具库**：JSZip、opencc-js
+- **前端**：React 19、Next.js 16（Pages Router）、TypeScript、Tailwind CSS v4、Framer Motion
+- **工具库**：JSZip、opencc-js、Zustand
 - **动画**：Framer Motion、react-lottie-player
 - **测试**：Vitest
 - **运行时**：转换优先在 Web Worker 中执行，保证大文件不冻结 UI
+- **状态管理**：全局 UI / 文件 / 转换状态集中在一个 Zustand store 中（按 `ui` / `files` / `converted` / `conversion` 四个 slice 拆分，位于 `src/store`），组件通过选择器订阅，不再层层透传 props。
 
 ## 安装
 
@@ -64,10 +65,10 @@ yarn install
 
 多数行为由界面控制，但以下几个位置便于在代码中自定义：
 
-- **转换方向** —— `t2s`（繁 → 简）与 `s2t`（简 → 繁）定义在 [`src/utils/opencc.js`](src/utils/opencc.js)，当前方向由界面上的 `DirectionSelector` 选择。
-- **背景渐变方案** —— 编辑 [`src/config/backgroundSchemes.js`](src/config/backgroundSchemes.js)。每个条目是一对 `{ light, dark }` 的 Tailwind 渐变类名字符串，每次会话随机选取（存入 `sessionStorage`）。向数组追加对象即可新增方案。
+- **转换方向** —— `t2s`（繁 → 简）与 `s2t`（简 → 繁）定义在 [`src/utils/opencc.ts`](src/utils/opencc.ts)，当前方向由界面上的 `DirectionSelector` 选择。
+- **背景渐变方案** —— 编辑 [`src/config/backgroundSchemes.ts`](src/config/backgroundSchemes.ts)。每个条目是一对 `{ light, dark }` 的 Tailwind 渐变类名字符串，每次会话随机选取（存入 `sessionStorage`）。向数组追加对象即可新增方案。
 - **主题** —— 由 `next-themes` 驱动。`ThemeToggle` 组件可切换浅色 / 深色，并自动检测系统偏好；手动选择会存入 `sessionStorage` 的 `theme` 键。
-- **转换引擎** —— 核心纯函数 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.js) 刻意不依赖浏览器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.js`](src/workers/convert.worker.js)）中运行。若 Worker 创建失败，会自动降级回主线程。
+- **转换引擎** —— 核心纯函数 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) 刻意不依赖浏览器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)）中运行。若 Worker 创建失败，会自动降级回主线程。
 
 ## 开发与测试
 
@@ -78,9 +79,11 @@ pnpm install        # 安装依赖
 pnpm dev            # 本地开发（Turbopack）
 pnpm build          # 生产构建
 pnpm start          # 启动生产服务
-pnpm lint           # 代码检查（ESLint）
+pnpm typecheck      # 类型检查（tsc --noEmit，严格模式）
 pnpm test           # 单元测试（Vitest）
 ```
+
+**代码检查**：`pnpm lint`（ESLint）当前不可用，因为 typescript-eslint 尚未支持 TypeScript 7；类型安全改由 `pnpm typecheck`（严格 `tsc --noEmit`）把关。
 
 **构建环境注意**：若在强制注入 `--use-system-ca` 等 Node 选项的沙箱环境中运行 `pnpm build`，Turbopack 启动 Worker 时可能报 `ERR_WORKER_INVALID_EXEC_ARGV`。请先剥离该选项（仅保留必要的 shim）再构建；普通本地环境无需此操作。
 

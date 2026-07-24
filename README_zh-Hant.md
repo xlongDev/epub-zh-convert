@@ -22,11 +22,12 @@
 
 ## 技術棧
 
-- **前端**：React 19、Next.js 16（Pages Router）、Tailwind CSS v4、Framer Motion
-- **工具庫**：JSZip、opencc-js
+- **前端**：React 19、Next.js 16（Pages Router）、TypeScript、Tailwind CSS v4、Framer Motion
+- **工具庫**：JSZip、opencc-js、Zustand
 - **動畫**：Framer Motion、react-lottie-player
 - **測試**：Vitest
 - **執行環境**：轉換優先在 Web Worker 中執行，確保大文件不凍結介面
+- **狀態管理**：全域 UI / 文件 / 轉換狀態集中在一個 Zustand store 中（依 `ui` / `files` / `converted` / `conversion` 四個 slice 拆分，位於 `src/store`），元件透過選擇器訂閱，不再層層透傳 props。
 
 ## 安裝
 
@@ -64,10 +65,10 @@ yarn install
 
 多數行為由介面控制，但以下幾個位置便於在程式碼中自訂：
 
-- **轉換方向** —— `t2s`（繁 → 簡）與 `s2t`（簡 → 繁）定義在 [`src/utils/opencc.js`](src/utils/opencc.js)，目前方向由介面上的 `DirectionSelector` 選擇。
-- **背景漸變方案** —— 編輯 [`src/config/backgroundSchemes.js`](src/config/backgroundSchemes.js)。每個條目是一對 `{ light, dark }` 的 Tailwind 漸變類名字串，每次會話隨機選取（存入 `sessionStorage`）。向陣列追加物件即可新增方案。
+- **轉換方向** —— `t2s`（繁 → 簡）與 `s2t`（簡 → 繁）定義在 [`src/utils/opencc.ts`](src/utils/opencc.ts)，目前方向由介面上的 `DirectionSelector` 選擇。
+- **背景漸變方案** —— 編輯 [`src/config/backgroundSchemes.ts`](src/config/backgroundSchemes.ts)。每個條目是一對 `{ light, dark }` 的 Tailwind 漸變類名字串，每次會話隨機選取（存入 `sessionStorage`）。向陣列追加物件即可新增方案。
 - **主題** —— 由 `next-themes` 驅動。`ThemeToggle` 元件可切換淺色 / 深色，並自動偵測系統偏好；手動選擇會存入 `sessionStorage` 的 `theme` 鍵。
-- **轉換引擎** —— 核心純函式 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.js) 刻意不依賴瀏覽器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.js`](src/workers/convert.worker.js)）中執行。若 Worker 建立失敗，會自動降級回主執行緒。
+- **轉換引擎** —— 核心純函式 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) 刻意不依賴瀏覽器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)）中執行。若 Worker 建立失敗，會自動降級回主執行緒。
 
 ## 開發與測試
 
@@ -78,9 +79,11 @@ pnpm install        # 安裝依賴
 pnpm dev            # 本地開發（Turbopack）
 pnpm build          # 生產構建
 pnpm start          # 啟動生產服務
-pnpm lint           # 程式碼檢查（ESLint）
+pnpm typecheck      # 類型檢查（tsc --noEmit，嚴格模式）
 pnpm test           # 單元測試（Vitest）
 ```
+
+**程式碼檢查**：`pnpm lint`（ESLint）目前不可用，因為 typescript-eslint 尚未支援 TypeScript 7；型別安全改由 `pnpm typecheck`（嚴格 `tsc --noEmit`）把關。
 
 **構建環境注意**：若在強制注入 `--use-system-ca` 等 Node 選項的沙箱環境中執行 `pnpm build`，Turbopack 啟動 Worker 時可能報 `ERR_WORKER_INVALID_EXEC_ARGV`。請先剝離該選項（僅保留必要的 shim）再構建；普通本地環境無需此操作。
 

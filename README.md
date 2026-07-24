@@ -22,11 +22,12 @@ This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter.
 
 ## Tech Stack
 
-- **Frontend**: React 19, Next.js 16 (Pages Router), Tailwind CSS v4, Framer Motion
-- **Libraries**: JSZip, opencc-js
+- **Frontend**: React 19, Next.js 16 (Pages Router), TypeScript, Tailwind CSS v4, Framer Motion
+- **Libraries**: JSZip, opencc-js, Zustand
 - **Animation**: Framer Motion, react-lottie-player
 - **Testing**: Vitest
 - **Runtime**: conversion runs in a Web Worker when available, keeping the UI responsive for large books
+- **State**: global UI / file / conversion state is centralized in a Zustand store, split into `ui` / `files` / `converted` / `conversion` slices under `src/store`; components subscribe via selectors instead of prop drilling.
 
 ## Installation
 
@@ -64,10 +65,10 @@ yarn install
 
 Most behavior is driven by the UI, but a few areas are easy to customize in code:
 
-- **Conversion direction** — `t2s` (Traditional → Simplified) and `s2t` (Simplified → Traditional) are defined in [`src/utils/opencc.js`](src/utils/opencc.js). The active direction is chosen via the on-screen `DirectionSelector`.
-- **Background gradient schemes** — edit [`src/config/backgroundSchemes.js`](src/config/backgroundSchemes.js). Each entry is a `{ light, dark }` pair of Tailwind gradient class strings. A scheme is picked at random per session (persisted in `sessionStorage`). Append a new object to the array to add your own.
+- **Conversion direction** — `t2s` (Traditional → Simplified) and `s2t` (Simplified → Traditional) are defined in [`src/utils/opencc.ts`](src/utils/opencc.ts). The active direction is chosen via the on-screen `DirectionSelector`.
+- **Background gradient schemes** — edit [`src/config/backgroundSchemes.ts`](src/config/backgroundSchemes.ts). Each entry is a `{ light, dark }` pair of Tailwind gradient class strings. A scheme is picked at random per session (persisted in `sessionStorage`). Append a new object to the array to add your own.
 - **Theme** — powered by `next-themes`. The `ThemeToggle` component lets users switch between light / dark, and the system preference is auto-detected. A manual choice is stored in `sessionStorage` under the `theme` key.
-- **Conversion engine** — the core pure function [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.js) performs the work and is intentionally free of browser `File` / `FileReader` APIs, so it can run inside the Web Worker ([`src/workers/convert.worker.js`](src/workers/convert.worker.js)). If Worker creation fails, the app transparently falls back to the main thread.
+- **Conversion engine** — the core pure function [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) performs the work and is intentionally free of browser `File` / `FileReader` APIs, so it can run inside the Web Worker ([`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)). If Worker creation fails, the app transparently falls back to the main thread.
 
 ## Development & Testing
 
@@ -78,11 +79,13 @@ pnpm install        # install dependencies
 pnpm dev            # local dev server (Turbopack)
 pnpm build          # production build
 pnpm start          # start the production server
-pnpm lint           # lint with ESLint
+pnpm typecheck      # type checking (tsc --noEmit, strict mode)
 pnpm test           # run unit tests with Vitest
 ```
 
 **Build environment note:** if you run `pnpm build` inside a sandboxed environment that forces Node options such as `--use-system-ca`, Turbopack may fail to spawn its Worker with `ERR_WORKER_INVALID_EXEC_ARGV`. Strip that option (keep only the necessary shim) before building; a normal local environment does not need this.
+
+**Linting note:** `pnpm lint` (ESLint) is currently unavailable because `typescript-eslint` does not yet support TypeScript 7; type safety is enforced through `pnpm typecheck` (strict `tsc --noEmit`) instead.
 
 ## Contributing
 

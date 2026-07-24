@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@config "../../tailwind.config.js";
+@config "../../tailwind.config.ts";
 
 /* Tailwind v4：让 dark: 工具类基于 .dark 类生效（next-themes 会在 <html> 上切换该类），
    而非默认跟随 prefers-color-scheme，使主题切换真正作用于组件级样式。 */

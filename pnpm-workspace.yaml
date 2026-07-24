@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+patchedDependencies:
+  next@16.2.11: patches/next@16.2.11.patch

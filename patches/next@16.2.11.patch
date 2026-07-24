@@ -1,0 +1,44 @@
+diff --git a/dist/esm/lib/verify-typescript-setup.js b/dist/esm/lib/verify-typescript-setup.js
+index cea10266321489b1ee40c1b5f902baa1627e142f..5213d942a7feaf5abca97864448ab00f4fbb8099 100644
+--- a/dist/esm/lib/verify-typescript-setup.js
++++ b/dist/esm/lib/verify-typescript-setup.js
+@@ -12,7 +12,7 @@ import { isCI } from '../server/ci-info';
+ import { missingDepsError } from './typescript/missingDependencyError';
+ import { resolveFrom } from './resolve-from';
+ const typescriptPackage = {
+-    file: 'typescript/lib/typescript.js',
++    file: 'typescript/lib/version.cjs',
+     pkg: 'typescript',
+     exportsRestrict: true
+ };
+@@ -127,7 +127,7 @@ export async function verifyAndRunTypeScript({ dir, distDir, cacheDir, strictRou
+             typedRoutes
+         });
+         let result;
+-        if (shouldRunTypeCheck) {
++        if (shouldRunTypeCheck && semver.lt(typescriptVersion, '7.0.0')) {
+             const { runTypeCheck } = require('./typescript/runTypeCheck');
+             // Install native bindings so that code frame rendering works in the worker
+             const { installBindings } = require('../build/swc/install-bindings');
+diff --git a/dist/lib/verify-typescript-setup.js b/dist/lib/verify-typescript-setup.js
+index caa1e6ad592c663e1392fe1e393e398e5aef19ad..535423064fb8408bacd1a58e6fc5bd8f325b4c02 100644
+--- a/dist/lib/verify-typescript-setup.js
++++ b/dist/lib/verify-typescript-setup.js
+@@ -68,7 +68,7 @@ function _interop_require_wildcard(obj, nodeInterop) {
+     return newObj;
+ }
+ const typescriptPackage = {
+-    file: 'typescript/lib/typescript.js',
++    file: 'typescript/lib/version.cjs',
+     pkg: 'typescript',
+     exportsRestrict: true
+ };
+@@ -183,7 +183,7 @@ async function verifyAndRunTypeScript({ dir, distDir, cacheDir, strictRouteTypes
+             typedRoutes
+         });
+         let result;
+-        if (shouldRunTypeCheck) {
++        if (shouldRunTypeCheck && _semver.default.lt(typescriptVersion, '7.0.0')) {
+             const { runTypeCheck } = require('./typescript/runTypeCheck');
+             // Install native bindings so that code frame rendering works in the worker
+             const { installBindings } = require('../build/swc/install-bindings');

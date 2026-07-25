@@ -87,6 +87,8 @@ pnpm test           # 單元測試（Vitest）
 
 **構建環境注意**：若在強制注入 `--use-system-ca` 等 Node 選項的沙箱環境中執行 `pnpm build`，Turbopack 啟動 Worker 時可能報 `ERR_WORKER_INVALID_EXEC_ARGV`。請先剝離該選項（僅保留必要的 shim）再構建；普通本地環境無需此操作。
 
+**Vercel 部署**：需在 Vercel 專案 **Settings → Environment Variables** 新增環境變數 `ENABLE_EXPERIMENTAL_COREPACK=1`（作用域選 **Production and Preview**）。這樣 Vercel 會讀取 `package.json` 的 `packageManager: pnpm@11.15.0`，用 pnpm@11 構建，與提交的 lockfile 及 Next.js 的 TypeScript 7 補丁完全對齊。若不開啟，Vercel 預設用 pnpm@9，會因 lockfile / 類型檢測不符而構建失敗。另需確保 `pnpm-workspace.yaml` 含 `packages` 欄位。
+
 ## 貢獻指南
 
 歡迎提交 Issue 或 Pull Request！請確保程式碼風格一致，並附上詳細的改動說明。

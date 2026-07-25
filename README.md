@@ -85,6 +85,8 @@ pnpm test           # run unit tests with Vitest
 
 **Build environment note:** if you run `pnpm build` inside a sandboxed environment that forces Node options such as `--use-system-ca`, Turbopack may fail to spawn its Worker with `ERR_WORKER_INVALID_EXEC_ARGV`. Strip that option (keep only the necessary shim) before building; a normal local environment does not need this.
 
+**Deploying on Vercel:** add the environment variable `ENABLE_EXPERIMENTAL_COREPACK=1` (Settings → Environment Variables; scope = "Production and Preview"). This makes Vercel read `package.json`'s `packageManager: pnpm@11.15.0` and build with pnpm@11, matching the committed lockfile and the Next.js TypeScript-7 patch. Without it, Vercel defaults to pnpm@9 and the build fails on lockfile / type-setup mismatches. `pnpm-workspace.yaml` must also contain a `packages` field.
+
 **Linting note:** `pnpm lint` (ESLint) is currently unavailable because `typescript-eslint` does not yet support TypeScript 7; type safety is enforced through `pnpm typecheck` (strict `tsc --noEmit`) instead.
 
 ## Contributing

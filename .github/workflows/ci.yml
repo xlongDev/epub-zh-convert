@@ -33,6 +33,11 @@ jobs:
       - name: Install dependencies (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Next.js route types
+        # 干净 checkout 还没有 .next，typecheck 会找不到 .next/types/routes.d.ts
+        # （被 next-env.d.ts import）。next typegen 只生成类型，不跑完整 build。
+        run: pnpm next typegen
+
       - name: Typecheck (tsc strict + noUnusedLocals)
         run: pnpm typecheck
 

@@ -18,10 +18,7 @@ export interface ConvertedSlice {
   scrollToConvertedFiles: () => void;
 }
 
-export const createConvertedSlice: StateCreator<AppState, [], [], ConvertedSlice> = (
-  set,
-  get
-) => ({
+export const createConvertedSlice: StateCreator<AppState, [], [], ConvertedSlice> = (set, get) => ({
   convertedFiles: [],
   failedFiles: [],
 
@@ -47,7 +44,7 @@ export const createConvertedSlice: StateCreator<AppState, [], [], ConvertedSlice
       const { buildConvertedZip } = await import("@/utils/zipUtils");
       await buildConvertedZip(
         convertedFiles.map((f) => ({ name: f.name, blob: f.blob })),
-        `全部文件(${convertedFiles.length}个).zip`
+        `全部文件(${convertedFiles.length}个).zip`,
       );
     } catch (err) {
       console.error("打包下载失败，回退为逐个下载:", err);

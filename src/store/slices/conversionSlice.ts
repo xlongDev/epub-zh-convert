@@ -46,7 +46,7 @@ const engineRefs: EngineRefs = {
 
 export const createConversionSlice: StateCreator<AppState, [], [], ConversionSlice> = (
   set,
-  get
+  get,
 ) => ({
   isLoading: false,
   progress: 0,
@@ -78,10 +78,9 @@ export const createConversionSlice: StateCreator<AppState, [], [], ConversionSli
     let worker: Worker | null = null;
     if (typeof Worker !== "undefined") {
       try {
-        worker = new Worker(
-          new URL("../../workers/convert.worker.ts", import.meta.url),
-          { type: "module" }
-        );
+        worker = new Worker(new URL("../../workers/convert.worker.ts", import.meta.url), {
+          type: "module",
+        });
       } catch {
         worker = null;
       }
@@ -113,19 +112,14 @@ export const createConversionSlice: StateCreator<AppState, [], [], ConversionSli
           const result = await runOne(file, i);
 
           set((state) => {
-            const existingIndex = state.convertedFiles.findIndex(
-              (f) => f.name === result.name
-            );
+            const existingIndex = state.convertedFiles.findIndex((f) => f.name === result.name);
             if (existingIndex !== -1) {
               const newFiles = [...state.convertedFiles];
               newFiles[existingIndex] = { name: result.name, blob: result.blob };
               return { convertedFiles: newFiles };
             }
             return {
-              convertedFiles: [
-                ...state.convertedFiles,
-                { name: result.name, blob: result.blob },
-              ],
+              convertedFiles: [...state.convertedFiles, { name: result.name, blob: result.blob }],
             };
           });
         } catch (err) {
@@ -235,7 +229,7 @@ async function convertOnMainThread(
   index: number,
   total: number,
   get: () => AppState,
-  set: (partial: Partial<AppState>) => void
+  set: (partial: Partial<AppState>) => void,
 ): Promise<ConvertedFile> {
   const { convertEpub } = await import("@/utils/zipUtils");
   return convertEpub(
@@ -245,7 +239,7 @@ async function convertOnMainThread(
       set({ progress: totalProgress });
     },
     engineRefs.abortController!.signal,
-    get().direction
+    get().direction,
   );
 }
 
@@ -256,7 +250,7 @@ function convertInWorker(
   index: number,
   total: number,
   get: () => AppState,
-  set: (partial: Partial<AppState>) => void
+  set: (partial: Partial<AppState>) => void,
 ): Promise<ConvertedFile> {
   return new Promise<ConvertedFile>((resolve, reject) => {
     engineRefs.pendingReject = reject;
@@ -306,3 +300,6 @@ function convertInWorker(
     });
   });
 }
+
+// 测试辅助：暴露引擎引用，供单测在用例间重置/断言（下划线前缀表示内部实现细节）。
+export const _engineRefs = engineRefs;

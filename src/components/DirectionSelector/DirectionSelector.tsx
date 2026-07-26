@@ -16,15 +16,13 @@ const DirectionSelector = React.memo(() => {
   const isMounted = useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false
+    () => false,
   );
 
   // 获取激活项的位置信息
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      const activeElement = document.querySelector(
-        `[data-direction="${direction}"]`
-      );
+      const activeElement = document.querySelector(`[data-direction="${direction}"]`);
       if (activeElement) {
         const { offsetLeft, offsetWidth } = activeElement as HTMLElement;
         setActivePosition({ x: offsetLeft, width: offsetWidth });

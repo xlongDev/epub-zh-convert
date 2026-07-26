@@ -14,6 +14,7 @@ import WelcomeAnimation from "@/components/WelcomeAnimation/WelcomeAnimation";
 import DirectionSelector from "@/components/DirectionSelector/DirectionSelector";
 import UploadSection from "@/components/UploadSection/UploadSection";
 import ConvertedSection from "@/components/ConvertedSection/ConvertedSection";
+import StatusAnnouncer from "@/components/StatusAnnouncer";
 
 export default function Home() {
   const backgroundScheme = useAppStore((s) => s.backgroundScheme);
@@ -32,10 +33,7 @@ export default function Home() {
           backgroundSchemes[Math.floor(Math.random() * backgroundSchemes.length)];
         setBackgroundScheme(randomScheme);
       } else {
-        sessionStorage.setItem(
-          "backgroundScheme",
-          JSON.stringify(backgroundSchemes[0])
-        );
+        sessionStorage.setItem("backgroundScheme", JSON.stringify(backgroundSchemes[0]));
       }
     });
     return () => cancelAnimationFrame(id);
@@ -43,6 +41,9 @@ export default function Home() {
 
   return (
     <LayoutWrapper backgroundScheme={backgroundScheme}>
+      {/* 屏幕阅读器状态播报：视觉隐藏，仅辅助技术可见 */}
+      <StatusAnnouncer />
+
       <WelcomeAnimation isVisible={true} />
 
       <Header />

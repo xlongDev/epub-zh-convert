@@ -1,0 +1,15 @@
+# build & deps
+.next
+node_modules
+out
+build
+coverage
+
+# lockfiles
+pnpm-lock.yaml
+
+# generated / docs (keep manually formatted)
+*.md
+
+# Lottie animation data (large JSON blobs, not for formatting)
+public/animations

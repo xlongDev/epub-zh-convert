@@ -62,21 +62,19 @@ export function useConversionLifecycle() {
     if (!completedSoundRef.current) return;
     completedSoundRef.current.currentTime = 0;
     completedSoundRef.current.volume = 0.4;
-    completedSoundRef.current
-      .play()
-      .catch((e: unknown) => {
-        console.error("播放转换成功提示音失败:", e);
-        const AudioContextCtor = getAudioContextCtor();
-        if (!AudioContextCtor) return;
-        try {
-          const audioContext = new AudioContextCtor();
-          audioContext.resume().then(() => {
-            completedSoundRef.current?.play();
-          });
-        } catch (err) {
-          console.error("无法恢复 AudioContext:", err);
-        }
-      });
+    completedSoundRef.current.play().catch((e: unknown) => {
+      console.error("播放转换成功提示音失败:", e);
+      const AudioContextCtor = getAudioContextCtor();
+      if (!AudioContextCtor) return;
+      try {
+        const audioContext = new AudioContextCtor();
+        audioContext.resume().then(() => {
+          completedSoundRef.current?.play();
+        });
+      } catch (err) {
+        console.error("无法恢复 AudioContext:", err);
+      }
+    });
   };
 
   // ── 2. 由底层状态推导 isConversionFailedOrCancelled / isComplete ──
@@ -86,9 +84,7 @@ export function useConversionLifecycle() {
   const isCancelled = useAppStore((s) => s.isCancelled);
   const filesLength = useAppStore((s) => s.files.length);
   const setIsComplete = useAppStore((s) => s.setIsComplete);
-  const setIsConversionFailedOrCancelled = useAppStore(
-    (s) => s.setIsConversionFailedOrCancelled
-  );
+  const setIsConversionFailedOrCancelled = useAppStore((s) => s.setIsConversionFailedOrCancelled);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -136,10 +132,7 @@ export function useConversionLifecycle() {
 
   useEffect(() => {
     const isFirstTimeComplete =
-      isComplete &&
-      !downloadPromptPrevComplete.current &&
-      convertedFilesLength > 0 &&
-      !error;
+      isComplete && !downloadPromptPrevComplete.current && convertedFilesLength > 0 && !error;
     if (isFirstTimeComplete) {
       setShowDownloadPrompt(true);
       const timer = setTimeout(() => setShowDownloadPrompt(false), 5000);

@@ -47,8 +47,8 @@ const FileUploader = React.memo(
               isDragging
                 ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/20"
                 : isHoveringUpload
-                ? "border-blue-400 bg-blue-50/30 dark:bg-blue-900/10"
-                : "border-gray-300 dark:border-gray-600 backdrop-blur-lg bg-white/30 dark:bg-gray-700/30" // 将 backdrop-blur-md 改为 backdrop-blur-lg
+                  ? "border-blue-400 bg-blue-50/30 dark:bg-blue-900/10"
+                  : "border-gray-300 dark:border-gray-600 backdrop-blur-lg bg-white/30 dark:bg-gray-700/30" // 将 backdrop-blur-md 改为 backdrop-blur-lg
             }`}
           role="button"
           tabIndex={0}
@@ -81,9 +81,7 @@ const FileUploader = React.memo(
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                  点击上传
-                </span>{" "}
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">点击上传</span>{" "}
                 或拖放文件到此处
               </p>
               <div className="h-5 mt-1 relative">
@@ -142,7 +140,9 @@ const FileUploader = React.memo(
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
                 {/* 背景轨道 */}
                 <circle
-                  cx="40" cy="40" r="34"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   fill="none"
                   stroke="rgba(255,255,255,0.25)"
                   strokeWidth="6"
@@ -150,7 +150,9 @@ const FileUploader = React.memo(
                 />
                 {/* 动画填充环 — 加粗更有分量感 */}
                 <motion.circle
-                  cx="40" cy="40" r="34"
+                  cx="40"
+                  cy="40"
+                  r="34"
                   fill="none"
                   stroke="url(#glass-progress-gradient)"
                   strokeWidth="6"
@@ -214,7 +216,7 @@ const FileUploader = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 export default FileUploader;

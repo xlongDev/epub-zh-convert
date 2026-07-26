@@ -3,28 +3,26 @@ import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
-import type { BackgroundScheme, ConvertedFile, FailedFile } from "@/types";
+import type { FailedFile } from "@/types";
 
 const ConvertedFilesList = dynamic(
   () => import("@/components/ConvertedFilesList/ConvertedFilesList"),
-  { ssr: false }
+  { ssr: false },
 );
 const CompletionCelebration = dynamic(
   () => import("@/components/CompletionCelebration/CompletionCelebration"),
-  { ssr: false }
+  { ssr: false },
 );
 const CancellationNotice = dynamic(
   () => import("@/components/CancellationNotice/CancellationNotice"),
-  { ssr: false }
+  { ssr: false },
 );
-const DownloadPrompt = dynamic(
-  () => import("@/components/DownloadPrompt/DownloadPrompt"),
-  { ssr: false }
-);
-const ErrorDisplay = dynamic(
-  () => import("@/components/ErrorDisplay/ErrorDisplay"),
-  { ssr: false }
-);
+const DownloadPrompt = dynamic(() => import("@/components/DownloadPrompt/DownloadPrompt"), {
+  ssr: false,
+});
+const ErrorDisplay = dynamic(() => import("@/components/ErrorDisplay/ErrorDisplay"), {
+  ssr: false,
+});
 
 /**
  * 中性提示卡片（取消 / 全部失败等，非红色错误风格）
@@ -55,9 +53,7 @@ const NeutralNotice = ({ tone = "neutral", title, children }: NeutralNoticeProps
     >
       <p
         className={`text-md mt-1 font-semibold leading-relaxed ${
-          tone === "danger"
-            ? "text-red-600 dark:text-red-400"
-            : "text-gray-700 dark:text-gray-200"
+          tone === "danger" ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-200"
         }`}
       >
         {title}
@@ -82,9 +78,7 @@ const FailuresSummary = ({ failedFiles }: FailuresSummaryProps) => (
           key={f.name}
           className="text-sm text-gray-600 dark:text-gray-300 flex items-start gap-2"
         >
-          <span className="text-red-500 dark:text-red-400 font-semibold flex-shrink-0">
-            •
-          </span>
+          <span className="text-red-500 dark:text-red-400 font-semibold flex-shrink-0">•</span>
           <span className="break-all">
             <span className="font-medium">{f.name}</span>
             {f.message ? `：${f.message}` : ""}
@@ -123,26 +117,14 @@ const ConvertedSection = React.memo(() => {
     isComplete && !error && failedFiles.length === 0 && convertedFiles.length > 0;
 
   return (
-    <motion.div
-      layout
-      className="mt-4"
-    >
+    <motion.div layout className="mt-4">
       <AnimatePresence>
-        {showDownloadPrompt && (
-          <DownloadPrompt
-            showDownloadPrompt={showDownloadPrompt}
-            scrollToConvertedFiles={scrollToConvertedFiles}
-          />
-        )}
+        {showDownloadPrompt && <DownloadPrompt scrollToConvertedFiles={scrollToConvertedFiles} />}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {error && <ErrorDisplay error={error} />}
-      </AnimatePresence>
+      <AnimatePresence>{error && <ErrorDisplay error={error} />}</AnimatePresence>
 
-      <AnimatePresence>
-        {isCancelled && <CancellationNotice show={isCancelled} />}
-      </AnimatePresence>
+      <AnimatePresence>{isCancelled && <CancellationNotice show={isCancelled} />}</AnimatePresence>
 
       <AnimatePresence>
         {failedFiles.length > 0 && <FailuresSummary failedFiles={failedFiles} />}

@@ -101,8 +101,7 @@ const ShareButton = ({ file, fileName }: ShareButtonProps) => {
         !/Mobi|Android/i.test(navigator.userAgent);
 
       // 检查是否在桌面 Chrome
-      const isDesktopChrome =
-        isDesktop && navigator.userAgent.includes("Chrome");
+      const isDesktopChrome = isDesktop && navigator.userAgent.includes("Chrome");
 
       if (isDesktopChrome) {
         showMessage("桌面版 Chrome 不完全支持分享，请尝试移动设备或 Safari。");
@@ -175,13 +174,11 @@ const ShareButton = ({ file, fileName }: ShareButtonProps) => {
               }}
             >
               {/* 小箭头 — 居中指向按钮 */}
-              <span
-                className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 glass border-t-0 border-l-0 rounded-tl-none"
-              />
+              <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 glass border-t-0 border-l-0 rounded-tl-none" />
               {message}
             </motion.div>
           </AnimatePresence>,
-          document.body
+          document.body,
         )}
     </>
   );

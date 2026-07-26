@@ -1,4 +1,3 @@
-import React from "react";
 import type { ChangeEvent } from "react";
 
 interface CheckboxProps {
@@ -11,19 +10,9 @@ interface CheckboxProps {
 
 const Checkbox = ({ checked, onChange, label, title, className = "" }: CheckboxProps) => {
   return (
-    <label
-      className={`inline-flex items-center cursor-pointer ${className}`}
-      title={title}
-    >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="sr-only peer"
-      />
-      <div
-        className={`glass-checkbox ${checked ? "glass-checkbox-checked" : ""}`}
-      >
+    <label className={`inline-flex items-center cursor-pointer ${className}`} title={title}>
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+      <div className={`glass-checkbox ${checked ? "glass-checkbox-checked" : ""}`}>
         {checked && (
           <svg
             className="w-3 h-3"

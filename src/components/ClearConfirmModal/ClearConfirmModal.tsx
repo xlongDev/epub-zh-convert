@@ -65,7 +65,8 @@ const ClearConfirmModal = ({
 
             <div className="mt-3 text-sm text-gray-600 dark:text-gray-300 space-y-1.5">
               <p>
-                将清空以下所有内容，且<span className="font-semibold text-red-600 dark:text-red-400">不可撤销</span>：
+                将清空以下所有内容，且
+                <span className="font-semibold text-red-600 dark:text-red-400">不可撤销</span>：
               </p>
               <ul className="list-disc list-inside pl-1 space-y-1">
                 <li>
@@ -98,7 +99,7 @@ const ClearConfirmModal = ({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 };
 

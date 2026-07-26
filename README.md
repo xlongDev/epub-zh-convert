@@ -25,7 +25,10 @@ This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter.
 - **Frontend**: React 19, Next.js 16 (Pages Router), TypeScript, Tailwind CSS v4, Framer Motion
 - **Libraries**: JSZip, opencc-js, Zustand
 - **Animation**: Framer Motion, react-lottie-player
+- **Linting**: oxlint (Rust-based; immune to the `typescript-eslint` incompatibility with TypeScript 7)
 - **Testing**: Vitest
+- **Formatting & Git hooks**: Prettier, Husky, lint-staged
+- **CI**: GitHub Actions (typecheck → lint → test → build)
 - **Runtime**: conversion runs in a Web Worker when available, keeping the UI responsive for large books
 - **State**: global UI / file / conversion state is centralized in a Zustand store, split into `ui` / `files` / `converted` / `conversion` slices under `src/store`; components subscribe via selectors instead of prop drilling.
 
@@ -80,6 +83,8 @@ pnpm dev            # local dev server (Turbopack)
 pnpm build          # production build
 pnpm start          # start the production server
 pnpm typecheck      # type checking (tsc --noEmit, strict mode)
+pnpm lint           # lint with oxlint (fast, TS7-compatible)
+pnpm format         # format with Prettier
 pnpm test           # run unit tests with Vitest
 ```
 
@@ -87,7 +92,7 @@ pnpm test           # run unit tests with Vitest
 
 **Deploying on Vercel:** add the environment variable `ENABLE_EXPERIMENTAL_COREPACK=1` (Settings → Environment Variables; scope = "Production and Preview"). This makes Vercel read `package.json`'s `packageManager: pnpm@11.15.0` and build with pnpm@11, matching the committed lockfile and the Next.js TypeScript-7 patch. Without it, Vercel defaults to pnpm@9 and the build fails on lockfile / type-setup mismatches. `pnpm-workspace.yaml` must also contain a `packages` field.
 
-**Linting note:** `pnpm lint` (ESLint) is currently unavailable because `typescript-eslint` does not yet support TypeScript 7; type safety is enforced through `pnpm typecheck` (strict `tsc --noEmit`) instead.
+**Linting:** `pnpm lint` runs [oxlint](https://oxc.rs) — a Rust-based linter that natively parses TypeScript/TSX and is immune to the `typescript-eslint` incompatibility with TypeScript 7. It runs as a lint-staged pre-commit hook and is part of the CI gate (typecheck → lint → test → build).
 
 ## Contributing
 

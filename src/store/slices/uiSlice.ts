@@ -35,6 +35,5 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => (
   setIsFileListOpen: (open) => set({ isFileListOpen: open }),
   setShowDownloadPrompt: (show) => set({ showDownloadPrompt: show }),
   setIsDragging: (dragging) => set({ isDragging: dragging }),
-  setIsConversionFailedOrCancelled: (value) =>
-    set({ isConversionFailedOrCancelled: value }),
+  setIsConversionFailedOrCancelled: (value) => set({ isConversionFailedOrCancelled: value }),
 });

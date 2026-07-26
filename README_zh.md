@@ -25,7 +25,10 @@
 - **前端**：React 19、Next.js 16（Pages Router）、TypeScript、Tailwind CSS v4、Framer Motion
 - **工具库**：JSZip、opencc-js、Zustand
 - **动画**：Framer Motion、react-lottie-player
+- **代码检查**：oxlint（基于 Rust，不受 typescript-eslint 与 TypeScript 7 不兼容的影响）
 - **测试**：Vitest
+- **格式化与 Git 钩子**：Prettier、Husky、lint-staged
+- **CI**：GitHub Actions（typecheck → lint → test → build）
 - **运行时**：转换优先在 Web Worker 中执行，保证大文件不冻结 UI
 - **状态管理**：全局 UI / 文件 / 转换状态集中在一个 Zustand store 中（按 `ui` / `files` / `converted` / `conversion` 四个 slice 拆分，位于 `src/store`），组件通过选择器订阅，不再层层透传 props。
 
@@ -80,10 +83,12 @@ pnpm dev            # 本地开发（Turbopack）
 pnpm build          # 生产构建
 pnpm start          # 启动生产服务
 pnpm typecheck      # 类型检查（tsc --noEmit，严格模式）
+pnpm lint           # 代码检查（oxlint，快速且兼容 TS7）
+pnpm format         # 使用 Prettier 格式化
 pnpm test           # 单元测试（Vitest）
 ```
 
-**代码检查**：`pnpm lint`（ESLint）当前不可用，因为 typescript-eslint 尚未支持 TypeScript 7；类型安全改由 `pnpm typecheck`（严格 `tsc --noEmit`）把关。
+**代码检查**：`pnpm lint` 现在使用 [oxlint](https://oxc.rs)——一个基于 Rust 的 linter，原生解析 TypeScript/TSX，不受 typescript-eslint 与 TypeScript 7 不兼容的影响。它通过 lint-staged 作为 pre-commit 钩子运行，并纳入 CI 门禁（typecheck → lint → test → build）。
 
 **构建环境注意**：若在强制注入 `--use-system-ca` 等 Node 选项的沙箱环境中运行 `pnpm build`，Turbopack 启动 Worker 时可能报 `ERR_WORKER_INVALID_EXEC_ARGV`。请先剥离该选项（仅保留必要的 shim）再构建；普通本地环境无需此操作。
 

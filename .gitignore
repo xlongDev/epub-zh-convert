@@ -24,6 +24,11 @@
 .DS_Store
 *.pem
 
+# temp / scratch files (avoid accidental commit of workbench leftovers)
+_tmp_*
+*.tmp
+~$*
+
 # workspace agent data (WorkBuddy)
 .workbuddy/
 

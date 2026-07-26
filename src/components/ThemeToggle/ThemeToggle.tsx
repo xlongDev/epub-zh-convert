@@ -9,7 +9,7 @@ const ThemeToggle = () => {
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false
+    () => false,
   );
 
   useEffect(() => {

@@ -17,15 +17,11 @@ export interface FilesSlice {
 }
 
 // 删除已不在源文件列表中的转换结果（源文件名可能带 / 不带 .epub）
-const pruneConvertedFiles = (
-  convertedFiles: ConvertedFile[],
-  files: File[]
-): ConvertedFile[] => {
+const pruneConvertedFiles = (convertedFiles: ConvertedFile[], files: File[]): ConvertedFile[] => {
   if (convertedFiles.length === 0) return convertedFiles;
   const currentNames = new Set(files.map((f) => f.name));
   return convertedFiles.filter(
-    (cf) =>
-      currentNames.has(cf.name.replace(/\.epub$/, "")) || currentNames.has(cf.name)
+    (cf) => currentNames.has(cf.name.replace(/\.epub$/, "")) || currentNames.has(cf.name),
   );
 };
 
@@ -37,9 +33,7 @@ export const createFilesSlice: StateCreator<AppState, [], [], FilesSlice> = (set
   addFiles: (incoming) => {
     const sourceFiles = Array.from(incoming);
     if (sourceFiles.length === 0) return;
-    const epubFiles = sourceFiles.filter((file) =>
-      file.name.toLowerCase().endsWith(".epub")
-    );
+    const epubFiles = sourceFiles.filter((file) => file.name.toLowerCase().endsWith(".epub"));
     if (epubFiles.length === 0 && sourceFiles.length > 0) {
       alert("只能上传EPUB格式的文件哦！😊");
       return;

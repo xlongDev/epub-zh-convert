@@ -102,7 +102,7 @@ const ConvertedFilesList = ({
           name: convertedFiles[i].name,
           blob: convertedFiles[i].blob,
         })),
-        `批量下载文件(${selectedIndices.length}个).zip`
+        `批量下载文件(${selectedIndices.length}个).zip`,
       );
       setSelectedFiles(new Set());
     } catch (error) {
@@ -154,7 +154,9 @@ const ConvertedFilesList = ({
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* 全选 checkbox — 作为列表主控件放在标题左侧 */}
                 <Checkbox
-                  checked={convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length}
+                  checked={
+                    convertedFiles.length > 0 && selectedFiles.size === convertedFiles.length
+                  }
                   onChange={handleSelectAll}
                   title={selectedFiles.size === convertedFiles.length ? "取消全选" : "全选"}
                 />
@@ -220,7 +222,10 @@ const ConvertedFilesList = ({
                           className="flex-shrink-0"
                         />
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate min-w-0" title={file.name}>
+                          <span
+                            className="text-sm text-gray-700 dark:text-gray-300 truncate min-w-0"
+                            title={file.name}
+                          >
                             {file.name}
                           </span>
                           <span className="text-xs text-gray-500 dark:text-gray-400">

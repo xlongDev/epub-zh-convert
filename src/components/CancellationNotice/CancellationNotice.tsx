@@ -48,27 +48,18 @@ const CancellationNotice = ({ show }: CancellationNoticeProps) => {
             }}
             className="w-9 h-9 rounded-lg flex items-center justify-center z-10 flex-shrink-0"
             style={{
-              background:
-                "linear-gradient(135deg, rgba(59,130,246,.15), rgba(99,102,241,.12))",
+              background: "linear-gradient(135deg, rgba(59,130,246,.15), rgba(99,102,241,.12))",
               border: "1px solid rgba(59,130,246,.28)",
             }}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="#3b82f6"
-              aria-hidden="true"
-            >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#3b82f6" aria-hidden="true">
               <rect x="5" y="5" width="14" height="14" rx="3" />
             </svg>
           </motion.div>
 
           {/* 文字 —— 单行 */}
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            <span className="font-semibold text-gray-800 dark:text-gray-200">
-              已取消转换
-            </span>
+            <span className="font-semibold text-gray-800 dark:text-gray-200">已取消转换</span>
             <span className="text-gray-500 dark:text-gray-400 ml-1.5">
               已转换的文件仍可在下方下载。
             </span>

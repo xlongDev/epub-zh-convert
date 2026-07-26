@@ -35,23 +35,19 @@ const UploadSection = React.memo(() => {
   const isPaused = useAppStore((s) => s.isPaused);
   const handlePause = useAppStore((s) => s.handlePause);
   const handleResume = useAppStore((s) => s.handleResume);
-  const isConversionFailedOrCancelled = useAppStore(
-    (s) => s.isConversionFailedOrCancelled
-  );
+  const isConversionFailedOrCancelled = useAppStore((s) => s.isConversionFailedOrCancelled);
   const addFiles = useAppStore((s) => s.addFiles);
   const deleteFile = useAppStore((s) => s.deleteFile);
   const handleClearAll = useAppStore((s) => s.handleClearAll);
 
   // 🎯 仅接收 EPUB 文件的封装逻辑
-  const handleFilteredFileChange = (
-    e: ChangeEvent<HTMLInputElement> | DragEvent
-  ) => {
+  const handleFilteredFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent) => {
     const sourceFiles =
       "dataTransfer" in e && e.dataTransfer
         ? e.dataTransfer.files
         : (e.target as HTMLInputElement).files;
     const epubFiles = Array.from(sourceFiles ?? []).filter((file) =>
-      file.name.toLowerCase().endsWith(".epub")
+      file.name.toLowerCase().endsWith(".epub"),
     );
     if (epubFiles.length === 0 && (sourceFiles?.length ?? 0) > 0) {
       alert("只能上传EPUB格式的文件哦！😊");
@@ -113,9 +109,11 @@ const UploadSection = React.memo(() => {
             dark:[background:radial-gradient(at_30%_20%,rgba(100,150,255,0.2)_0px,transparent_50%), 
                      radial-gradient(at_70%_80%,rgba(180,100,255,0.15)_0px,transparent_50%)]"
         />
-        <div className="absolute top-0 left-0 w-full h-20 
+        <div
+          className="absolute top-0 left-0 w-full h-20 
             bg-gradient-to-b from-white/60 to-transparent 
-            dark:from-gray-800/40 dark:to-transparent" />
+            dark:from-gray-800/40 dark:to-transparent"
+        />
         <div className="absolute inset-0 border border-white/30 dark:border-white/10 rounded-xl" />
       </div>
 

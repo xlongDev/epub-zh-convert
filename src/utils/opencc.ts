@@ -34,7 +34,7 @@ export const convertText = (text: string, direction: ConversionDirection = "t2s"
  */
 export const convertFilename = (
   filename: string,
-  direction: ConversionDirection = "t2s"
+  direction: ConversionDirection = "t2s",
 ): string => {
   if (!filename) return filename;
 

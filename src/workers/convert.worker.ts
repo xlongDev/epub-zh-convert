@@ -6,9 +6,7 @@ import type { WorkerRequest } from "@/types";
 // 由于项目 tsconfig 使用 dom lib（与 webworker lib 冲突），
 // 这里用最小作用域的 WorkerScope 接口来描述 worker 全局，避免 lib 冲突。
 interface WorkerScope {
-  onmessage:
-    | ((this: WorkerScope, ev: MessageEvent<WorkerRequest>) => unknown)
-    | null;
+  onmessage: ((this: WorkerScope, ev: MessageEvent<WorkerRequest>) => unknown) | null;
   postMessage(message: unknown, transfer?: Transferable[]): void;
 }
 
@@ -34,15 +32,14 @@ ctx.onmessage = async (e: MessageEvent<WorkerRequest>) => {
       arrayBuffer,
       direction,
       (percent) => ctx.postMessage({ type: "progress", percent }),
-      () => cancelled
+      () => cancelled,
     );
 
     const buffer = await blob.arrayBuffer();
     // 文件名转换在 Worker 内完成并随消息回传，主线程无需再打包 opencc-js
-    ctx.postMessage(
-      { type: "done", buffer, name: convertFilename(file.name, direction) },
-      [buffer]
-    );
+    ctx.postMessage({ type: "done", buffer, name: convertFilename(file.name, direction) }, [
+      buffer,
+    ]);
   } catch (err) {
     const error = err as Error;
     ctx.postMessage({

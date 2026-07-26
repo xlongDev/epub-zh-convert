@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Lottie from "@/components/Lottie/Lottie";
 
@@ -10,7 +9,6 @@ interface WelcomeAnimationProps {
 const WelcomeAnimation = React.memo(({ isVisible }: WelcomeAnimationProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [animationData, setAnimationData] = useState<unknown>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // 延迟到下一帧再设置加载态，避免 effect 内同步 setState

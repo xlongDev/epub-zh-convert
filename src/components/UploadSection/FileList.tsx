@@ -129,14 +129,13 @@ const FileList = React.memo(
                   <AnimatePresence>
                     {files.map((file, index) => {
                       // 逐文件状态（顺序转换）：已完成 / 转换中 / 待转换（T6）
-                      const status =
-                        !isLoading
-                          ? null
-                          : index < (currentFileIndex ?? 0)
+                      const status = !isLoading
+                        ? null
+                        : index < (currentFileIndex ?? 0)
                           ? "done"
                           : index === currentFileIndex
-                          ? "active"
-                          : "pending";
+                            ? "active"
+                            : "pending";
                       return (
                         <motion.li
                           key={file.name}
@@ -179,15 +178,19 @@ const FileList = React.memo(
                                 status === "active"
                                   ? "bg-blue-100/70 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
                                   : status === "done"
-                                  ? "bg-green-100/70 dark:bg-green-900/40 text-green-600 dark:text-green-300"
-                                  : "bg-gray-100/70 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400"
+                                    ? "bg-green-100/70 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                                    : "bg-gray-100/70 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400"
                               }`}
                             >
                               {status === "active" && (
                                 <span className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                               )}
                               {status === "done" && "✓ "}
-                              {status === "active" ? "转换中" : status === "done" ? "已完成" : "待转换"}
+                              {status === "active"
+                                ? "转换中"
+                                : status === "done"
+                                  ? "已完成"
+                                  : "待转换"}
                             </span>
                           )}
                           {/* 删除文件按钮 — 玻璃风格 */}
@@ -214,7 +217,7 @@ const FileList = React.memo(
         </AnimatePresence>
       </motion.div>
     );
-  }
+  },
 );
 
 export default FileList;

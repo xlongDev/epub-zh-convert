@@ -55,9 +55,7 @@ const ErrorDisplay = ({ error }: ErrorDisplayProps) => {
           {error}
         </p>
         {/* 建议：可以根据实际情况添加更多提示，例如引导用户重试或检查网络 */}
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-          请检查文件，再重试。
-        </p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">请检查文件，再重试。</p>
       </motion.div>
     </motion.div>
   );

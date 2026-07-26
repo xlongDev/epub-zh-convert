@@ -1,10 +1,19 @@
+import { useEffect } from "react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { installGlobalErrorHandlers } from "@/utils/errorReporter";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  // 安装全局错误钩子（运行时异常 / 未处理 Promise 拒绝），让 Worker 崩溃等可见
+  useEffect(() => {
+    const cleanup = installGlobalErrorHandlers();
+    return cleanup;
+  }, []);
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system">
       <MotionConfig reducedMotion="user">
@@ -28,7 +37,9 @@ function MyApp({ Component, pageProps }: AppProps) {
             media="(min-width: 1024px)"
           />
         </Head>
-        <Component {...pageProps} />
+        <ErrorBoundary>
+          <Component {...pageProps} />
+        </ErrorBoundary>
       </MotionConfig>
     </ThemeProvider>
   );

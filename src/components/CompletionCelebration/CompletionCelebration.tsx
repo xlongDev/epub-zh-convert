@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import type { BackgroundScheme } from "@/types";
@@ -101,20 +101,18 @@ interface ParticleGeometry {
   delay: number;
 }
 
-const PARTICLE_GEOMETRY: ParticleGeometry[] = Array.from({ length: 48 }).map(
-  (_, i) => {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 130 + Math.random() * 250;
-    return {
-      id: i,
-      dx: Math.cos(angle) * dist,
-      dy: Math.sin(angle) * dist,
-      size: 11 + Math.random() * 13,
-      rotate: (Math.random() - 0.5) * 720,
-      delay: Math.random() * 0.18,
-    };
-  }
-);
+const PARTICLE_GEOMETRY: ParticleGeometry[] = Array.from({ length: 48 }).map((_, i) => {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 130 + Math.random() * 250;
+  return {
+    id: i,
+    dx: Math.cos(angle) * dist,
+    dy: Math.sin(angle) * dist,
+    size: 11 + Math.random() * 13,
+    rotate: (Math.random() - 0.5) * 720,
+    delay: Math.random() * 0.18,
+  };
+});
 
 const CompletionCelebration = ({ show, scheme }: CompletionCelebrationProps) => {
   const [reduced, setReduced] = useState(false);
@@ -143,16 +141,13 @@ const CompletionCelebration = ({ show, scheme }: CompletionCelebrationProps) => 
         ...g,
         color: palette[g.id % palette.length],
       })),
-    [palette]
+    [palette],
   );
 
   if (!show || reduced) return null;
 
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute left-0 right-0 z-50"
-    >
+    <div aria-hidden="true" className="pointer-events-none absolute left-0 right-0 z-50">
       <div className="absolute left-1/2 top-[-90px]" style={{ transform: "translateX(-50%)" }}>
         {particles.map((p) => (
           <motion.span

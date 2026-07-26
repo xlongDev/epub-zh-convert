@@ -33,8 +33,7 @@ export interface DirectionOption {
 
 /** Web Worker 入站消息（主线程 → Worker） */
 export type WorkerRequest =
-  | { type: "convert"; file: File; direction: ConversionDirection }
-  | { type: "cancel" };
+  { type: "convert"; file: File; direction: ConversionDirection } | { type: "cancel" };
 
 /** Web Worker 出站消息（Worker → 主线程） */
 export type WorkerResponse =

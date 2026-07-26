@@ -7,10 +7,9 @@ type LottiePlayerProps = LottieProps & {
   "aria-label"?: string;
   role?: string;
 };
-const LottiePlayer = dynamic(
-  () => import("react-lottie-player"),
-  { ssr: false }
-) as unknown as React.ComponentType<LottiePlayerProps>;
+const LottiePlayer = dynamic(() => import("react-lottie-player"), {
+  ssr: false,
+}) as unknown as React.ComponentType<LottiePlayerProps>;
 
 /**
  * 共享 Lottie 封装

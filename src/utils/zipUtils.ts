@@ -13,7 +13,7 @@ import type { ConversionDirection, ConvertedFile } from "@/types";
  */
 export const buildConvertedZip = async (
   files: { name: string; blob: Blob }[],
-  zipName: string
+  zipName: string,
 ): Promise<void> => {
   const zip = new JSZip();
   for (const file of files) {
@@ -35,7 +35,7 @@ export const convertEpubBuffer = async (
   data: ArrayBuffer | Uint8Array,
   direction: ConversionDirection = "t2s",
   onProgress: (percent: number) => void = () => {},
-  isCancelled: () => boolean = () => false
+  isCancelled: () => boolean = () => false,
 ): Promise<{ blob: Blob }> => {
   const zip = new JSZip();
   const epubZip = await JSZip.loadAsync(data);
@@ -121,14 +121,14 @@ export const convertEpub = async (
   file: File,
   setProgress: (percent: number) => void,
   signal: AbortSignal,
-  direction: ConversionDirection = "t2s"
+  direction: ConversionDirection = "t2s",
 ): Promise<ConvertedFile> => {
   const arrayBuffer = await file.arrayBuffer();
   const { blob } = await convertEpubBuffer(
     arrayBuffer,
     direction,
     setProgress,
-    () => signal.aborted
+    () => signal.aborted,
   );
   const name = convertFilename(file.name, direction);
   return { blob, name };
@@ -140,10 +140,7 @@ export const convertEpub = async (
  * @param direction - 转换方向 ('t2s' 或 's2t')
  * @returns 转换后的 OPF 文件内容
  */
-const convertOpfMetadata = (
-  opfContent: string,
-  direction: ConversionDirection
-): string => {
+const convertOpfMetadata = (opfContent: string, direction: ConversionDirection): string => {
   // 使用正则表达式匹配需要转换的元数据字段
   // 包括：作者(creator)、标题(title)、主题(subject)、描述(description)等
   const metadataPatterns: RegExp[] = [

@@ -2,11 +2,10 @@ import { motion } from "framer-motion";
 import { FaArrowDown } from "react-icons/fa";
 
 interface DownloadPromptProps {
-  showDownloadPrompt: boolean;
   scrollToConvertedFiles: () => void;
 }
 
-const DownloadPrompt = ({ showDownloadPrompt, scrollToConvertedFiles }: DownloadPromptProps) => {
+const DownloadPrompt = ({ scrollToConvertedFiles }: DownloadPromptProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

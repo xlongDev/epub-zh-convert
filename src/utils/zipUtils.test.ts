@@ -14,7 +14,12 @@ async function buildSampleEpub() {
 describe("convertEpubBuffer", () => {
   it("转换文本内容并保持非文本文件原样", async () => {
     const buf = await buildSampleEpub();
-    const { blob } = await convertEpubBuffer(buf, "t2s", () => {}, () => false);
+    const { blob } = await convertEpubBuffer(
+      buf,
+      "t2s",
+      () => {},
+      () => false,
+    );
 
     expect(blob).toBeTruthy();
     expect(typeof blob.arrayBuffer).toBe("function");
@@ -36,7 +41,12 @@ describe("convertEpubBuffer", () => {
     const buf = await buildSampleEpub();
     let threw = false;
     try {
-      await convertEpubBuffer(buf, "t2s", () => {}, () => true);
+      await convertEpubBuffer(
+        buf,
+        "t2s",
+        () => {},
+        () => true,
+      );
     } catch (e) {
       threw = true;
       expect((e as Error).name).toBe("AbortError");
@@ -48,7 +58,12 @@ describe("convertEpubBuffer", () => {
     const zip = new JSZip();
     zip.file("OEBPS/ch.html", "<p>这是简体</p>");
     const buf = await zip.generateAsync({ type: "uint8array" });
-    const { blob } = await convertEpubBuffer(buf, "s2t", () => {}, () => false);
+    const { blob } = await convertEpubBuffer(
+      buf,
+      "s2t",
+      () => {},
+      () => false,
+    );
     const out = await JSZip.loadAsync(await blob.arrayBuffer());
     const html = await out.file("OEBPS/ch.html")!.async("text");
     expect(html).toContain("這是簡體");
@@ -61,7 +76,12 @@ describe("convertEpubBuffer", () => {
     zip.file("mimetype", "application/epub+zip");
     const buf = await zip.generateAsync({ type: "uint8array" });
 
-    const { blob } = await convertEpubBuffer(buf, "t2s", () => {}, () => false);
+    const { blob } = await convertEpubBuffer(
+      buf,
+      "t2s",
+      () => {},
+      () => false,
+    );
 
     // 解析 ZIP 本地文件头，读取第一个条目的名称与压缩方式
     const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -98,12 +118,7 @@ describe("convertEpubBuffer", () => {
       type: "application/epub+zip",
     });
 
-    const { blob, name } = await convertEpub(
-      file,
-      () => {},
-      new AbortController().signal,
-      "t2s"
-    );
+    const { blob, name } = await convertEpub(file, () => {}, new AbortController().signal, "t2s");
     expect(name).toBe("说明.epub");
     const out = await JSZip.loadAsync(await blob.arrayBuffer());
     const html = await out.file("OEBPS/ch.html")!.async("text");

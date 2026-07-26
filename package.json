@@ -7,9 +7,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "autoprefixer": "^10.5.4",
@@ -28,16 +29,36 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/eslint-parser": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
     "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^10.7.0",
+    "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.11",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.1.1",
+    "oxlint": "^1.75.0",
+    "prettier": "^3.9.6",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "oxlint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md,mjs}": [
+      "prettier --write"
+    ]
   },
   "packageManager": "pnpm@11.15.0"
 }

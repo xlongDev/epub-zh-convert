@@ -27,7 +27,11 @@ const ProgressIndicator = React.memo(
         {progress > 0 && progress < 100 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto", transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } }}
+            animate={{
+              opacity: 1,
+              height: "auto",
+              transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+            }}
             exit={{ opacity: 0, height: 0, transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
             className="mt-4"
           >
@@ -71,18 +75,20 @@ const ProgressIndicator = React.memo(
                     {isPaused
                       ? "已暂停"
                       : showFileIndex
-                      ? `正在转换第 ${currentFileIndex + 1} / ${totalFiles} 个`
-                      : "正在转换中…"}
+                        ? `正在转换第 ${currentFileIndex + 1} / ${totalFiles} 个`
+                        : "正在转换中…"}
                   </motion.span>
                 </div>
                 {/* 百分比数字 — 玻璃内嵌胶囊 */}
-                <span className="
+                <span
+                  className="
                   text-sm font-semibold tabular-nums px-2.5 py-0.5 rounded-lg
                   bg-white/40 dark:bg-white/[0.08]
                   border border-white/30 dark:border-white/10
                   shadow-sm backdrop-blur-md
                   text-indigo-600 dark:text-indigo-400
-                ">
+                "
+                >
                   {percent}%
                 </span>
               </div>
@@ -130,7 +136,8 @@ const ProgressIndicator = React.memo(
                     <motion.div
                       className="absolute inset-0 -translate-x-full overflow-hidden"
                       style={{
-                        background: "linear-gradient(90deg, transparent 15%, rgba(255,255,255,0.45) 50%, transparent 85%)",
+                        background:
+                          "linear-gradient(90deg, transparent 15%, rgba(255,255,255,0.45) 50%, transparent 85%)",
                       }}
                       animate={{ translateX: ["-100%", "250%"] }}
                       transition={{
@@ -155,7 +162,7 @@ const ProgressIndicator = React.memo(
         )}
       </AnimatePresence>
     );
-  }
+  },
 );
 
 export default ProgressIndicator;

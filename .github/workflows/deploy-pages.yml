@@ -1,0 +1,70 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 允许一个并发部署，跳过正在进行的旧部署
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+# 必须授予 Pages 与 OIDC 权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        # 不显式指定 version：从 package.json 的 packageManager 字段读取（pnpm@11.15.0），
+        # 与本地 / Vercel 构建保持一致，避免 lockfile 版本漂移。
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Pages
+        # static_site_generator: next 会自动注入 NEXT_BASE_PATH（如 /epub-zh-convert）
+        # 供 next.config 开启静态导出并加 basePath 前缀。
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: next
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (static export)
+        # NEXT_EXPORT=1 显式开启 output:'export'（configure-pages 注入的 NEXT_BASE_PATH 也会触发）。
+        # NODE_OPTIONS="" 避免继承 --use-system-ca 导致 Turbopack worker 拒绝。
+        env:
+          NEXT_EXPORT: "1"
+          NODE_OPTIONS: ""
+        run: pnpm build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 静态导出产物位于仓库根目录的 out/（已按 basePath 平铺）
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

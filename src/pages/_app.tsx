@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { installGlobalErrorHandlers } from "@/utils/errorReporter";
+import { withBasePath } from "@/utils/basePath";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -32,7 +33,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <link
             rel="preload"
             as="fetch"
-            href="/animations/welcome.json"
+            href={withBasePath("/animations/welcome.json")}
             type="application/json"
             media="(min-width: 1024px)"
           />

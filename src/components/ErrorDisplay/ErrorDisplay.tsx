@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Lottie from "@/components/Lottie/Lottie";
+import { withBasePath } from "@/utils/basePath";
 
 interface ErrorDisplayProps {
   error: string;
@@ -17,7 +18,7 @@ const ErrorDisplay = ({ error }: ErrorDisplayProps) => {
   const [errorAnimation, setErrorAnimation] = useState<unknown>(null);
 
   useEffect(() => {
-    fetch("/animations/error.json")
+    fetch(withBasePath("/animations/error.json"))
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then(setErrorAnimation)
       .catch(() => setErrorAnimation(null));

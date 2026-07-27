@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Lottie from "@/components/Lottie/Lottie";
+import { withBasePath } from "@/utils/basePath";
 
 interface WelcomeAnimationProps {
   isVisible: boolean;
@@ -17,7 +18,7 @@ const WelcomeAnimation = React.memo(({ isVisible }: WelcomeAnimationProps) => {
     let timer: ReturnType<typeof setTimeout>;
     if (isVisible) {
       // 动画 JSON 改为运行时 fetch，避免 ~534KB 被打进首屏 JS 包
-      fetch("/animations/welcome.json")
+      fetch(withBasePath("/animations/welcome.json"))
         .then((res) => (res.ok ? res.json() : Promise.reject()))
         .then((data) => {
           if (active) setAnimationData(data);

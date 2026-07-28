@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 // 仅当为 GitHub Pages 静态导出构建时才切换为 export 模式：
-// - CI 中 `actions/configure-pages` 会注入 NEXT_BASE_PATH（如 /epub-zh-convert）
+// - CI 中 `actions/configure-pages` 会注入 NEXT_PUBLIC_BASE_PATH（如 /epub-zh-convert）
+// - 也兼容旧手动注入的 NEXT_BASE_PATH
 // - 本地/ Vercel 构建不设置该变量，保持默认的服务端输出
-const isGitHubPages = !!process.env.NEXT_BASE_PATH || process.env.NEXT_EXPORT === "1";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || process.env.NEXT_BASE_PATH || "";
+const isGitHubPages = !!basePath || process.env.NEXT_EXPORT === "1";
 
 const nextConfig = {
   reactStrictMode: true,
@@ -57,7 +59,7 @@ const nextConfig = {
       }),
   // basePath 仅在 GitHub Pages 构建时由 configure-pages 注入；本地 dev / Vercel 保持为空。
   // 仅影响 Next 自身的 _next 资源与路由前缀；手动资源路径由 withBasePath() 用相对路径处理。
-  basePath: process.env.NEXT_BASE_PATH || "",
+  basePath,
 };
 
 export default nextConfig;

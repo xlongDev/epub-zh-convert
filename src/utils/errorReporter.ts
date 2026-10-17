@@ -42,7 +42,6 @@ export function reportError(
   };
 
   // 任何情况下都在控制台保留线索（开发环境、未配置端点都可见）
-  // eslint-disable-next-line no-console
   console.error("[error-reporter]", report);
 
   if (!ENDPOINT) return;

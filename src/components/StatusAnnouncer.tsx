@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 
 /**
@@ -10,6 +9,9 @@ import { useAppStore } from "@/store/useAppStore";
  *
  * - polite 区域：常规状态变更（开始、完成、取消），不打断当前播报
  * - assertive 区域：错误，立即播报
+ *
+ * 播报文本直接由当前状态**派生**：aria-live 仅在其文本内容发生变化时才播报，
+ * 因此无需在 effect 中 setState（避免 set-state-in-effect 级联渲染，也更简单）。
  */
 export function StatusAnnouncer() {
   const isLoading = useAppStore((s) => s.isLoading);
@@ -19,42 +21,19 @@ export function StatusAnnouncer() {
   const failedFilesLen = useAppStore((s) => s.failedFiles.length);
   const convertedFilesLen = useAppStore((s) => s.convertedFiles.length);
 
-  const [polite, setPolite] = useState("");
-  const [assertive, setAssertive] = useState("");
+  const assertive = error && !isLoading ? error : "";
 
-  // 记录上一帧状态，仅在「状态发生有意义变化」时更新播报，避免重复朗读
-  const prev = useRef({ isLoading, isComplete, isCancelled, error, convertedFilesLen });
-
-  useEffect(() => {
-    const p = prev.current;
-
-    // 错误优先（assertive）
-    if (error && !isLoading) {
-      setAssertive(error);
-      setPolite("");
-    } else if (!error && p.error) {
-      // 错误被清除（如重试），清空 assertive
-      setAssertive("");
-    }
-
-    // 离散状态播报（polite）
-    if (isLoading && !p.isLoading) {
-      setPolite("开始转换，请稍候");
-    } else if (isComplete && !p.isComplete && convertedFilesLen > 0) {
-      const ok = convertedFilesLen;
-      const fail = failedFilesLen;
-      setPolite(
-        fail > 0 ? `转换完成，成功 ${ok} 个，失败 ${fail} 个` : `转换完成，成功 ${ok} 个文件`,
-      );
-    } else if (isCancelled && !p.isCancelled) {
-      setPolite("已取消转换");
-    } else if (!isLoading && !isComplete && !isCancelled && !error && p.isLoading) {
-      // 从「进行中」回到初始，清空（例如重置）
-      setPolite("");
-    }
-
-    prev.current = { isLoading, isComplete, isCancelled, error, convertedFilesLen };
-  }, [isLoading, isComplete, isCancelled, error, failedFilesLen, convertedFilesLen]);
+  let polite = "";
+  if (isLoading) {
+    polite = "开始转换，请稍候";
+  } else if (isComplete && convertedFilesLen > 0) {
+    polite =
+      failedFilesLen > 0
+        ? `转换完成，成功 ${convertedFilesLen} 个，失败 ${failedFilesLen} 个`
+        : `转换完成，成功 ${convertedFilesLen} 个文件`;
+  } else if (isCancelled) {
+    polite = "已取消转换";
+  }
 
   return (
     <>

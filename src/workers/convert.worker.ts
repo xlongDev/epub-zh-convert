@@ -28,15 +28,15 @@ ctx.onmessage = async (e: MessageEvent<WorkerRequest>) => {
   cancelled = false;
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const { blob } = await convertEpubBuffer(
+    const { buffer } = await convertEpubBuffer(
       arrayBuffer,
       direction,
       (percent) => ctx.postMessage({ type: "progress", percent }),
       () => cancelled,
     );
 
-    const buffer = await blob.arrayBuffer();
-    // 文件名转换在 Worker 内完成并随消息回传，主线程无需再打包 opencc-js
+    // 文件名转换在 Worker 内完成并随消息回传，主线程无需再打包 opencc-js。
+    // 直接 transfer ArrayBuffer，省去 Blob -> arrayBuffer 的额外内存复制。
     ctx.postMessage({ type: "done", buffer, name: convertFilename(file.name, direction) }, [
       buffer,
     ]);

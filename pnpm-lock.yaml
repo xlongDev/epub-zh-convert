@@ -11,9 +11,6 @@ importers:
 
   .:
     dependencies:
-      autoprefixer:
-        specifier: ^10.6.1
-        version: 10.6.1(postcss@8.5.30)
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -897,13 +894,6 @@ packages:
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
-
-  autoprefixer@10.6.1:
-    resolution: {integrity: sha512-cL1Qz6ADZhcEbny/8HPfe99J6HhNoYtpX2LFLIbhgGE7Q1hlQVkYFdetDN7Id3KiQxhDrHwzlHr/YQCnZ8+xSA==}
-    engines: {node: ^10 || ^12 || >=14}
-    hasBin: true
-    peerDependencies:
-      postcss: ^8.1.0
 
   baseline-browser-mapping@2.11.29:
     resolution: {integrity: sha512-YeesxhUmR4h5y5V8KF8iBCqJb8YFrBJ++XBTeGcWIaQOYXGN19JM0FoiOjAhwuDoln8owMgXcWBmgHtYSkky2w==}
@@ -2114,15 +2104,6 @@ snapshots:
   '@vitest/spy@5.0.5': {}
 
   assertion-error@2.0.1: {}
-
-  autoprefixer@10.6.1(postcss@8.5.30):
-    dependencies:
-      browserslist: 4.29.3
-      caniuse-lite: 1.0.30001816
-      fraction.js: 5.3.4
-      picocolors: 1.1.1
-      postcss: 8.5.30
-      postcss-value-parser: 4.2.0
 
   baseline-browser-mapping@2.11.29: {}
 

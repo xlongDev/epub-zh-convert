@@ -14,17 +14,16 @@ async function buildSampleEpub() {
 describe("convertEpubBuffer", () => {
   it("转换文本内容并保持非文本文件原样", async () => {
     const buf = await buildSampleEpub();
-    const { blob } = await convertEpubBuffer(
+    const { buffer } = await convertEpubBuffer(
       buf,
       "t2s",
       () => {},
       () => false,
     );
 
-    expect(blob).toBeTruthy();
-    expect(typeof blob.arrayBuffer).toBe("function");
+    expect(buffer).toBeInstanceOf(ArrayBuffer);
 
-    const out = await JSZip.loadAsync(await blob.arrayBuffer());
+    const out = await JSZip.loadAsync(buffer);
     const html = await out.file("OEBPS/chapter1.html")!.async("text");
     expect(html).toContain("这是一段繁体文字");
     expect(html).not.toContain("這是一段繁體文字");
@@ -35,6 +34,57 @@ describe("convertEpubBuffer", () => {
     // 非文本（图片）应原样保留
     const img = await out.file("OEBPS/cover.jpg")!.async("uint8array");
     expect(Array.from(img)).toEqual([1, 2, 3, 4]);
+  });
+
+  it("扩展的文本类型（svg/xml/css/htm）也参与转换", async () => {
+    const zip = new JSZip();
+    zip.file("mimetype", "application/epub+zip");
+    zip.file("OEBPS/fig.svg", "<svg><text>這是繁體</text></svg>");
+    zip.file("OEBPS/style.css", "/* 這是一段繁體文字 */");
+    zip.file("OEBPS/old.htm", "<p>這是繁體</p>");
+    const buf = await zip.generateAsync({ type: "uint8array" });
+    const { buffer } = await convertEpubBuffer(
+      buf,
+      "t2s",
+      () => {},
+      () => false,
+    );
+    const out = await JSZip.loadAsync(buffer);
+    const svg = await out.file("OEBPS/fig.svg")!.async("text");
+    expect(svg).toContain("这是繁体");
+    const css = await out.file("OEBPS/style.css")!.async("text");
+    expect(css).toContain("这是一段繁体文字");
+    const htm = await out.file("OEBPS/old.htm")!.async("text");
+    expect(htm).toContain("这是繁体");
+  });
+
+  it("非法 UTF-8 字节输入不崩溃，产出可解析结果", async () => {
+    // 模拟不合规编码：EPUB 规范要求 UTF-8，个别老书可能用 GBK/Big5；
+    // decodeText 检出无效字节后会尝试回退（浏览器原生支持 gbk/big5），
+    // 即便运行时不支持某编码也只退回 UTF-8 乱码而不崩溃。这里验证「不崩溃 + 结构完好」。
+    const zip = new JSZip();
+    zip.file("mimetype", "application/epub+zip");
+    const broken = new Uint8Array([0xff, 0xfe, 0xe4, 0xb8, 0xad]);
+    zip.file("OEBPS/chapter1.html", broken);
+    const buf = await zip.generateAsync({ type: "uint8array" });
+
+    let threw = false;
+    let buffer: ArrayBuffer | null = null;
+    try {
+      ({ buffer } = await convertEpubBuffer(
+        buf,
+        "t2s",
+        () => {},
+        () => false,
+      ));
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(false);
+    expect(buffer).toBeInstanceOf(ArrayBuffer);
+    // 重新解析不应抛错（ZIP 结构完好，目标条目仍在）
+    const out = await JSZip.loadAsync(buffer!);
+    expect(out.file("OEBPS/chapter1.html")).toBeTruthy();
   });
 
   it("取消时抛出 AbortError", async () => {
@@ -58,13 +108,13 @@ describe("convertEpubBuffer", () => {
     const zip = new JSZip();
     zip.file("OEBPS/ch.html", "<p>这是简体</p>");
     const buf = await zip.generateAsync({ type: "uint8array" });
-    const { blob } = await convertEpubBuffer(
+    const { buffer } = await convertEpubBuffer(
       buf,
       "s2t",
       () => {},
       () => false,
     );
-    const out = await JSZip.loadAsync(await blob.arrayBuffer());
+    const out = await JSZip.loadAsync(buffer);
     const html = await out.file("OEBPS/ch.html")!.async("text");
     expect(html).toContain("這是簡體");
   });
@@ -76,7 +126,7 @@ describe("convertEpubBuffer", () => {
     zip.file("mimetype", "application/epub+zip");
     const buf = await zip.generateAsync({ type: "uint8array" });
 
-    const { blob } = await convertEpubBuffer(
+    const { buffer } = await convertEpubBuffer(
       buf,
       "t2s",
       () => {},
@@ -84,7 +134,7 @@ describe("convertEpubBuffer", () => {
     );
 
     // 解析 ZIP 本地文件头，读取第一个条目的名称与压缩方式
-    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const bytes = new Uint8Array(buffer);
     let first: { name: string; compression: number } | null = null;
     for (let i = 0; i < bytes.length - 4; i++) {
       if (

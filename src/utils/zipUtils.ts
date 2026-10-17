@@ -24,19 +24,40 @@ export const buildConvertedZip = async (
 };
 
 /**
+ * 文本解码：EPUB 规范要求 UTF-8，但不合规老书可能用 GBK/Big5。
+ * 先以 UTF-8 解码（非 fatal，非法字节变 U+FFFD 替换字符），检出替换字符则依次回退
+ * GBK / Big5（现代浏览器 TextDecoder 原生支持；Node 需 full-icu）；运行时不支持某编码时
+ * try/catch 跳过，最终仍返回 UTF-8 结果（最坏情况乱码但不崩溃，而非把错误静默吞掉）。
+ */
+const utf8Decoder = new TextDecoder("utf-8");
+const decodeText = (bytes: Uint8Array): string => {
+  const utf8 = utf8Decoder.decode(bytes);
+  if (!utf8.includes("�")) return utf8;
+  for (const enc of ["gbk", "big5"]) {
+    try {
+      const alt = new TextDecoder(enc).decode(bytes);
+      if (!alt.includes("�")) return alt;
+    } catch {
+      // 该运行时未捆绑对应编码，忽略
+    }
+  }
+  return utf8;
+};
+
+/**
  * 转换 EPUB（纯函数核心，不依赖浏览器 File/FileReader）
- * @param arrayBuffer - EPUB 文件的二进制内容
+ * @param data - EPUB 文件的二进制内容
  * @param direction - 转换方向 ('t2s' 或 's2t')
  * @param onProgress - 进度回调，入参为 0-100 的整数
  * @param isCancelled - 取消判定，返回 true 时中止并抛出 AbortError
- * @returns 转换后的 Blob 对象
+ * @returns 转换后的 ArrayBuffer（由调用方决定包 Blob 或 transfer 给 Worker）
  */
 export const convertEpubBuffer = async (
   data: ArrayBuffer | Uint8Array,
   direction: ConversionDirection = "t2s",
   onProgress: (percent: number) => void = () => {},
   isCancelled: () => boolean = () => false,
-): Promise<{ blob: Blob }> => {
+): Promise<{ buffer: ArrayBuffer }> => {
   const zip = new JSZip();
   const epubZip = await JSZip.loadAsync(data);
   let totalFiles = Object.keys(epubZip.files).length;
@@ -52,12 +73,12 @@ export const convertEpubBuffer = async (
     totalFiles -= 1;
   }
 
+  // 需做繁简转换的文本类条目：覆盖常见 HTML / XML / CSS / SVG 与 NCX 导航文件。
+  // 原先仅认 .html/.xhtml/.txt/.ncx/.nav.xhtml，遗漏 .htm / .svg / 其它 .xml /
+  // style.css 内的中文（如 SVG 内 <text> 文案不会被转换）。
+  const TEXT_EXTENSIONS = [".html", ".xhtml", ".htm", ".ncx", ".txt", ".svg", ".xml", ".css"];
   const isTextFile = (path: string): boolean =>
-    path.endsWith(".html") ||
-    path.endsWith(".xhtml") ||
-    path.endsWith(".txt") ||
-    path.endsWith("toc.ncx") ||
-    path.endsWith("nav.xhtml");
+    TEXT_EXTENSIONS.some((ext) => path.toLowerCase().endsWith(ext));
 
   for (const [path, fileEntry] of Object.entries(epubZip.files)) {
     if (path === "mimetype") continue; // 已在循环外首位固定写入
@@ -68,11 +89,11 @@ export const convertEpubBuffer = async (
     if (!fileEntry.dir) {
       let content: string | Uint8Array;
       if (isTextFile(path)) {
-        content = await fileEntry.async("text");
+        content = decodeText(await fileEntry.async("uint8array"));
         content = convertText(content, direction);
       } else if (path.endsWith(".opf")) {
         // 转换 OPF 文件中的元数据（包括作者信息）
-        content = await fileEntry.async("text");
+        content = decodeText(await fileEntry.async("uint8array"));
         content = convertOpfMetadata(content, direction);
       } else {
         content = await fileEntry.async("uint8array");
@@ -98,15 +119,17 @@ export const convertEpubBuffer = async (
     throw new DOMException("转换已取消", "AbortError");
   }
 
+  // 直接产出 ArrayBuffer，Worker 可直接 transfer 而无需先包 Blob 再 arrayBuffer 往返，
+  // 省去一次额外的内存复制（主线程降级路径再按需包 Blob）。
   const newEpub = await zip.generateAsync({
-    type: "blob",
+    type: "arraybuffer",
     compression: "DEFLATE",
     compressionOptions: { level: 9 },
     platform: "UNIX",
     comment: "",
   });
 
-  return { blob: newEpub };
+  return { buffer: newEpub as ArrayBuffer };
 };
 
 /**
@@ -124,12 +147,13 @@ export const convertEpub = async (
   direction: ConversionDirection = "t2s",
 ): Promise<ConvertedFile> => {
   const arrayBuffer = await file.arrayBuffer();
-  const { blob } = await convertEpubBuffer(
+  const { buffer } = await convertEpubBuffer(
     arrayBuffer,
     direction,
     setProgress,
     () => signal.aborted,
   );
+  const blob = new Blob([buffer]);
   const name = convertFilename(file.name, direction);
   return { blob, name };
 };

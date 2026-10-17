@@ -19,6 +19,9 @@
 - **清空全部**：结果区提供「清空全部」按钮，经二次确认后一次性清空上传列表与转换结果，方便快速开始新一批任务。
 - **主题支持**：通过 next-themes 提供浅色 / 深色 / 跟随系统主题。
 - **本地私密**：转换在浏览器内完成，文件不会离开你的电脑。下载完成的对象 URL 会立即释放，剪贴板分享的链接在页面卸载时统一回收，内存占用始终有界。
+- **上传校验**：上传时即校验 EPUB 合法性（`.epub` 扩展名 + ZIP `PK\x03\x04` 文件头），不合规或非 EPUB 文件会在转换开始前给出清晰提示并拒绝，而非转换中途才报错。
+- **失败文件重试**：部分文件失败时，提供「重试失败文件」操作，仅重新转换失败项，已成功的结果不受影响。
+- **编码容错**：文本默认按 UTF-8 解码，对不合规的老旧 EPUB 自动回退 GBK / Big5，避免不兼容书籍出现静默乱码。
 
 ## 技术栈
 
@@ -71,7 +74,7 @@ yarn install
 - **转换方向** —— `t2s`（繁 → 简）与 `s2t`（简 → 繁）定义在 [`src/utils/opencc.ts`](src/utils/opencc.ts)，当前方向由界面上的 `DirectionSelector` 选择。
 - **背景渐变方案** —— 编辑 [`src/config/backgroundSchemes.ts`](src/config/backgroundSchemes.ts)。每个条目是一对 `{ light, dark }` 的 Tailwind 渐变类名字符串，每次会话随机选取（存入 `sessionStorage`）。向数组追加对象即可新增方案。
 - **主题** —— 由 `next-themes` 驱动。`ThemeToggle` 组件可切换浅色 / 深色，并自动检测系统偏好；手动选择会存入 `sessionStorage` 的 `theme` 键。
-- **转换引擎** —— 核心纯函数 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) 刻意不依赖浏览器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)）中运行。若 Worker 创建失败，会自动降级回主线程。
+- **转换引擎** —— 核心纯函数 [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) 刻意不依赖浏览器 `File` / `FileReader` API，因此可在 Web Worker（[`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)）中运行。若 Worker 创建失败，会自动降级回主线程。它直接返回转换后的 `ArrayBuffer`，便于零拷贝回传主线程。
 
 ## 开发与测试
 

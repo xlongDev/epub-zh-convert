@@ -11,7 +11,7 @@ export interface FilesSlice {
   files: File[];
   isFileSelected: boolean;
 
-  addFiles: (incoming: FileList | File[]) => void;
+  addFiles: (incoming: FileList | File[]) => Promise<void>;
   deleteFile: (index: number) => void;
   clearFiles: () => void;
 }
@@ -25,12 +25,23 @@ const pruneConvertedFiles = (convertedFiles: ConvertedFile[], files: File[]): Co
   );
 };
 
+// EPUB 本质是 ZIP 归档，合法文件以 ZIP 本地文件头签名开头（PK\x03\x04）。
+// 用于上传阶段剔除扩展名是 .epub 但实际不是 ZIP 的伪文件。
+const isLikelyEpub = async (file: File): Promise<boolean> => {
+  try {
+    const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+    return head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04;
+  } catch {
+    return false;
+  }
+};
+
 export const createFilesSlice: StateCreator<AppState, [], [], FilesSlice> = (set) => ({
   files: [],
   isFileSelected: false,
 
-  // 仅接收 EPUB 文件；若混入非 EPUB 则提示并忽略
-  addFiles: (incoming) => {
+  // 仅接收 EPUB 文件：扩展名 + ZIP 魔数双重校验，排除伪 .epub（非真实 ZIP/EPUB）
+  addFiles: async (incoming) => {
     const sourceFiles = Array.from(incoming);
     if (sourceFiles.length === 0) return;
     const epubFiles = sourceFiles.filter((file) => file.name.toLowerCase().endsWith(".epub"));
@@ -38,8 +49,21 @@ export const createFilesSlice: StateCreator<AppState, [], [], FilesSlice> = (set
       alert("只能上传EPUB格式的文件哦！😊");
       return;
     }
+    const valid: File[] = [];
+    const invalid: File[] = [];
+    for (const file of epubFiles) {
+      if (await isLikelyEpub(file)) valid.push(file);
+      else invalid.push(file);
+    }
+    if (valid.length === 0) {
+      alert("文件不是有效的 EPUB（ZIP）格式，请检查后重试。");
+      return;
+    }
+    if (invalid.length > 0) {
+      alert(`已跳过 ${invalid.length} 个无效文件（非 EPUB/ZIP 格式）。`);
+    }
     set((state) => {
-      const files = [...state.files, ...epubFiles];
+      const files = [...state.files, ...valid];
       return {
         files,
         isFileSelected: true,

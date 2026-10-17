@@ -19,6 +19,9 @@ This is a React and Next.js-based EPUB Traditional-Simplified Chinese converter.
 - **Clear all**: a single "Clear all" action in the result area wipes both the upload list and the converted files after a confirmation, so you can start a fresh batch quickly.
 - **Theme support**: light / dark / system themes via `next-themes`.
 - **Client-side & private**: conversion happens in the browser; nothing leaves your machine. Blob URLs are released as soon as downloads finish, and clipboard-shared URLs are reclaimed when the page unloads, so memory stays bounded.
+- **Upload validation**: files are checked for a valid EPUB on upload (`.epub` extension and ZIP `PK\x03\x04` header), so malformed or non-EPUB files are rejected with a clear message before conversion even starts.
+- **Retry failed files**: if some files fail, a dedicated "重试失败文件" action re-runs only the failed items, leaving already-converted results untouched.
+- **Encoding tolerance**: text is decoded as UTF-8 with automatic fallback to GBK / Big5 for non-compliant older EPUBs, preventing silent mojibake on incompatible books.
 
 ## Tech Stack
 
@@ -71,7 +74,7 @@ Most behavior is driven by the UI, but a few areas are easy to customize in code
 - **Conversion direction** — `t2s` (Traditional → Simplified) and `s2t` (Simplified → Traditional) are defined in [`src/utils/opencc.ts`](src/utils/opencc.ts). The active direction is chosen via the on-screen `DirectionSelector`.
 - **Background gradient schemes** — edit [`src/config/backgroundSchemes.ts`](src/config/backgroundSchemes.ts). Each entry is a `{ light, dark }` pair of Tailwind gradient class strings. A scheme is picked at random per session (persisted in `sessionStorage`). Append a new object to the array to add your own.
 - **Theme** — powered by `next-themes`. The `ThemeToggle` component lets users switch between light / dark, and the system preference is auto-detected. A manual choice is stored in `sessionStorage` under the `theme` key.
-- **Conversion engine** — the core pure function [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) performs the work and is intentionally free of browser `File` / `FileReader` APIs, so it can run inside the Web Worker ([`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)). If Worker creation fails, the app transparently falls back to the main thread.
+- **Conversion engine** — the core pure function [`convertEpubBuffer(arrayBuffer, direction, onProgress, isCancelled)`](src/utils/zipUtils.ts) performs the work and is intentionally free of browser `File` / `FileReader` APIs, so it can run inside the Web Worker ([`src/workers/convert.worker.ts`](src/workers/convert.worker.ts)). If Worker creation fails, the app transparently falls back to the main thread. It returns the converted file as an `ArrayBuffer` for efficient, zero-copy transfer back to the main thread.
 
 ## Development & Testing
 

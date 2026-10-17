@@ -40,20 +40,13 @@ const UploadSection = React.memo(() => {
   const deleteFile = useAppStore((s) => s.deleteFile);
   const handleClearAll = useAppStore((s) => s.handleClearAll);
 
-  // 🎯 仅接收 EPUB 文件的封装逻辑
+  // 🎯 校验（扩展名 + ZIP 魔数）统一交给 store.addFiles 处理，避免重复过滤/提示
   const handleFilteredFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent) => {
     const sourceFiles =
       "dataTransfer" in e && e.dataTransfer
         ? e.dataTransfer.files
         : (e.target as HTMLInputElement).files;
-    const epubFiles = Array.from(sourceFiles ?? []).filter((file) =>
-      file.name.toLowerCase().endsWith(".epub"),
-    );
-    if (epubFiles.length === 0 && (sourceFiles?.length ?? 0) > 0) {
-      alert("只能上传EPUB格式的文件哦！😊");
-      return;
-    }
-    addFiles(epubFiles);
+    void addFiles(sourceFiles ?? []);
   };
 
   // 🖱️ 拖拽计数器：规避子元素边界 dragenter/leave 互相抵消导致的遮罩闪烁

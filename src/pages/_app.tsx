@@ -26,6 +26,22 @@ function MyApp({ Component, pageProps }: AppProps) {
             content="在线 EPUB 繁简（繁体/简体）转换工具，支持批量上传、实时进度与一键下载。"
           />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <script
+            type="application/ld+json"
+            // 结构化数据：帮助搜索引擎理解这是一个 Web 应用
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                name: "EPUB 繁简转换",
+                description:
+                  "在线 EPUB 繁简（繁体/简体）转换工具，支持批量上传、实时进度与一键下载。",
+                applicationCategory: "UtilitiesApplication",
+                operatingSystem: "Any",
+                inLanguage: "zh-CN",
+              }),
+            }}
+          />
           {/* 预加载欢迎动画 JSON：
               桌面端带宽充足，预加载可让动画随导航并行下载、更快出现；
               移动端带宽受限且该 JSON(≈534KB) 并非 LCP 元素（LCP 由 CSS 骨架即时绘制），

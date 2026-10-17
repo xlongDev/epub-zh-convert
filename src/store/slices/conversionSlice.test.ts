@@ -166,4 +166,46 @@ describe("conversionSlice — 状态机", () => {
     // 全部文件处理完（即使失败）仍标记完成
     expect(getState().isComplete).toBe(true);
   });
+
+  it("handleRetryFailed 成功移除 failedFiles 并写入 convertedFiles", async () => {
+    const file = new File(["x"], "retry.epub", { type: "application/epub+zip" });
+    const { slice, getState } = makeStore({
+      files: [file],
+      failedFiles: [{ name: "retry.epub", message: "boom" }],
+      isComplete: true,
+    });
+    (convertEpub as unknown as Mock).mockResolvedValue({
+      name: "retry.epub",
+      blob: new Blob(),
+    });
+    await slice.handleRetryFailed();
+    expect(getState().isLoading).toBe(false);
+    expect(getState().failedFiles).toHaveLength(0);
+    expect(getState().convertedFiles).toHaveLength(1);
+    expect(getState().convertedFiles[0].name).toBe("retry.epub");
+  });
+
+  it("handleRetryFailed 部分失败：成功的写入、失败的重回 failedFiles", async () => {
+    const good = new File(["x"], "good.epub", { type: "application/epub+zip" });
+    const bad = new File(["x"], "bad.epub", { type: "application/epub+zip" });
+    const { slice, getState } = makeStore({
+      files: [good, bad],
+      failedFiles: [
+        { name: "good.epub", message: "boom" },
+        { name: "bad.epub", message: "boom" },
+      ],
+      isComplete: true,
+    });
+    (convertEpub as unknown as Mock).mockImplementation((file: File) => {
+      if (file.name === "bad.epub") return Promise.reject(new Error("still bad"));
+      return Promise.resolve({ name: file.name, blob: new Blob() });
+    });
+    await slice.handleRetryFailed();
+    const s = getState();
+    expect(s.convertedFiles).toHaveLength(1);
+    expect(s.convertedFiles[0].name).toBe("good.epub");
+    expect(s.failedFiles).toHaveLength(1);
+    expect(s.failedFiles[0].name).toBe("bad.epub");
+    expect(s.failedFiles[0].message).toBe("still bad");
+  });
 });

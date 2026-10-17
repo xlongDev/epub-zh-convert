@@ -4,7 +4,7 @@ import type { AppState, ConvertedFile } from "../types";
 
 /**
  * 转换引擎 slice：转换中 / 进度 / 错误 / 完成 / 取消 / 暂停等状态，
- * 以及 handleConvert（Worker 编排，含主线程降级）、暂停 / 继续 / 取消 / 重置。
+ * 以及 handleConvert（Worker 编排，含主线程降级）、暂停 / 继续 / 取消 / 重置 / 重试失败。
  *
  * 引擎需要的非序列化引用（AbortController、Worker、暂停/继续 Promise resolver）
  * 放在模块级 `engineRefs`，不进入 store 的响应式部分；store action 内部统一通过
@@ -23,6 +23,7 @@ export interface ConversionSlice {
   handleCancel: () => void;
   handlePause: () => void;
   handleResume: () => void;
+  handleRetryFailed: () => Promise<void>;
   resetConversion: () => void;
   setIsComplete: (value: boolean) => void;
 }
@@ -187,6 +188,76 @@ export const createConversionSlice: StateCreator<AppState, [], [], ConversionSli
         isComplete: false,
         isPaused: false,
       });
+    }
+  },
+
+  handleRetryFailed: async () => {
+    const failedNames = new Set(get().failedFiles.map((f) => f.name));
+    if (failedNames.size === 0) return;
+    const target = get().files.filter((f) => failedNames.has(f.name));
+    if (target.length === 0) return;
+
+    const ac = new AbortController();
+    engineRefs.abortController = ac;
+
+    // 优先尝试 Web Worker，失败则降级到主线程
+    let worker: Worker | null = null;
+    if (typeof Worker !== "undefined") {
+      try {
+        worker = new Worker(new URL("../../workers/convert.worker.ts", import.meta.url), {
+          type: "module",
+        });
+      } catch {
+        worker = null;
+      }
+    }
+    engineRefs.worker = worker;
+
+    set({ isLoading: true, error: null, isCancelled: false, currentFileIndex: 0, progress: 0 });
+
+    // 先把即将重试的失败项从 failedFiles 中移除，避免重试期间重复展示
+    const remaining = get().failedFiles.filter((f) => !failedNames.has(f.name));
+    set({ failedFiles: remaining });
+
+    const runOne = (file: File, index: number): Promise<ConvertedFile> =>
+      worker
+        ? convertInWorker(worker, file, index, target.length, get, set)
+        : convertOnMainThread(file, index, target.length, get, set);
+
+    const newFailed: FailedFile[] = [];
+    try {
+      for (let i = 0; i < target.length; i++) {
+        const file = target[i];
+        if (ac.signal.aborted) break;
+        set({ currentFileIndex: i });
+        try {
+          const result = await runOne(file, i);
+          set((state) => {
+            const existingIndex = state.convertedFiles.findIndex((f) => f.name === result.name);
+            if (existingIndex !== -1) {
+              const newFiles = [...state.convertedFiles];
+              newFiles[existingIndex] = { name: result.name, blob: result.blob };
+              return { convertedFiles: newFiles };
+            }
+            return {
+              convertedFiles: [...state.convertedFiles, { name: result.name, blob: result.blob }],
+            };
+          });
+        } catch (err) {
+          const error = err as Error;
+          if (error.name !== "AbortError") {
+            console.error(`文件 ${file.name} 重试失败:`, error.message);
+            newFailed.push({
+              name: file.name,
+              message: error.message || "未知错误",
+            });
+          }
+        }
+      }
+    } finally {
+      if (worker) worker.terminate();
+      engineRefs.worker = null;
+      set((state) => ({ isLoading: false, failedFiles: [...state.failedFiles, ...newFailed] }));
     }
   },
 

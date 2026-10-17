@@ -64,33 +64,45 @@ const NeutralNotice = ({ tone = "neutral", title, children }: NeutralNoticeProps
 );
 
 /**
- * 失败文件清单卡片（部分 / 全部失败）
+ * 失败文件清单卡片（部分 / 全部失败），并提供「仅重试失败文件」入口
  */
 interface FailuresSummaryProps {
   failedFiles: FailedFile[];
 }
 
-const FailuresSummary = ({ failedFiles }: FailuresSummaryProps) => (
-  <NeutralNotice tone="danger" title={`有 ${failedFiles.length} 个文件转换失败`}>
-    <ul className="mt-2 space-y-1 text-left w-full max-w-md">
-      {failedFiles.map((f) => (
-        <li
-          key={f.name}
-          className="text-sm text-gray-600 dark:text-gray-300 flex items-start gap-2"
-        >
-          <span className="text-red-500 dark:text-red-400 font-semibold flex-shrink-0">•</span>
-          <span className="break-all">
-            <span className="font-medium">{f.name}</span>
-            {f.message ? `：${f.message}` : ""}
-          </span>
-        </li>
-      ))}
-    </ul>
-    <p className="text-gray-500 dark:text-gray-400 text-sm mt-3">
-      其余文件已转换成功，可正常下载。
-    </p>
-  </NeutralNotice>
-);
+const FailuresSummary = ({ failedFiles }: FailuresSummaryProps) => {
+  const handleRetryFailed = useAppStore((s) => s.handleRetryFailed);
+  const isLoading = useAppStore((s) => s.isLoading);
+  return (
+    <NeutralNotice tone="danger" title={`有 ${failedFiles.length} 个文件转换失败`}>
+      <ul className="mt-2 space-y-1 text-left w-full max-w-md">
+        {failedFiles.map((f) => (
+          <li
+            key={f.name}
+            className="text-sm text-gray-600 dark:text-gray-300 flex items-start gap-2"
+          >
+            <span className="text-red-500 dark:text-red-400 font-semibold flex-shrink-0">•</span>
+            <span className="break-all">
+              <span className="font-medium">{f.name}</span>
+              {f.message ? `：${f.message}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={handleRetryFailed}
+        disabled={isLoading}
+        className="mt-3 glass-btn px-4 py-2 rounded-xl text-sm font-medium text-blue-600 dark:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+      >
+        {isLoading ? "重试中…" : "重试失败文件"}
+      </button>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+        其余文件已转换成功，可正常下载。
+      </p>
+    </NeutralNotice>
+  );
+};
 
 /**
  * 📦 ConvertedSection - 转换结果展示「容器组件」

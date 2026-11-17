@@ -4,6 +4,8 @@ node_modules
 out
 build
 coverage
+test-results
+playwright-report
 
 # lockfiles
 pnpm-lock.yaml

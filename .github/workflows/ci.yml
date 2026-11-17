@@ -52,3 +52,11 @@ jobs:
         env:
           NODE_OPTIONS: ""
         run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E (Playwright)
+        env:
+          NODE_OPTIONS: ""
+        run: pnpm test:e2e

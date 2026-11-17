@@ -87,6 +87,21 @@ describe("convertEpubBuffer", () => {
     expect(out.file("OEBPS/chapter1.html")).toBeTruthy();
   });
 
+  it("GBK 编码的文本回退解码后正确转为简体（无乱码）", async () => {
+    // "這是繁體" 的 GBK 字节；UTF-8 解码会产生 U+FFFD，应回退到 GBK
+    const gbkBytes = new Uint8Array([0xdf, 0x40, 0xca, 0xc7, 0xb7, 0xb1, 0xf3, 0x77]);
+    const zip = new JSZip();
+    zip.file("mimetype", "application/epub+zip");
+    zip.file("OEBPS/chapter1.html", gbkBytes);
+    const buf = await zip.generateAsync({ type: "uint8array" });
+
+    const { buffer } = await convertEpubBuffer(buf, "t2s");
+    const out = await JSZip.loadAsync(buffer);
+    const html = await out.file("OEBPS/chapter1.html")!.async("text");
+    expect(html).toContain("这是繁体");
+    expect(html).not.toContain("\uFFFD");
+  });
+
   it("取消时抛出 AbortError", async () => {
     const buf = await buildSampleEpub();
     let threw = false;

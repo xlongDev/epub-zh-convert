@@ -1,14 +1,27 @@
 import { Html, Head, Main, NextScript } from "next/document";
-import { withBasePath } from "@/utils/basePath";
+import { getFaviconHrefs } from "@/utils/favicon";
+import { getAppleAppTitle, getManifestHref } from "@/utils/pwa";
 
 export default function Document() {
+  // SSR 首帧用深色版（与 next-themes 挂载前的默认一致）；客户端由 FaviconThemeSync 按实际主题改写
+  const favicon = getFaviconHrefs("dark");
+
   return (
     <Html lang="zh-CN" suppressHydrationWarning>
       <Head>
         <meta charSet="UTF-8" />
-        <link rel="icon" href={withBasePath("/favicon.ico")} sizes="any" />
-        <link rel="icon" type="image/svg+xml" href={withBasePath("/favicon.svg")} />
-        <link rel="apple-touch-icon" href={withBasePath("/apple-touch-icon.png")} />
+        <link id="favicon-ico" rel="icon" href={favicon.ico} sizes="any" />
+        <link id="favicon-svg" rel="icon" type="image/svg+xml" href={favicon.svg} />
+        <link id="apple-touch-icon" rel="apple-touch-icon" href={favicon.apple} />
+        {/* SSR 首帧按中文输出，客户端 PwaLanguageSync 按设备语言纠正（安装时名称取当时快照） */}
+        <link id="pwa-manifest" rel="manifest" href={getManifestHref("zh")} />
+        <meta
+          id="apple-mobile-web-app-title"
+          name="apple-mobile-web-app-title"
+          content={getAppleAppTitle("zh")}
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="EPUB 繁简转换 | epub-zh-convert" />
         <meta

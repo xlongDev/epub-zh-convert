@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+  <title id="t">EPUB 繁简转换器浅色图标：双玻璃页互转</title>
+  <defs>
+    <linearGradient id="cl-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#93C5FD"/>
+      <stop offset="0.5" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#86EFAC"/>
+    </linearGradient>
+    <linearGradient id="cl-left" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFFFFF" stop-opacity="0.97"/>
+      <stop offset="1" stop-color="#DBEEFF" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="cl-right" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F2FAFF" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#BFE1FF" stop-opacity="0.92"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#cl-bg)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="15.25" fill="none" stroke="#FFFFFF" stroke-opacity="0.75"/>
+  <path d="M12 8h38a4 4 0 0 1 4 4v6C40 14 24 14 8 19v-7a4 4 0 0 1 4-4Z" fill="#FFFFFF" opacity="0.3"/>
+  <rect x="9" y="18" width="27" height="31" rx="7" fill="url(#cl-left)" stroke="#1B4E87" stroke-opacity="0.32" stroke-width="1.1"/>
+  <rect x="28" y="14" width="27" height="31" rx="7" fill="url(#cl-right)" stroke="#1B4E87" stroke-opacity="0.4" stroke-width="1.1"/>
+  <g stroke="#1B4E87" stroke-width="2.4" stroke-linecap="round" opacity="0.88">
+    <path d="M14 27h11"/>
+    <path d="M14 32h8"/>
+    <path d="M14 37h11"/>
+    <path d="M14 42h6"/>
+  </g>
+  <g stroke="#1B4E87" stroke-width="2.4" stroke-linecap="round" opacity="0.92">
+    <path d="M34 26h14"/>
+    <path d="M34 34h10"/>
+  </g>
+  <path d="M22 35h20M38 31l4 4-4 4M26 31l-4 4 4 4" fill="none" stroke="#123C6B" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  <path d="M22 35h20M38 31l4 4-4 4M26 31l-4 4 4 4" fill="none" stroke="#F6FCFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

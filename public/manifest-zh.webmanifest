@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "EPUB 繁简转换",
+  "short_name": "繁简转换",
+  "description": "在线 EPUB 繁简（繁体/简体）转换工具，支持批量上传、实时进度与一键下载。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B1B33",
+  "theme_color": "#0B1B33",
+  "icons": [
+    { "src": "./pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

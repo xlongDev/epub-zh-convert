@@ -4,6 +4,8 @@ import Head from "next/head";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import FaviconThemeSync from "@/components/FaviconThemeSync/FaviconThemeSync";
+import PwaLanguageSync from "@/components/PwaLanguageSync/PwaLanguageSync";
 import { installGlobalErrorHandlers } from "@/utils/errorReporter";
 import { withBasePath } from "@/utils/basePath";
 import "../styles/globals.css";
@@ -17,6 +19,8 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system">
+      <FaviconThemeSync />
+      <PwaLanguageSync />
       <MotionConfig reducedMotion="user">
         <Head>
           <html lang="zh-CN" />

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+  <title id="t">EPUB 繁简转换器图标：双页与双向箭头</title>
+  <defs>
+    <linearGradient id="a-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0B1B33"/>
+      <stop offset="1" stop-color="#123C6B"/>
+    </linearGradient>
+    <linearGradient id="a-page" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#F7FCFF"/>
+      <stop offset="1" stop-color="#D9ECFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#a-bg)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" fill="none" stroke="#7DD3FC" stroke-opacity="0.38"/>
+  <path d="M12 8h40a4 4 0 0 1 4 4v7C40 15 24 15 8 20v-8a4 4 0 0 1 4-4Z" fill="#FFFFFF" opacity="0.07"/>
+  <path d="M11 20c6-3.5 13-3.5 21 1v27c-8-4.5-15-4.5-21-1V20Z" fill="url(#a-page)" stroke="#7DD3FC" stroke-opacity="0.65" stroke-width="1.2"/>
+  <path d="M53 20c-6-3.5-13-3.5-21 1v27c8-4.5 15-4.5 21-1V20Z" fill="url(#a-page)" stroke="#7DD3FC" stroke-opacity="0.5" stroke-width="1.2"/>
+  <path d="M32 21v27" stroke="#0B1B33" stroke-opacity="0.22" stroke-width="1.5"/>
+  <g stroke="#1B4E87" stroke-width="2.4" stroke-linecap="round" opacity="0.92">
+    <path d="M15 27h11"/>
+    <path d="M15 32h8"/>
+    <path d="M15 39h11"/>
+    <path d="M15 44h6"/>
+  </g>
+  <g stroke="#1B4E87" stroke-width="2.4" stroke-linecap="round" opacity="0.92">
+    <path d="M38 29h11"/>
+    <path d="M38 37h8"/>
+  </g>
+  <path d="M25 34h14M35 30l4 4-4 4M29 30l-4 4 4 4" fill="none" stroke="#0B1B33" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>
+  <path d="M25 34h14M35 30l4 4-4 4M29 30l-4 4 4 4" fill="none" stroke="#F4FBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

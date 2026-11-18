@@ -6,7 +6,9 @@ export default function Document() {
     <Html lang="zh-CN" suppressHydrationWarning>
       <Head>
         <meta charSet="UTF-8" />
-        <link rel="icon" href={withBasePath("/favicon.ico")} />
+        <link rel="icon" href={withBasePath("/favicon.ico")} sizes="any" />
+        <link rel="icon" type="image/svg+xml" href={withBasePath("/favicon.svg")} />
+        <link rel="apple-touch-icon" href={withBasePath("/apple-touch-icon.png")} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="EPUB 繁简转换 | epub-zh-convert" />
         <meta

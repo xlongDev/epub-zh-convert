@@ -42,14 +42,16 @@ const FileUploader = React.memo(
     return (
       <div className="relative">
         <motion.div
-          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2
+          className={`glass-dropzone border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2
             ${
               isDragging
-                ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/20"
+                ? "border-blue-500 bg-blue-50/50"
                 : isHoveringUpload
-                  ? "border-blue-400 bg-blue-50/30 dark:bg-blue-900/10"
-                  : "border-gray-300 dark:border-gray-600 backdrop-blur-lg bg-white/30 dark:bg-gray-700/30" // 将 backdrop-blur-md 改为 backdrop-blur-lg
+                  ? "border-blue-400 bg-blue-50/30"
+                  : "border-gray-300 bg-white/30"
             }`}
+          data-dragging={isDragging}
+          data-hover={isHoveringUpload}
           role="button"
           tabIndex={0}
           aria-label="点击或按回车选择 EPUB 文件，也可将文件拖放至此处"
@@ -75,7 +77,7 @@ const FileUploader = React.memo(
           }}
         >
           <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="p-3 bg-blue-100/50 dark:bg-blue-900/30 rounded-full">
+            <div className="glass-icon-orb p-3 rounded-full">
               {/* 文件上传图标 */}
               <UploadIcon className="w-8 h-8 text-blue-500 dark:text-blue-300" />
             </div>

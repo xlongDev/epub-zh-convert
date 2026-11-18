@@ -50,11 +50,11 @@ const DirectionSelector = React.memo(() => {
       role="group"
       aria-label="选择转换方向"
     >
-      <div className="relative bg-white/20 dark:bg-gray-800/30 backdrop-blur-lg rounded-xl p-1 border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+      <div className="glass-segment relative rounded-xl p-1">
         {/* 流动背景效果 */}
         <div className="absolute inset-0 overflow-hidden rounded-xl">
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-400/10 dark:from-blue-600/15 dark:to-purple-600/15"
+            className="absolute inset-0 bg-gradient-to-r from-sky-400/10 to-indigo-400/10 dark:from-sky-500/10 dark:to-indigo-500/15"
             animate={{
               backgroundPosition: ["0% 0%", "100% 100%"],
             }}
@@ -70,7 +70,7 @@ const DirectionSelector = React.memo(() => {
         {/* 激活状态指示器 */}
         <AnimatePresence>
           <motion.div
-            className="absolute top-1 bottom-1 rounded-lg bg-white dark:bg-gray-700/80 shadow-md z-0"
+            className="glass-segment-thumb absolute top-1 bottom-1 rounded-lg z-0"
             initial={isMounted ? false : { x: activePosition.x, width: activePosition.width }}
             animate={{
               x: activePosition.x,

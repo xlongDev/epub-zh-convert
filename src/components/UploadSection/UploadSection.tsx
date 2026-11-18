@@ -73,7 +73,7 @@ const UploadSection = React.memo(() => {
 
   return (
     <motion.div
-      className="relative p-6 rounded-xl shadow-2xl overflow-hidden"
+      className="glass-card relative p-6 overflow-hidden"
       variants={uploadVariants}
       initial="hidden"
       animate="visible"
@@ -83,31 +83,10 @@ const UploadSection = React.memo(() => {
         transition: { duration: 0.3 },
       }}
       key="upload-section"
-      whileHover={{
-        boxShadow: "0 20px 50px -10px rgba(0, 0, 0, 0.1)",
-        transition: { duration: 0.4 },
-      }}
     >
-      {/* 💧 背景液态玻璃层 + 流动光效 */}
-      <div
-        className="absolute inset-0 z-0 
-          bg-white/30 dark:bg-gray-800/30 
-          backdrop-blur-xl border border-white/50 dark:border-gray-700/50
-          rounded-xl [mask-image:linear-gradient(white,transparent)]"
-      >
-        <div
-          className="absolute inset-0 
-            [background:radial-gradient(at_30%_20%,rgba(180,220,255,0.3)_0px,transparent_50%), 
-                     radial-gradient(at_70%_80%,rgba(220,180,255,0.2)_0px,transparent_50%)] 
-            dark:[background:radial-gradient(at_30%_20%,rgba(100,150,255,0.2)_0px,transparent_50%), 
-                     radial-gradient(at_70%_80%,rgba(180,100,255,0.15)_0px,transparent_50%)]"
-        />
-        <div
-          className="absolute top-0 left-0 w-full h-20 
-            bg-gradient-to-b from-white/60 to-transparent 
-            dark:from-gray-800/40 dark:to-transparent"
-        />
-        <div className="absolute inset-0 border border-white/30 dark:border-white/10 rounded-xl" />
+      {/* 💧 背景液态玻璃层：完整覆盖 + 双层边框高光，暗色下折射环境光 */}
+      <div className="glass-card-surface z-0 rounded-xl">
+        <div className="glass-card-caustic" />
       </div>
 
       {/* 📦 内容主体区域 */}

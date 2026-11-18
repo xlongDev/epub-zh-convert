@@ -56,7 +56,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className="glass-icon-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
       aria-label="切换主题"
     >
       {theme === "dark" ? (
